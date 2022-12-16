@@ -19,7 +19,7 @@ on:
         required: false
         default: ""
     secrets:
-      AWS_OPEN_ID_CONNECT_ROLE_ARN:
+      AWS_ROLE_ARN:
         required: true
 
 permissions:
@@ -50,7 +50,7 @@ jobs:
       - name: Configure AWS Credentials for dev
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.AWS_OPEN_ID_CONNECT_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
 
       - name: run prep script
