@@ -90,6 +90,7 @@ jobs:
           aws s3 cp $REPO_NAME.zip s3://ds-${{ github.event.inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
   deploy:
     runs-on: "ubuntu-latest"
+    environment: 'dev-deploy'
     needs:
       - prepare
     env:
