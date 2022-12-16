@@ -90,14 +90,25 @@ jobs:
           aws s3 cp $REPO_NAME.zip s3://ds-${{ inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
   deploy:
     runs-on: "ubuntu-latest"
-    environment: 'dev-deploy'
     needs:
       - prepare
     env:
       user: ${{ github.actor }}
-    uses:
-
+    environment: 'dev-deploy'
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install AWS CLI
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install python dependencies
+        run: |
+          pip install -r scripts/requirements-aws-cli.txt          
+
       - name: Deploy
         env:
           user: "${{ env.user }}"
