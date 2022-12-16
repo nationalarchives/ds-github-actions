@@ -33,6 +33,7 @@ jobs:
       release: "${{ inputs.release }}"
       branch: "${{ inputs.branch }}"
       repo: "${{ inputs.deploy-repo }}"
+      deploy-environment: "${{ inputs.deploy-environment }}"
 
     steps:
       - name: checkout repo with release
@@ -56,6 +57,7 @@ jobs:
       - name: run prep script
         env:
           REPO_NAME: "${{ env.repo }}"
+          DEPLOY_ENV: "${{ env.deploy-environment }}"
         run: |
           mkdir .payload
           mv * .payload
@@ -87,7 +89,7 @@ jobs:
           echo "chown apache:apache /var/www/html/wp-content/themes/$REPO_NAME" >> permissions.sh
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
-          aws s3 cp $REPO_NAME.zip s3://ds-${{ inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
+          aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME.zip
   deploy:
     runs-on: "ubuntu-latest"
     needs:
@@ -112,9 +114,9 @@ jobs:
       - name: Deploy
         env:
           user: "${{ env.user }}"
-          environment: "${{ env.deploy-environment }}"
+          deploy-env: "${{ env.deploy-environment }}"
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
-          echo ""aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$environment-deployment-source,bundleType=zip,key=website/$repo.zip"
+          echo "aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$deploy-env-deployment-source,bundleType=zip,key=website/$repo.zip"
 ...
