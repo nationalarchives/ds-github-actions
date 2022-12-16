@@ -27,7 +27,7 @@ permissions:
   contents: write
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     env:
       region: "eu-west-2"
       release: "${{ inputs.release }}"
@@ -89,9 +89,16 @@ jobs:
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
           aws s3 cp $REPO_NAME.zip s3://ds-${{ github.event.inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
   deploy:
+    runs-on: "ubuntu-latest"
     needs:
       - prepare
-    uses: trstringer/manual-approval@v1
-    with:
-    - name: Deploy
-      run: echo deploying...
+    env:
+      user: ${{ github.actor }}
+
+    steps:
+      - name: Deploy
+        env:
+          user: "${{ env.user }}"
+        run: |
+          echo deploying for $user...
+...
