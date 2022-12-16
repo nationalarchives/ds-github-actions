@@ -33,7 +33,7 @@ jobs:
       release: "${{ inputs.release }}"
       branch: "${{ inputs.branch }}"
       repo: "${{ inputs.deploy-repo }}"
-      deploy-environment: "${{ inputs.deploy-environment }}"
+      deploy_environment: "${{ inputs.deploy-environment }}"
 
     steps:
       - name: checkout repo with release
@@ -57,7 +57,7 @@ jobs:
       - name: run prep script
         env:
           REPO_NAME: "${{ env.repo }}"
-          DEPLOY_ENV: "${{ env.deploy-environment }}"
+          DEPLOY_ENV: "${{ env.deploy_environment }}"
         run: |
           mkdir .payload
           mv * .payload
@@ -114,9 +114,9 @@ jobs:
       - name: Deploy
         env:
           user: "${{ env.user }}"
-          deploy-env: "${{ env.deploy-environment }}"
+          deploy_env: "${{ env.deploy_environment }}"
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
-          echo "aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$deploy-env-deployment-source,bundleType=zip,key=website/$repo.zip"
+          echo "aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo.zip"
 ...
