@@ -88,14 +88,10 @@ jobs:
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
           aws s3 cp $REPO_NAME.zip s3://ds-${{ github.event.inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
-  approve:
+  deploy:
     needs:
       - prepare
-    runs-on: ubuntu-latest
-    environment: poc-manual-step
-    steps:
-      - name: Manual Approve Info
-        run: |
-          echo ${{ github.triggering_actor }}
-          echo ${{ github.actor }}
-...
+    uses: trstringer/manual-approval@v1
+    with:
+    - name: Deploy
+      run: echo deploying...
