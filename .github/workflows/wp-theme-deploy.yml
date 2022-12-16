@@ -87,7 +87,7 @@ jobs:
           echo "chown apache:apache /var/www/html/wp-content/themes/$REPO_NAME" >> permissions.sh
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
-          aws s3 cp $REPO_NAME.zip s3://ds-${{ github.event.inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
+          aws s3 cp $REPO_NAME.zip s3://ds-${{ inputs.deploy-environment }}-deployment-source/website/$REPO_NAME.zip
   deploy:
     runs-on: "ubuntu-latest"
     environment: 'dev-deploy'
@@ -95,11 +95,15 @@ jobs:
       - prepare
     env:
       user: ${{ github.actor }}
+    uses:
 
     steps:
       - name: Deploy
         env:
           user: "${{ env.user }}"
+          environment: "${{ env.deploy-environment }}"
+          repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
+          echo ""aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$environment-deployment-source,bundleType=zip,key=website/$repo.zip"
 ...
