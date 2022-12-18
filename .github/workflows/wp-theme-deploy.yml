@@ -33,7 +33,7 @@ jobs:
       release: "${{ inputs.release }}"
       branch: "${{ inputs.branch }}"
       repo: "${{ inputs.deploy-repo }}"
-      deploy_environment: "${{ inputs.deploy-environment }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
 
     steps:
       - name: checkout repo with release
@@ -57,7 +57,7 @@ jobs:
       - name: run prep script
         env:
           REPO_NAME: "${{ env.repo }}"
-          DEPLOY_ENV: "${{ env.deploy_environment }}"
+          DEPLOY_ENV: "${{ env.deploy_env }}"
         run: |
           mkdir .payload
           mv * .payload
