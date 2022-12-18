@@ -111,6 +111,7 @@ jobs:
         run: |
           pwd
           ls -la ../
+          mv ../scripts .
           pip install -r scripts/requirements-aws-cli.txt          
 
       - name: Deploy
