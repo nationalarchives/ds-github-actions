@@ -107,7 +107,7 @@ jobs:
         run: |
           cd $repo
           pwd
-          cp scripts/requirements-aws-cli.txt requirments.txt
+          cp scripts/requirements-aws-cli.txt requirements.txt
 
       - name: Install AWS CLI
         uses: actions/setup-python@v4
