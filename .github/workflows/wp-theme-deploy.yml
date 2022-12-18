@@ -109,6 +109,8 @@ jobs:
 
       - name: Install python dependencies
         run: |
+          pwd
+          ls -la ../
           pip install -r scripts/requirements-aws-cli.txt          
 
       - name: Deploy
