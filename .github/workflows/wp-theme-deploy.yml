@@ -104,8 +104,7 @@ jobs:
       - name: copy script
         run: |
           pwd
-          ls -la ../
-          cp ../scripts/requirements-aws-cli.txt requirments.txt
+          cp scripts/requirements-aws-cli.txt requirments.txt
 
       - name: Install AWS CLI
         uses: actions/setup-python@v4
