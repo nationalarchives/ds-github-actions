@@ -98,8 +98,13 @@ jobs:
       user: ${{ github.actor }}
     environment: 'dev-deploy'
     steps:
-      - name: Checkout
+#      - name: Checkout
+#        uses: actions/checkout@v2
+
+      - name: Checkout ds-github-actions
         uses: actions/checkout@v2
+        with:
+          repository: nationalarchives/ds-github-actions
 
       - name: copy script
         env:
