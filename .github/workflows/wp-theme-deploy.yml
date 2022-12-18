@@ -102,7 +102,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: copy script
+        env:
+          repo: "${{ env.repo }}"
         run: |
+          cd $repo
           pwd
           cp scripts/requirements-aws-cli.txt requirments.txt
 
