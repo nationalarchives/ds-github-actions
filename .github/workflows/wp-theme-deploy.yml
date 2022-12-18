@@ -105,6 +105,9 @@ jobs:
         env:
           repo: "${{ env.repo }}"
         run: |
+          pwd
+          ls -la
+          echo $repo
           cd $repo
           pwd
           cp scripts/requirements-aws-cli.txt requirements.txt
