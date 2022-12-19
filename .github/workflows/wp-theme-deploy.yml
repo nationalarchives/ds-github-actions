@@ -102,7 +102,7 @@ jobs:
 #        uses: actions/checkout@v2
 
       - name: Checkout ds-github-actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: nationalarchives/ds-github-actions
 
