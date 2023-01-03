@@ -97,6 +97,7 @@ jobs:
     env:
       user: "${{ github.actor }}"
       repo: "${{ inputs.deploy-repo }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
       region: "eu-west-2"
     environment: 'dev-deploy'
     steps:
@@ -131,7 +132,7 @@ jobs:
       - name: Deploy
         env:
           user: "${{ env.user }}"
-          deploy_env: "${{ env.deploy_environment }}"
+          deploy_env: "${{ env.deploy_env }}"
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
