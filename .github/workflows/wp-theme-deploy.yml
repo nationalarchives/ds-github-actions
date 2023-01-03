@@ -97,6 +97,7 @@ jobs:
     env:
       user: "${{ github.actor }}"
       repo: "${{ inputs.deploy-repo }}"
+      region: "eu-west-2"
     environment: 'dev-deploy'
     steps:
       - name: Checkout ds-github-actions
@@ -108,9 +109,6 @@ jobs:
         env:
           repo: "${{ env.repo }}"
         run: |
-          pwd
-          ls -la
-          echo $repo
           cp scripts/requirements-aws-cli.txt .
 
       - name: Install AWS CLI
@@ -122,11 +120,13 @@ jobs:
 
       - name: Install python dependencies
         run: |
-          pwd
-          ls -la ../
-          ls -la
-          # mv ../scripts .
           pip install -r scripts/requirements-aws-cli.txt
+
+      - name: Configure AWS Credentials for dev
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: "${{ env.region }}"
 
       - name: Deploy
         env:
