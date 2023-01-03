@@ -95,12 +95,10 @@ jobs:
     needs:
       - prepare
     env:
-      user: ${{ github.actor }}
+      user: "${{ github.actor }}"
+      repo: "${{ inputs.deploy-repo }}"
     environment: 'dev-deploy'
     steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-
       - name: Checkout ds-github-actions
         uses: actions/checkout@v3
         with:
