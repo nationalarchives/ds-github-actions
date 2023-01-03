@@ -49,7 +49,7 @@ jobs:
           ref: ${{ env.branch }}
 
       - name: Configure AWS Credentials for dev
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
@@ -97,6 +97,7 @@ jobs:
     env:
       user: "${{ github.actor }}"
       repo: "${{ inputs.deploy-repo }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
       region: "eu-west-2"
     environment: 'dev-deploy'
     steps:
@@ -123,7 +124,7 @@ jobs:
           pip install -r scripts/requirements-aws-cli.txt
 
       - name: Configure AWS Credentials for dev
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
@@ -131,7 +132,7 @@ jobs:
       - name: Deploy
         env:
           user: "${{ env.user }}"
-          deploy_env: "${{ env.deploy_environment }}"
+          deploy_env: "${{ env.deploy_env }}"
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
