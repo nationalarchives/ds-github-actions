@@ -136,5 +136,5 @@ jobs:
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
-          echo "aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo.zip"
+          aws deploy create-deployment --application-name website-wp --deployment-config-name website-wp --deployment-group-name website-wp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo.zip
 ...
