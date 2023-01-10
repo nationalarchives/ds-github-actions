@@ -48,11 +48,10 @@ jobs:
         with:
           ref: ${{ env.branch }}
 
-      - name: Configure AWS Credentials for dev
-        if: "${{ env.deploy_env == 'dev' }}"
+      - name: Configure AWS Credentials for ${{ env.deploy_env }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN_DEV }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
 
       - name: run prep script
