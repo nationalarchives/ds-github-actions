@@ -18,9 +18,9 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      AWS_ROLE_ARN:
-        required: true
+#    secrets:
+#      AWS_ROLE_ARN:
+#        required: true
 
 permissions:
   id-token: write
