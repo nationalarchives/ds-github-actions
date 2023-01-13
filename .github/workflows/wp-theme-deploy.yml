@@ -1,5 +1,5 @@
 ---
-name: Prepare Zip File
+name: Website Theme Deployment
 
 on:
   workflow_call:
