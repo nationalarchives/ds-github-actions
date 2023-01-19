@@ -1,0 +1,141 @@
+---
+name: Media Theme Deployment
+
+on:
+  workflow_call:
+    inputs:
+      deploy-repo:
+        type: string
+        required: true
+      deploy-environment:
+        type: string
+        required: true
+      release:
+        type: string
+        required: false
+        default: ""
+      branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+jobs:
+  prepare:
+    runs-on: "ubuntu-latest"
+    env:
+      region: "eu-west-2"
+      release: "${{ inputs.release }}"
+      branch: "${{ inputs.branch }}"
+      repo: "${{ inputs.deploy-repo }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
+
+    steps:
+      - name: checkout repo with release
+        if: "${{ env.release != '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: "${{ env.release }}"
+
+      - name: checkout repo with branch
+        if: "${{ env.release == '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.branch }}
+
+      - name: Configure AWS Credentials for dev
+        if: "${{ env.deploy_env == 'dev' }}"
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: "${{ env.region }}"
+
+      - name: run prep script
+        env:
+          REPO_NAME: "${{ env.repo }}"
+          DEPLOY_ENV: "${{ env.deploy_env }}"
+        run: |
+          mkdir .payload
+          mv * .payload
+          mv .payload payload
+          echo "version: 0.0" > appspec.yml
+          echo "os: linux" >> appspec.yml
+          echo "files:" >> appspec.yml
+          echo "  - source: '/payload'" >> appspec.yml
+          echo "    destination: '/var/www/html/wp-content/themes/$REPO_NAME'" >> appspec.yml
+          echo "file_exists_behavior: OVERWRITE" >> appspec.yml
+          echo "permissions:" >> appspec.yml
+          echo "  - object: '/var/www/html/wp-content/themes/$REPO_NAME'" >> appspec.yml
+          echo "    pattern: '**'" >> appspec.yml
+          echo "    owner: apache" >> appspec.yml
+          echo "    group: apache" >> appspec.yml
+          echo "    type:" >> appspec.yml
+          echo "      - directory" >> appspec.yml
+          echo "      - file" >> appspec.yml
+          echo "hooks:" >> appspec.yml
+          echo "  BeforeInstall:" >> appspec.yml
+          echo "  - location: './prep-env.sh'" >> appspec.yml
+          echo "    timeout: 60" >> appspec.yml
+          echo "  - AfterInstall:" >> appspec.yml
+          echo "    location: './permissions.sh'" >> appspec.yml
+          echo "    timeout: 60" >> appspec.yml
+          echo "#!/bin/bash" > prep-env.sh
+          echo "mkdir -p /var/www/html/wp-content/themes/$REPO_NAME" >> prep-env.sh
+          echo "#!/bin/bash" > permissions.sh
+          echo "chown apache:apache /var/www/html/wp-content/themes/$REPO_NAME" >> permissions.sh
+          cd ..
+          zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
+          aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/media/$REPO_NAME.zip
+  deploy:
+    runs-on: "ubuntu-latest"
+    needs:
+      - prepare
+    env:
+      user: "${{ github.actor }}"
+      repo: "${{ inputs.deploy-repo }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
+      region: "eu-west-2"
+    environment: 'dev-deploy'
+    steps:
+      - name: Checkout ds-github-actions
+        uses: actions/checkout@v3
+        with:
+          repository: nationalarchives/ds-github-actions
+
+      - name: copy script
+        env:
+          repo: "${{ env.repo }}"
+        run: |
+          cp scripts/requirements-aws-cli.txt .
+
+      - name: Install AWS CLI
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements-aws-cli.txt'
+
+      - name: Install python dependencies
+        run: |
+          pip install -r scripts/requirements-aws-cli.txt
+
+      - name: Configure AWS Credentials for dev
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: "${{ env.region }}"
+
+      - name: Deploy
+        env:
+          user: "${{ env.user }}"
+          deploy_env: "${{ env.deploy_env }}"
+          repo: "${{ env.repo }}"
+        run: |
+          echo deploying for $user...
+          aws deploy create-deployment --application-name media-wp --deployment-config-name media-wp --deployment-group-name media-wp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=media/$repo.zip
+...
