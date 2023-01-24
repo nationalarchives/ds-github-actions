@@ -10,6 +10,9 @@ on:
       deploy-environment:
         type: string
         required: true
+      github-environment:
+        type: string
+        required: true
       release:
         type: string
         required: false
@@ -99,7 +102,7 @@ jobs:
       repo: "${{ inputs.deploy-repo }}"
       deploy_env: "${{ inputs.deploy-environment }}"
       region: "eu-west-2"
-#    environment: 'dev-deploy'
+    environment: "${{ inputs.github-environment }}"
     steps:
       - name: Checkout ds-github-actions
         uses: actions/checkout@v3
