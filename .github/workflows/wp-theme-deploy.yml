@@ -10,6 +10,9 @@ on:
       deploy-environment:
         type: string
         required: true
+      github-environment:
+        type: string
+        required: true
       release:
         type: string
         required: false
@@ -48,8 +51,7 @@ jobs:
         with:
           ref: ${{ env.branch }}
 
-      - name: Configure AWS Credentials for dev
-        if: "${{ env.deploy_env == 'dev' }}"
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
@@ -100,7 +102,7 @@ jobs:
       repo: "${{ inputs.deploy-repo }}"
       deploy_env: "${{ inputs.deploy-environment }}"
       region: "eu-west-2"
-    environment: 'dev-deploy'
+    environment: "${{ inputs.github-environment }}"
     steps:
       - name: Checkout ds-github-actions
         uses: actions/checkout@v3
@@ -124,7 +126,7 @@ jobs:
         run: |
           pip install -r scripts/requirements-aws-cli.txt
 
-      - name: Configure AWS Credentials for dev
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
