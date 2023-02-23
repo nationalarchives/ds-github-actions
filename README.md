@@ -1,7 +1,7 @@
 # ds-github-actions
 Common GitHub Actions
 ### Theme Deployment
-Deploying themes for WordPress websites by creating zip files and copying them to the shared S3 deployment bucket and start CodeDeploy service. \n
+Deploying themes for WordPress websites by creating zip files and copying them to the shared S3 deployment bucket and start CodeDeploy service.\
 
 To start a theme deployment you must head to the repo of the theme you would like to deploy and run the theme deployment job for the service you want to deploy to.
 
