@@ -1,5 +1,5 @@
 ---
-name: Website Theme Deployment
+name: Nginx Config Deployment
 
 on:
   workflow_call:
@@ -13,10 +13,6 @@ on:
       github-environment:
         type: string
         required: true
-      release:
-        type: string
-        required: false
-        default: ""
       branch:
         type: string
         required: false
@@ -33,20 +29,12 @@ jobs:
     runs-on: "ubuntu-latest"
     env:
       region: "eu-west-2"
-      release: "${{ inputs.release }}"
       branch: "${{ inputs.branch }}"
       repo: "${{ inputs.deploy-repo }}"
       deploy_env: "${{ inputs.deploy-environment }}"
 
     steps:
-      - name: checkout repo with release
-        if: "${{ env.release != '' }}"
-        uses: actions/checkout@v3
-        with:
-          ref: "${{ env.release }}"
-
       - name: checkout repo with branch
-        if: "${{ env.release == '' }}"
         uses: actions/checkout@v3
         with:
           ref: ${{ env.branch }}
@@ -63,16 +51,16 @@ jobs:
           DEPLOY_ENV: "${{ env.deploy_env }}"
         run: |
           mkdir .payload
-          mv * .payload
+          mv  .payload
           mv .payload payload
           echo "version: 0.0" > appspec.yml
           echo "os: linux" >> appspec.yml
           echo "files:" >> appspec.yml
           echo "  - source: '/payload'" >> appspec.yml
-          echo "    destination: '/var/www/html/wp-content/themes/$REPO_NAME'" >> appspec.yml
+          echo "    destination: '/etc/nginx/'" >> appspec.yml
           echo "file_exists_behavior: OVERWRITE" >> appspec.yml
           echo "permissions:" >> appspec.yml
-          echo "  - object: '/var/www/html/wp-content/themes/$REPO_NAME'" >> appspec.yml
+          echo "  - object: '/etc/nginx/nginx.conf'" >> appspec.yml
           echo "    pattern: '**'" >> appspec.yml
           echo "    owner: apache" >> appspec.yml
           echo "    group: apache" >> appspec.yml
@@ -87,10 +75,9 @@ jobs:
           echo "    location: './permissions.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
           echo "#!/bin/bash" > prep-env.sh
-          echo "mkdir -p /var/www/html/wp-content/themes/$REPO_NAME" >> prep-env.sh
+          echo "mkdir -p /etc/nginx/" >> prep-env.sh
           echo "#!/bin/bash" > permissions.sh
-          echo "chown apache:apache /var/www/html/wp-content/themes/$REPO_NAME" >> permissions.sh
-          echo "rm /opt/codedeploy-agent/deployment-root/deployment-instructions/*-cleanup" >> permissions.sh
+          echo "chown apache:apache /etc/nginx/" >> permissions.sh
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
           aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME.zip
