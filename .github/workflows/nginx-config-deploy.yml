@@ -51,7 +51,7 @@ jobs:
           DEPLOY_ENV: "${{ env.deploy_env }}"
         run: |
           mkdir .payload
-          mv  .payload
+          mv /components/terraform/nginx-conf/scripts/nginx.conf .payload
           mv .payload payload
           echo "version: 0.0" > appspec.yml
           echo "os: linux" >> appspec.yml
