@@ -92,16 +92,17 @@ jobs:
           Set-AWSCredentials -AccessKey ${{ secrets.AWS_ACCESS_KEY_ID }} -SecretKey ${{ secrets.AWS_SECRET_ACCESS_KEY }} -StoreAs WorkProfile
           Initialize-AWSDefaults -ProfileName WorkProfile -Region ${{ env.region }}
           $Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_ROLE_ARN }}" -RoleSessionName "CopyToS3").Credentials
-
-      - name: copy web zip file
-        if: ${{ inputs.deploy-target  == 'web' || inputs.deploy-target  == 'web_&_api' }}
-        run: |
-          Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
-
-      - name: copy api zip file
-        if: ${{ inputs.deploy-target  == 'api' || inputs.deploy-target  == 'web_&_api' }}
-        run: |
+          
+          if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
+          {
+            echo "copy web zip file"
+            Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+          }
+          if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
+          {
+            echo "copy api zip file"
           Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+          }
 
   deploy:
     runs-on: "ubuntu-latest"
