@@ -106,6 +106,17 @@ jobs:
       deploy_target: "${{ inputs.deploy-target }}"
       region: "eu-west-2"
     steps:
+      - name: Checkout ds-github-actions
+        uses: actions/checkout@v3
+        with:
+          repository: nationalarchives/ds-github-actions
+
+      - name: copy script
+        env:
+          repo: "${{ env.repo }}"
+        run: |
+          cp scripts/requirements-aws-cli.txt .
+
       - name: Install AWS CLI
         uses: actions/setup-python@v4
         with:
