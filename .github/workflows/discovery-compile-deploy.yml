@@ -1,0 +1,159 @@
+---
+name: Discovery compile and deploy
+
+on:
+  workflow_call:
+    inputs:
+      deploy-repo:
+        type: string
+        required: true
+      deploy-environment:
+        type: string
+        required: true
+      deploy-target:
+        type: string
+        required: true
+      release:
+        type: string
+        required: false
+        default: ""
+      branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    env:
+      region: "eu-west-2"
+      release: "${{ inputs.release }}"
+      branch: "${{ inputs.branch }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
+      deploy_target: "${{ inputs.deploy-target }}"
+      output_dir: "\\build"
+
+    steps:
+      - name: checkout repo with release
+        if: "${{ env.release != '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: "${{ env.release }}"
+
+      - name: checkout repo with branch
+        if: "${{ env.release == '' }}"
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.branch }}
+
+      - name: add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+
+      - name: create build target directory
+        run: |
+          mkdir ${{ env.output_dir }}
+
+      - name: run nuget
+        run: |
+          nuget restore ResourceDiscovery.sln
+
+      - name: run MSBuild
+        run: |
+          msbuild ResourceDiscovery.sln /m /p:configuration=Release /p:OutDir=${{ env.output_dir }} -verbosity:quiet
+
+      - name: run prep script
+        run: |
+          cd ${{ env.output_dir }}
+          copy ${{ github.workspace }}\.devops-deployment-scripts\start-webserver.ps1 ${{ env.output_dir }}
+          copy ${{ github.workspace }}\.devops-deployment-scripts\stop-webserver.ps1 ${{ env.output_dir }}
+          ${{ github.workspace }}\.devops-deployment-scripts\prepare_zip_files.ps1 -output_dir ${{ env.output_dir }}
+
+      - name: setup profile and copy zip files for ${{ env.deploy_env }}
+        run: |
+          Install-Module -Name AWS.Tools.Installer -Force
+          Install-AWSToolsModule AWS.Tools.SecurityToken,AWS.Tools.S3 -Force -CleanUp
+          
+          # maybe there is better clean up to remove the redundant modules
+          del "C:\Users\runneradmin\Documents\PowerShell\Modules\AWS.Tools.Common.*"
+          del "C:\Program Files\WindowsPowerShell\Modules\AWSPowerShell.*"
+          
+          Set-AWSCredentials -AccessKey ${{ secrets.AWS_ACCESS_KEY_ID }} -SecretKey ${{ secrets.AWS_SECRET_ACCESS_KEY }} -StoreAs WorkProfile
+          Initialize-AWSDefaults -ProfileName WorkProfile -Region ${{ env.region }}
+          $Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_ROLE_ARN_DEV }}" -RoleSessionName "CopyToS3").Credentials
+          
+          Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+          Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+
+  deploy:
+    runs-on: "ubuntu-latest"
+    needs:
+      - prepare
+    env:
+      user: "${{ github.actor }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
+      deploy_target: "${{ inputs.deploy-target }}"
+      region: "eu-west-2"
+    steps:
+      - name: Install AWS CLI
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements-aws-cli.txt'
+
+      - name: Install python dependencies
+        run: |
+          pip install -r scripts/requirements-aws-cli.txt
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: "${{ env.region }}"
+
+      - name: Deploy Web to ${{ env.deploy_env }}
+        if: ${{ inputs.deploy-target  == 'web' || inputs.deploy-target  == 'web_&_api' }}
+        env:
+          user: "${{ env.user }}"
+          deploy_env: "${{ env.deploy_env }}"
+        run: |
+          echo deploying for $user...
+          aws deploy create-deployment \
+            --application-name discovery-frontend \
+            --deployment-config-name discovery-frontend \
+            --deployment-group-name discovery-frontend-group \
+            --s3-location bucket=ds-${{ deploy_env }}-deployment-source,bundleType=zip,key=discovery/builds/TNA.Discovery.web.zip
+          aws deploy create-deployment \
+            --application-name discovery-frontend-internal \
+            --deployment-config-name discovery-frontend-internal \
+            --deployment-group-name discovery-frontend-internal-group \
+            --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=discovery/builds/TNA.Discovery.web.zip
+
+      - name: Deploy API to ${{ env.deploy_env }}
+        if: ${{ inputs.deploy-target  == 'api' || inputs.deploy-target  == 'web_&_api' }}
+        env:
+          user: "${{ env.user }}"
+          deploy_env: "${{ env.deploy_env }}"
+        run: |
+          echo deploying for $user...
+          aws deploy create-deployment \
+            --application-name discovery-backend \
+            --deployment-config-name discovery-backend \
+            --deployment-group-name discovery-backend-group \
+            --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=discovery/builds/TNA.Discovery.api.zip
+...
