@@ -25,6 +25,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      AWS_CODEDEPLOY_ARN:
+        required: true
 
 permissions:
   id-token: write
@@ -91,7 +93,7 @@ jobs:
           
           Set-AWSCredentials -AccessKey ${{ secrets.AWS_ACCESS_KEY_ID }} -SecretKey ${{ secrets.AWS_SECRET_ACCESS_KEY }} -StoreAs WorkProfile
           Initialize-AWSDefaults -ProfileName WorkProfile -Region ${{ env.region }}
-          $Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_ROLE_ARN }}" -RoleSessionName "CopyToS3").Credentials
+          $Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_CODEDEPLOY_ARN }}" -RoleSessionName "CopyToS3").Credentials
           
           if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
@@ -101,7 +103,7 @@ jobs:
           if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
             echo "copy api zip file"
-          Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+            Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
           }
 
   deploy:
@@ -139,7 +141,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_CODEDEPLOY_ARN }}
           aws-region: "${{ env.region }}"
 
       - name: Deploy Web to ${{ env.deploy_env }}
