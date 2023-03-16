@@ -115,7 +115,7 @@ jobs:
 
       - name: copy zip files
         run: |
-##          $Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_CODEDEPLOY_ARN }}" -RoleSessionName "CopyToS3").Credentials
+          ##$Creds = (Use-STSRole -RoleArn "${{ secrets.AWS_CODEDEPLOY_ARN }}" -RoleSessionName "CopyToS3").Credentials
           if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
             echo "copy web zip file"
