@@ -11,11 +11,7 @@ on:
         type: string
         required: true
     secrets:
-      AWS_ROLE_ARN:
-        required: true
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
+      AWS_CODEDEPLOY_ARN:
         required: true
 
 permissions:
@@ -45,7 +41,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.AWS_CODEDEPLOY_ARN }}
           aws-region: "${{ env.region }}"
 
       - name: Deploy Web to ${{ env.deploy_env }}
