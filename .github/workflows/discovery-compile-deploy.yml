@@ -87,6 +87,7 @@ jobs:
         run: |
           Install-Module -Name AWS.Tools.Installer -Force
           Install-AWSToolsModule AWS.Tools.S3 -Force -CleanUp
+          Remove-Module AWSPowerShell
 
 ##          Install-Module -Name AWS.Tools.Installer -Force
 ##          Install-AWSToolsModule AWS.Tools.SecurityToken,AWS.Tools.S3 -Force -CleanUp
