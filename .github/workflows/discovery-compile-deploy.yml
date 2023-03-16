@@ -83,8 +83,10 @@ jobs:
           copy ${{ github.workspace }}\.devops-deployment-scripts\stop-webserver.ps1 ${{ env.output_dir }}
           ${{ github.workspace }}\.devops-deployment-scripts\prepare_zip_files.ps1 -output_dir ${{ env.output_dir }}
 
-##      - name: setup AWS.Tools
-##        run: |
+      - name: setup AWS.Tools
+        run: |
+          Install-Module -Name AWSPowerShell 
+
 ##          Install-Module -Name AWS.Tools.Installer -Force
 ##          Install-AWSToolsModule AWS.Tools.SecurityToken,AWS.Tools.S3 -Force -CleanUp
 ##
