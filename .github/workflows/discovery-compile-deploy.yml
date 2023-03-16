@@ -85,6 +85,7 @@ jobs:
 
       - name: setup AWS.Tools
         run: |
+          Install-Module -Name AWS.Tools.Installer -Force
           Install-AWSToolsModule AWS.Tools.S3 -Force -CleanUp
 
 ##          Install-Module -Name AWS.Tools.Installer -Force
