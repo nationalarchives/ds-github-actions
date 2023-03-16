@@ -88,9 +88,6 @@ jobs:
           Install-Module -Name AWS.Tools.Installer -Force
           Install-AWSToolsModule AWS.Tools.S3 -Force -CleanUp
 
-##          Install-Module -Name AWS.Tools.Installer -Force
-##          Install-AWSToolsModule AWS.Tools.SecurityToken,AWS.Tools.S3 -Force -CleanUp
-##
 ##          # maybe there is better clean up to remove the redundant modules
 ##          del "C:\Users\runneradmin\Documents\PowerShell\Modules\AWS.Tools.Common.*"
 ##          del "C:\Program Files\WindowsPowerShell\Modules\AWSPowerShell.*"
