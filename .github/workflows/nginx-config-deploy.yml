@@ -62,8 +62,8 @@ jobs:
           echo "permissions:" >> appspec.yml
           echo "  - object: '/etc/nginx/nginx.conf'" >> appspec.yml
           echo "    pattern: '**'" >> appspec.yml
-          echo "    owner: apache" >> appspec.yml
-          echo "    group: apache" >> appspec.yml
+          echo "    owner: root" >> appspec.yml
+          echo "    group: root" >> appspec.yml
           echo "    type:" >> appspec.yml
           echo "      - directory" >> appspec.yml
           echo "      - file" >> appspec.yml
