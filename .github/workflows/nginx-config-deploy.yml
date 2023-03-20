@@ -68,12 +68,17 @@ jobs:
           echo "      - directory" >> appspec.yml
           echo "      - file" >> appspec.yml
           echo "hooks:" >> appspec.yml
-          echo "  Install:" >> appspec.yml
+          echo "  BeforeInstall:" >> appspec.yml
           echo "  - location: './prep-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
+          echo "  - AfterInstall:" >> appspec.yml
+          echo "    location: './permissions.sh'" >> appspec.yml
+          echo "    timeout: 60" >> appspec.ym
           echo "#!/bin/bash" > prep-nginx.sh
           echo "nginx -t > nginx_last_test_log.txt" >> prep-nginx.sh
           echo "nginx -s reload" >> prep-nginx.sh
+          echo "#!/bin/bash" > permissions.sh
+          echo "chown root:root /etc/nginx/*" >> permissions.sh
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
           aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
@@ -123,5 +128,5 @@ jobs:
           repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
-          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo.zip
+          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo-nginx-conf.zip
 ...
