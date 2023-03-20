@@ -75,7 +75,7 @@ jobs:
           echo "    location: './permissions.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.ym
           echo "#!/bin/bash" > prep-nginx.sh
-          echo "nginx -t > nginx_last_test_log.txt" >> prep-nginx.sh
+          echo "nginx -t > /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "nginx -s reload" >> prep-nginx.sh
           echo "#!/bin/bash" > permissions.sh
           echo "chown root:root /etc/nginx/*" >> permissions.sh
