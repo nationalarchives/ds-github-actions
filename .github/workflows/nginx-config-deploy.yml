@@ -69,7 +69,7 @@ jobs:
           echo "      - file" >> appspec.yml
           echo "hooks:" >> appspec.yml
           echo "  BeforeInstall:" >> appspec.yml
-          echo "  - location: './prep-env.sh'" >> appspec.yml
+          echo "  - location: './prep-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
           echo "  - AfterInstall:" >> appspec.yml
           echo "    location: './permissions.sh'" >> appspec.yml
