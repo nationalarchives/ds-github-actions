@@ -80,7 +80,7 @@ jobs:
           echo "#!/bin/bash" > permissions.sh
           echo "chown root:root /etc/nginx/*" >> permissions.sh
           mkdir deployment
-          mv ./payload ./deployment/payload
+          mv .payload ./deployment/payload
           mv appspec.yml ./deployment/appspec.yml
           zip -r deployment.zip deployment -x "*.git*"
           aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
