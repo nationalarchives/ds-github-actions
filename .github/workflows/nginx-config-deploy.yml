@@ -72,13 +72,14 @@ jobs:
           echo "  - location: './prep-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
           echo "  - AfterInstall:" >> appspec.yml
-          echo "    location: './permissions.sh'" >> appspec.yml
+          echo "    location: './deploy-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
           echo "#!/bin/bash" > prep-nginx.sh
-          echo "nginx -t > /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
-          echo "nginx -s reload" >> prep-nginx.sh
-          echo "#!/bin/bash" > permissions.sh
-          echo "chown root:root /etc/nginx/*" >> permissions.sh
+          echo "echo 'Starting Nginx Deployment...' > /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
+          echo "#!/bin/bash" > deploy-nginx.sh
+          echo "nginx -t >> /etc/nginx/nginx_last_test_log.txt" >> deploy-nginx.sh
+          echo "nginx -s reload" >> deploy-nginx.sh
+          echo "chown root:root /etc/nginx/*" >> deploy-nginx.sh
           mkdir deployment
           mv .payload ./deployment/payload
           mv appspec.yml ./deployment/appspec.yml
