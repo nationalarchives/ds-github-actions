@@ -80,9 +80,8 @@ jobs:
           echo "nginx -s reload" >> prep-nginx.sh
           echo "#!/bin/bash" > permissions.sh
           echo "chown root:root /etc/nginx/*" >> permissions.sh
-          cd ..
-          zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
-          aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
+          zip -r payload.zip payload -x "*.git*"
+          aws s3 cp payload.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
   deploy:
     runs-on: "ubuntu-latest"
     needs:
