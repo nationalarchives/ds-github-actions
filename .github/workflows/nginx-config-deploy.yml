@@ -82,6 +82,7 @@ jobs:
           mkdir deployment
           mv .payload ./deployment/payload
           mv appspec.yml ./deployment/appspec.yml
+          mv *.sh ./deployment
           zip -r deployment.zip deployment -x "*.git*"
           aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
   deploy:
