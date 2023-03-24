@@ -4,19 +4,12 @@ name: Nginx Config Deployment
 on:
   workflow_call:
     inputs:
-      deploy-repo:
-        type: string
-        required: true
       deploy-environment:
         type: string
         required: true
       github-environment:
         type: string
         required: true
-      branch:
-        type: string
-        required: false
-        default: ""
     secrets:
       AWS_ROLE_ARN:
         required: true
@@ -30,15 +23,9 @@ jobs:
     env:
       region: "eu-west-2"
       branch: "${{ inputs.branch }}"
-      repo: "${{ inputs.deploy-repo }}"
       deploy_env: "${{ inputs.deploy-environment }}"
 
     steps:
-      - name: checkout repo with branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ env.branch }}
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
@@ -47,7 +34,6 @@ jobs:
 
       - name: run prep script
         env:
-          REPO_NAME: "${{ env.repo }}"
           DEPLOY_ENV: "${{ env.deploy_env }}"
         run: |
           mkdir .payload
@@ -86,14 +72,13 @@ jobs:
           mv appspec.yml ./deployment/appspec.yml
           mv *.sh ./deployment
           zip -r deployment.zip deployment -x "*.git*"
-          aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$REPO_NAME-nginx-conf.zip
+          aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/$ds-infrastructure-website-nginx-conf.zip
   deploy:
     runs-on: "ubuntu-latest"
     needs:
       - prepare
     env:
       user: "${{ github.actor }}"
-      repo: "${{ inputs.deploy-repo }}"
       deploy_env: "${{ inputs.deploy-environment }}"
       region: "eu-west-2"
     environment: "${{ inputs.github-environment }}"
@@ -104,8 +89,6 @@ jobs:
           repository: nationalarchives/ds-github-actions
 
       - name: copy script
-        env:
-          repo: "${{ env.repo }}"
         run: |
           cp scripts/requirements-aws-cli.txt .
 
@@ -130,8 +113,7 @@ jobs:
         env:
           user: "${{ env.user }}"
           deploy_env: "${{ env.deploy_env }}"
-          repo: "${{ env.repo }}"
         run: |
           echo deploying for $user...
-          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/$repo-nginx-conf.zip
+          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/ds-infrastructure-website-nginx-conf.zip
 ...
