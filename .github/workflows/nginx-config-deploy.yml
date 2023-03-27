@@ -42,7 +42,7 @@ jobs:
           CONFIG_BUCKET: "${{ env.config_bucket }}"
         run: |
           mkdir .payload
-          aws s3 cp s3://ds-$DEPLOY_ENV-wp-deployment-v2/website/nginx/nginx.conf nginx.conf
+          aws s3 cp s3://$CONFIG_BUCKET/website/nginx/nginx.conf nginx.conf
           mv ./nginx.conf .payload/nginx.conf
           echo "version: 0.0" > appspec.yml
           echo "os: linux" >> appspec.yml
