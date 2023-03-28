@@ -42,8 +42,7 @@ jobs:
           CONFIG_BUCKET: "${{ env.config_bucket }}"
         run: |
           mkdir .payload
-          aws s3 cp s3://$CONFIG_BUCKET/website/nginx/nginx.conf nginx.conf
-          mv ./nginx.conf .payload/nginx.conf
+          aws s3 cp s3://$CONFIG_BUCKET/website/nginx/ .payload/ --recursive --exclude "*" --include "*.conf"
           echo "version: 0.0" > appspec.yml
           echo "os: linux" >> appspec.yml
           echo "files:" >> appspec.yml
@@ -51,7 +50,7 @@ jobs:
           echo "    destination: '/etc/nginx/'" >> appspec.yml
           echo "file_exists_behavior: OVERWRITE" >> appspec.yml
           echo "permissions:" >> appspec.yml
-          echo "  - object: '/etc/nginx/nginx.conf'" >> appspec.yml
+          echo "  - object: '/etc/nginx/*'" >> appspec.yml
           echo "    pattern: '**'" >> appspec.yml
           echo "    owner: root" >> appspec.yml
           echo "    group: root" >> appspec.yml
