@@ -20,6 +20,9 @@ on:
       role-to-assume:
         type: string
         required: true
+      config-bucket:
+        type: string
+        required: true
 
 jobs:
     terraform-apply-nginx:
