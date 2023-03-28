@@ -23,6 +23,9 @@ on:
       config-bucket:
         type: string
         required: true
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
 
 jobs:
   terraform-apply-nginx:
