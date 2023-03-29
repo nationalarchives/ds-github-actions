@@ -115,8 +115,8 @@ jobs:
           CONFIG_BUCKET: "${{ env.config_bucket }}"
         run: |
           mkdir .payload
-          aws s3 cp s3://$CONFIG_BUCKET/website/nginx/nginx.conf nginx.conf
-          mv ./nginx.conf .payload/nginx.conf
+          aws s3 cp s3://$CONFIG_BUCKET/website/nginx/*.conf ./
+          mv ./*.conf .payload/
           echo "version: 0.0" > appspec.yml
           echo "os: linux" >> appspec.yml
           echo "files:" >> appspec.yml
