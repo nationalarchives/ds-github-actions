@@ -134,8 +134,8 @@ jobs:
           echo "  BeforeInstall:" >> appspec.yml
           echo "  - location: './prep-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
-          echo "  - ApplicationStop:" >> appspec.yml
-          echo "    location: './deploy-nginx.sh'" >> appspec.yml
+          echo "  ApplicationStop:" >> appspec.yml
+          echo "  - location: './deploy-nginx.sh'" >> appspec.yml
           echo "    timeout: 60" >> appspec.yml
           echo "#!/bin/bash" > prep-nginx.sh
           echo "echo 'Starting Nginx Deployment...' > /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
