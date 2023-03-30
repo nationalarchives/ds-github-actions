@@ -144,6 +144,7 @@ jobs:
           echo "echo 'A log of an nginx test is displayed below:' >> /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "echo '' >> /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "#!/bin/bash" > deploy-nginx.sh
+          echo "sleep 30" >> deploy-nginx.sh
           echo "nginx -t 2>> /etc/nginx/nginx_last_test_log.txt" >> deploy-nginx.sh
           echo "nginx -s reload" >> deploy-nginx.sh
           echo "chown root:root /etc/nginx/*" >> deploy-nginx.sh
