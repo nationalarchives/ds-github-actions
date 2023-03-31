@@ -136,7 +136,7 @@ jobs:
           echo "    timeout: 60" >> appspec.yml
           echo "  AfterInstall:" >> appspec.yml
           echo "  - location: './deploy-nginx.sh'" >> appspec.yml
-          echo "    timeout: 90" >> appspec.yml
+          echo "    timeout: 60" >> appspec.yml
           echo "#!/bin/bash" > prep-nginx.sh
           echo "echo 'Starting Nginx Deployment...' > /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "echo 'If this log is empty, the reload did not run!' >> /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
@@ -148,7 +148,7 @@ jobs:
           echo ""#!/bin/bash" > test.sh" >> deploy-nginx.sh
           echo ""OUTPUT=\$\(grep terminate nginx_last_test_log.txt\)" >> test.sh" >> deploy-nginx.sh
           echo ""if [ -n \$OUTPUT ]\; then" >> test.sh" >> deploy-nginx.sh
-          echo ""    exit" >> test.sh" >> deploy-nginx.sh
+          echo ""    sleep 60" >> test.sh" >> deploy-nginx.sh
           echo ""else" >> test.sh" >> deploy-nginx.sh
           echo ""    echo "Test Successful" >> test.sh"" >> deploy-nginx.sh
           echo ""fi" >> test.sh" >> deploy-nginx.sh
