@@ -145,6 +145,14 @@ jobs:
           echo "echo '' >> /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "#!/bin/bash" > deploy-nginx.sh
           echo "nginx -t 2>> /etc/nginx/nginx_last_test_log.txt" >> deploy-nginx.sh
+          echo ""#!/bin/bash" > test.sh" >> deploy-nginx.sh
+          echo ""OUTPUT=$(grep terminate nginx_last_test_log.txt)" >> test.sh" >> deploy-nginx.sh
+          echo ""if [ -n $OUTPUT ]; then" >> test.sh" >> deploy-nginx.sh
+          echo ""    exit" >> test.sh" >> deploy-nginx.sh
+          echo ""else" >> test.sh" >> deploy-nginx.sh
+          echo ""    echo "Test Successful" >> test.sh"" >> deploy-nginx.sh
+          echo ""fi" >> test.sh" >> deploy-nginx.sh
+          echo ". ./test.sh" >> deploy.nginx.sh
           echo "nginx -s reload" >> deploy-nginx.sh
           echo "chown root:root /etc/nginx/*" >> deploy-nginx.sh
           mkdir deployment
