@@ -145,7 +145,7 @@ jobs:
           echo "echo '' >> /etc/nginx/nginx_last_test_log.txt" >> prep-nginx.sh
           echo "#!/bin/bash" > deploy-nginx.sh
           echo "nginx -t 2>> /etc/nginx/nginx_last_test_log.txt" >> deploy-nginx.sh
-          echo "OUTPUT=\$(grep successful nginx_last_test_log.txt)" >> deploy-nginx.sh
+          echo "OUTPUT=\$(grep -o successful nginx_last_test_log.txt)" >> deploy-nginx.sh
           echo "if [ -z \$OUTPUT ]; then" >> deploy-nginx.sh
           echo "    sleep 60" >> deploy-nginx.sh
           echo "else" >> deploy-nginx.sh
