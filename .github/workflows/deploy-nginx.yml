@@ -205,4 +205,5 @@ jobs:
           echo deploying for $user...
           aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/website-nginx-conf.zip 2> id.txt
           cat id.txt
+          cat id.txt
           cut id.txt -d '"' -f 2 
