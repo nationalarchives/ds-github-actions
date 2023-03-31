@@ -150,7 +150,7 @@ jobs:
           echo "echo 'if [ -z \$OUTPUT ]\; then' >> test.sh" >> deploy-nginx.sh
           echo "echo '    sleep 60' >> test.sh" >> deploy-nginx.sh
           echo "echo 'else' >> test.sh" >> deploy-nginx.sh
-          echo "echo '    echo "Test Successful' >> test.sh" >> deploy-nginx.sh
+          echo "echo '    echo \"Test Successful\"' >> test.sh" >> deploy-nginx.sh
           echo "echo 'fi' >> test.sh" >> deploy-nginx.sh
           echo ". ./test.sh" >> deploy-nginx.sh
           echo "nginx -s reload" >> deploy-nginx.sh
