@@ -90,7 +90,7 @@ jobs:
           echo "mkdir -p /var/www/html/wp-content/themes/$REPO_NAME" >> prep-env.sh
           echo "#!/bin/bash" > permissions.sh
           echo "chown apache:apache /var/www/html/wp-content/themes/$REPO_NAME" >> permissions.sh
-          echo "rm /opt/codedeploy-agent/deployment-root/deployment-instructions/*-cleanup" >> permissions.sh
+          echo "rm -f /opt/codedeploy-agent/deployment-root/deployment-instructions/*-cleanup" >> permissions.sh
           cd ..
           zip -r $REPO_NAME.zip $REPO_NAME -x "*.git*"
           aws s3 cp $REPO_NAME.zip s3://ds-$DEPLOY_ENV-deployment-source/media/$REPO_NAME.zip
