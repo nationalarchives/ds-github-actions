@@ -90,7 +90,7 @@ jobs:
 
       - name: Terraform apply
         id: apply
-        run: terraform apply -target module.nginx_conf
+        run: terraform apply -auto-approve -target module.nginx_conf
         working-directory: ${{ env.working-directory }}
   prepare:
     runs-on: "ubuntu-latest"
