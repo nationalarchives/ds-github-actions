@@ -158,7 +158,7 @@ jobs:
           mv appspec.yml ./deployment/appspec.yml
           mv *.sh ./deployment
           zip -r deployment.zip deployment -x "*.git*"
-          aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/website-nginx-conf.zip
+          aws s3 cp deployment.zip s3://ds-$DEPLOY_ENV-deployment-source/website/nginx-deployment/website-nginx-conf.zip
   deploy:
     runs-on: "ubuntu-latest"
     needs:
@@ -201,7 +201,7 @@ jobs:
           deploy_env: "${{ env.deploy_env }}"
         run: |
           echo deploying for $user...
-          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/website-nginx-conf.zip | tee id.txt
+          aws deploy create-deployment --application-name nginx-rp --deployment-config-name nginx-rp --deployment-group-name nginx-rp-group --s3-location bucket=ds-$deploy_env-deployment-source,bundleType=zip,key=website/nginx-deployment/website-nginx-conf.zip | tee id.txt
           x=$(cut id.txt -d '"' -f 4 -s)
           echo "Waiting for successful deployment..."
           aws deploy wait deployment-successful --deployment-id $x
