@@ -52,7 +52,7 @@ jobs:
           ref: ${{ env.branch }}
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
@@ -128,7 +128,7 @@ jobs:
           pip install -r scripts/requirements-aws-cli.txt
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"

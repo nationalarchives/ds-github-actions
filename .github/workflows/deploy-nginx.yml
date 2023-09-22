@@ -42,7 +42,7 @@ jobs:
       region: eu-west-2
     steps:
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: eu-west-2
           role-to-assume: "${{ inputs.role-to-assume }}"
