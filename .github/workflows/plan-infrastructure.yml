@@ -24,7 +24,7 @@ on:
       region:
         type: string
         required: false
-        default: "eu-west-2""
+        default: "eu-west-2"
       working-directory:
         type: string
         required: false
