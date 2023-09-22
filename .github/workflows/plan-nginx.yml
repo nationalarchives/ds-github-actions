@@ -20,6 +20,10 @@ on:
       role-to-assume:
         type: string
         required: true
+      branch:
+        type: string
+        required: false
+        default: ""
 
 jobs:
    terraform:
@@ -45,6 +49,8 @@ jobs:
 
           - name: Checkout
             uses: actions/checkout@v3
+            with:
+              ref: ${{ env.branch }}
 
           - uses: hashicorp/setup-terraform@v2
 # only use if version freeze is in place

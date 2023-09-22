@@ -23,6 +23,10 @@ on:
       config-bucket:
         type: string
         required: true
+      branch:
+        type: string
+        required: false
+        default: ""
     secrets:
       AWS_ROLE_ARN:
         required: true
@@ -51,6 +55,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ env.branch }}
 
       - uses: hashicorp/setup-terraform@v2
       # only use if version freeze is in place
