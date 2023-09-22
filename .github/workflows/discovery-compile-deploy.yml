@@ -41,7 +41,7 @@ jobs:
 
     steps:
       - name: set credentials for AWS
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: "${{ secrets.AWS_CODEDEPLOY_ARN }}"
           aws-region: "${{ env.region }}"
@@ -138,7 +138,7 @@ jobs:
           pip install -r scripts/requirements-aws-cli.txt
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_CODEDEPLOY_ARN }}
           aws-region: "${{ env.region }}"
