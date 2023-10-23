@@ -35,6 +35,11 @@ jobs:
       code_package: "${{ inputs.code-package }}"
 
     steps:
+      - name: Checkout ds-github-actions
+        uses: actions/checkout@v3
+        with:
+          repository: nationalarchives/ds-github-actions
+
       - name: Install AWS CLI
         uses: actions/setup-python@v4
         with:
