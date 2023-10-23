@@ -45,7 +45,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: "eu-west-2"
+          aws-region: "${{ env.region }}"
 
       - name: run copy web
         if: input.code-package == 'web' || input.code-package == 'web_&_api'
