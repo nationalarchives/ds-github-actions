@@ -16,10 +16,6 @@ on:
     secrets:
       AWS_ROLE_ARN:
         required: true
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
 
 permissions:
   id-token: write
@@ -35,11 +31,16 @@ jobs:
       code_package: "${{ inputs.code-package }}"
 
     steps:
-      - id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1
+      - name: Install AWS CLI
+        uses: actions/setup-python@v4
         with:
-          version: 2
-          verbose: false
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: '**/requirements-aws-cli.txt'
+
+      - name: Install python dependencies
+        run: |
+          pip install -r scripts/requirements-aws-cli.txt
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -47,7 +48,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: "${{ env.region }}"
 
-      - name: run copy web
+      - name: copy web from env.source_env to env.target_env
         if: inputs.code-package == 'web' || inputs.code-package == 'web_&_api'
         env:
           SOURCE_ENV: "${{ env.source_env }}"
@@ -55,7 +56,7 @@ jobs:
         run: |
           aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
 
-      - name: run copy api
+      - name: copy api from env.source_env to env.target_env
         if: inputs.code-package == 'api' || inputs.code-package == 'web_&_api'
         env:
           SOURCE_ENV: "${{ env.source_env }}"
