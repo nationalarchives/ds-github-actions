@@ -48,7 +48,7 @@ jobs:
           aws-region: "${{ env.region }}"
 
       - name: run copy web
-        if: input.code-package == 'web' || input.code-package == 'web_&_api'
+        if: inputs.code-package == 'web' || inputs.code-package == 'web_&_api'
         env:
           SOURCE_ENV: "${{ env.source_env }}"
           TARGET_ENV: "${{ env.target_env }}"
@@ -56,7 +56,7 @@ jobs:
           aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
 
       - name: run copy api
-        if: input.code-package == 'api' || input.code-package == 'web_&_api'
+        if: inputs.code-package == 'api' || inputs.code-package == 'web_&_api'
         env:
           SOURCE_ENV: "${{ env.source_env }}"
           TARGET_ENV: "${{ env.target_env }}"
