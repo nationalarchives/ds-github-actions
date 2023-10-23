@@ -1,0 +1,65 @@
+---
+name: Copy Discovery Code S3
+
+on:
+  workflow_call:
+    inputs:
+      target-env:
+        type: string
+        required: true
+      source-env:
+        type: string
+        required: true
+      code-package:
+        type: string
+        required: true
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: "ubuntu-latest"
+    env:
+      region: "eu-west-2"
+      source_env: "${{ inputs.source-env }}"
+      target_env: "${{ inputs.target-env }}"
+      code_package: "${{ inputs.code-package }}"
+
+    steps:
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: false
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: "eu-west-2"
+
+      - name: run copy web
+        if: input.code-package == 'web' || input.code-package == 'web_&_api'
+        env:
+          SOURCE_ENV: "${{ env.source_env }}"
+          TARGET_ENV: "${{ env.target_env }}"
+        run: |
+          aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
+
+      - name: run copy api
+        if: input.code-package == 'api' || input.code-package == 'web_&_api'
+        env:
+          SOURCE_ENV: "${{ env.source_env }}"
+          TARGET_ENV: "${{ env.target_env }}"
+        run: |
+          aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.api.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.api.zip
+...
