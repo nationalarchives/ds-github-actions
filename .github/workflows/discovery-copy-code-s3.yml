@@ -22,7 +22,7 @@ permissions:
   contents: write
 
 jobs:
-  prepare:
+  copy:
     runs-on: "ubuntu-latest"
     env:
       region: "eu-west-2"
