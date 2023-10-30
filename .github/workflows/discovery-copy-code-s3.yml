@@ -16,17 +16,17 @@ on:
     secrets:
       AWS_ROLE_ARN:
         required: true
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
+#      AWS_ACCESS_KEY_ID:
+#        required: true
+#      AWS_SECRET_ACCESS_KEY:
+#        required: true
 
 permissions:
   id-token: write
   contents: write
 
 jobs:
-  copy:
+  copy-process:
     runs-on: "ubuntu-latest"
     env:
       region: "eu-west-2"
@@ -72,7 +72,7 @@ jobs:
           aws s3 ls s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
 
       - name: copy web
-        if: (inputs.code-package == 'web' || inputs.code-package == 'web_&_api') && inputs.target-env != inputs.source-env
+        if: inputs.code-package == 'web' || inputs.code-package == 'web_&_api'
         env:
           SOURCE_ENV: "${{ env.source_env }}"
           TARGET_ENV: "${{ env.target_env }}"
