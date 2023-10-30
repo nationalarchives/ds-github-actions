@@ -69,19 +69,21 @@ jobs:
         run: |
           aws s3 ls s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
 
-      - name: copy web from {{ env.source_env }}  to {{ env.target_env }}
+      - name: copy web
         if: (inputs.code-package == 'web' || inputs.code-package == 'web_&_api') && inputs.target-env != inputs.source-env
         env:
           SOURCE_ENV: "${{ env.source_env }}"
           TARGET_ENV: "${{ env.target_env }}"
         run: |
+          echo "copy web from $SOURCE_ENV to $TARGET_ENV
           aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.web.zip
 
-      - name: copy api from {{ env.source_env }} to {{ env.target_env }}
+      - name: copy api
         if: (inputs.code-package == 'api' || inputs.code-package == 'web_&_api') && inputs.target-env != inputs.source-env
         env:
           SOURCE_ENV: "${{ env.source_env }}"
           TARGET_ENV: "${{ env.target_env }}"
         run: |
+          echo "copy api from $SOURCE_ENV to $TARGET_ENV
           aws s3 cp s3://ds-$SOURCE_ENV-deployment-source/discovery/builds/TNA.Discovery.api.zip s3://ds-$TARGET_ENV-deployment-source/discovery/builds/TNA.Discovery.api.zip
 ...
