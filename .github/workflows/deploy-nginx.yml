@@ -156,7 +156,6 @@ jobs:
           echo "else" >> deploy-nginx.sh
           echo "  echo 'Test Successful'" >> deploy-nginx.sh
           echo "fi" >> deploy-nginx.sh
-          echo "echo 'Why?' > test.txt" >> deploy-nginx.sh
           echo "nginx -s reload" >> deploy-nginx.sh
           echo "chown root:root /etc/nginx/*" >> deploy-nginx.sh
           mkdir deployment
