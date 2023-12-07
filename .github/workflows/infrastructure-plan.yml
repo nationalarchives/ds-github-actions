@@ -78,7 +78,7 @@ jobs:
 
       - name: Terraform init
         id: init
-        run: terraform init -upgrade
+        run: terraform init
         working-directory: ${{ inputs.working-directory }}
 
       - name: Terraform plan
