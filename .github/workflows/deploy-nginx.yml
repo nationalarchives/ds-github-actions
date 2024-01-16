@@ -70,15 +70,15 @@ jobs:
       - name: Create Backend S3 Bucket
         run: |
           if 
-           aws s3 ls "s3://tna-terraform-backend-state-${{ env.region }}-${{ env.account_id }}" 2>&1 | grep -q 'NoSuchBucket' 
+           aws s3 ls "s3://ds-terraform-state-${{ env.region }}-${{ env.account_id }}" 2>&1 | grep -q 'NoSuchBucket' 
           then 
            aws s3api create-bucket \
-              --bucket tna-terraform-backend-state-${{ env.region }}-${{ env.account_id }} \
+              --bucket ds-terraform-state-${{ env.region }}-${{ env.account_id }} \
               --region ${{ env.region }} \
               --create-bucket-configuration LocationConstraint=${{ env.region }}
           
            aws s3api put-public-access-block \
-              --bucket tna-terraform-backend-state-${{ env.region }}-${{ env.account_id }} \
+              --bucket ds-terraform-state-${{ env.region }}-${{ env.account_id }} \
               --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
           else
            echo 'Bucket Already Exists'
