@@ -61,6 +61,7 @@ jobs:
       subnet_id: "${{ inputs.subnet_id }}"
       instance_type: "${{ inputs.instance_type }}"
       volume_size: "${{ inputs.volume_size }}"
+      asm_key: "${{ inputs.asm_key }}"
 
     steps:
       - name: checkout repo
