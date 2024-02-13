@@ -26,12 +26,6 @@ on:
       playbook_role:
         type: string
         required: true
-      vpc_id:
-        type: string
-        required: true
-      subnet_id:
-        type: string
-        required: true
       instance_type:
         type: string
         required: true
@@ -57,8 +51,6 @@ jobs:
       branch: "${{ inputs.branch }}"
       base_role: "${{ inputs.base_role }}"
       playbook_role: "${{ inputs.playbook_role }}"
-      vpc_id: "${{ inputs.vpc_id }}"
-      subnet_id: "${{ inputs.subnet_id }}"
       instance_type: "${{ inputs.instance_type }}"
       volume_size: "${{ inputs.volume_size }}"
       asm_key: "${{ inputs.asm_key }}"
@@ -104,9 +96,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          AWS_ROLE_ARN: "${{ env.playbook_role }}"
-          VPC_ID: "${{ env.vpc_id }}"
-          SUBNET_ID: "${{ env.subnet_id }}"
+          VPC_ID: ${{ secrets.VPC_ID }}
+          SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/ansible-playbooks/databases/mysql-base
@@ -118,11 +109,12 @@ jobs:
           --extra-vars "ansible_var_file='${{ env.ansible_var_file }}' \
           project_name='${{ env.project_name }}' \
           key_name='${{ env.key_name }}' \
+          role_arn='${{ env.playbook_role }}' \
           asm_key='/infrastructure/credentials/mysql-${{ env.project_name }}' \
           env='${{ env.account }}' \
-          region='${{ env.region }}'" \
-          instance_type='${{ env.instance_type }}'" \
-          volume_size='${{ env.volume_size }}'" \
+          region='${{ env.region }}' \
+          instance_type='${{ env.instance_type }}' \
+          volume_size='${{ env.volume_size }}' \
           asm_key='${{ env.asm_key }}'" \
           --private-key $cur_dir/${{ env.key_name }} \
           mysql-base-playbook.yml
