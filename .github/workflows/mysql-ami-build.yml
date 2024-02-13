@@ -63,13 +63,14 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v4
         with:
+          path: main
           ref: "${{ env.branch }}"
 
-      - name: Checkout tools repo
+      - name: Checkout ds-github-actions
         uses: actions/checkout@v4
         with:
           repository: nationalarchives/ds-github-actions
-          path: .
+          path: actions
 
 #      - name: set ansible var file for dev
 #        run: |
@@ -102,7 +103,7 @@ jobs:
           cache: 'pip'
           cache-dependency-path: '**/mysql-ami-build-req.txt'
       - run: |
-          pip install -r ${{ github.workspace }}/ds-github-actions/.github/workflows/mysql-ami-build-req.txt
+          pip install -r ${{ github.workspace }}/actions/.github/workflows/mysql-ami-build-req.txt
 
       - name: run ansible playbook
         env:
@@ -110,7 +111,7 @@ jobs:
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/ansible-playbooks/databases/mysql-base
+          cd $cur_dir/actions/ansible-playbooks/databases/mysql-base
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
