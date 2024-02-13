@@ -20,6 +20,9 @@ on:
       branch:
         type: string
         required: true
+      project_name:
+        type: string
+        required: true
       base_role:
         type: string
         required: true
@@ -49,6 +52,7 @@ jobs:
       region: "${{ inputs.region }}"
       key_name: "${{ inputs.key_name }}"
       branch: "${{ inputs.branch }}"
+      project_name: "${{ inputs.project_name }}"
       base_role: "${{ inputs.base_role }}"
       playbook_role: "${{ inputs.playbook_role }}"
       instance_type: "${{ inputs.instance_type }}"
