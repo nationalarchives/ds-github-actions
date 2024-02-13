@@ -72,9 +72,9 @@ jobs:
           repository: nationalarchives/ds-github-actions
           path: actions
 
-#      - name: set ansible var file for dev
-#        run: |
-#          echo "ANSIBLE_VAR_FILE=${{ env.ansible_var_file }}" >> $GITHUB_ENV
+      - name: set ansible var file for dev
+        run: |
+          echo "ANSIBLE_VAR_FILE=${{ env.ansible_var_file }}" >> $GITHUB_ENV
 #          echo "SSH_KEY_FILE=${{ env.key_name }}" >> $GITHUB_ENV
 
       - name: Configure AWS Credentials
