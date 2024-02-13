@@ -65,6 +65,12 @@ jobs:
         with:
           ref: "${{ env.branch }}"
 
+      - name: Checkout tools repo
+        uses: actions/checkout@v4
+        with:
+          repository: nationalarchives/ds-github-actions
+          path: .
+
 #      - name: set ansible var file for dev
 #        run: |
 #          echo "ANSIBLE_VAR_FILE=${{ env.ansible_var_file }}" >> $GITHUB_ENV
