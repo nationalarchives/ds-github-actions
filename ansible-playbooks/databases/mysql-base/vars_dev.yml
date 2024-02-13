@@ -1,0 +1,4 @@
+---
+s3_deployment_bucket: "ds-dev-deployment-source"
+s3_deployment_root: "mysql"
+...

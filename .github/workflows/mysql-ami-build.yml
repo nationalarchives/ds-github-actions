@@ -32,6 +32,15 @@ on:
       subnet_id:
         type: string
         required: true
+      instance_type:
+        type: string
+        required: true
+      volume_size:
+        type: string
+        required: true
+      asm_key:
+        type: string
+        required: true
 
 permissions:
   id-token: write
@@ -50,6 +59,8 @@ jobs:
       playbook_role: "${{ inputs.playbook_role }}"
       vpc_id: "${{ inputs.vpc_id }}"
       subnet_id: "${{ inputs.subnet_id }}"
+      instance_type: "${{ inputs.instance_type }}"
+      volume_size: "${{ inputs.volume_size }}"
 
     steps:
       - name: checkout repo
@@ -86,9 +97,9 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: '**/mysql-base-req.txt'
+          cache-dependency-path: '**/mysql-ami-build-req.txt'
       - run: |
-          pip install -r ${{ github.workspace }}/.github/workflows/mysql-base-req.txt
+          pip install -r ${{ github.workspace }}/.github/workflows/mysql-ami-build-req.txt
 
       - name: run ansible playbook
         env:
@@ -97,7 +108,7 @@ jobs:
           SUBNET_ID: "${{ env.subnet_id }}"
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/databases/mysql-base
+          cd $cur_dir/ansible-playbooks/databases/mysql-base
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
@@ -109,6 +120,9 @@ jobs:
           asm_key='/infrastructure/credentials/mysql-${{ env.project_name }}' \
           env='${{ env.account }}' \
           region='${{ env.region }}'" \
+          instance_type='${{ env.instance_type }}'" \
+          volume_size='${{ env.volume_size }}'" \
+          asm_key='${{ env.asm_key }}'" \
           --private-key $cur_dir/${{ env.key_name }} \
           mysql-base-playbook.yml
 ...
