@@ -7,7 +7,7 @@
   tasks:
   - name: switch role credentials
     community.aws.sts_assume_role:
-      role_arn: "{{ lookup ('env', 'AWS_ROLE_ARN') }}"
+      role_arn: "{{ role_arn }}"
       role_session_name: "s-devops-mysql-base"
     register: assumed_role
 
