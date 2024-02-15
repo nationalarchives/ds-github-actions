@@ -79,7 +79,10 @@ jobs:
 
       - name: dump
         run: |
+          ls
           echo $(pwd)
+          cd ..
+          ls
           echo 'github.workspace === ${{ github.workspace }}'
           echo "GITHUB_WORKSPACE === $GITHUB_WORKSPACE"
           echo 'runner.workspace === ${{ runner.workspace }}'
