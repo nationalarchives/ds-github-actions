@@ -11,7 +11,7 @@
 
   - name: switch role credentials
     community.aws.sts_assume_role:
-      role_arn: "{{ lookup ('env', 'AWS_ROLE_ARN') }}"
+      role_arn: "{{ role_arn }}"
       role_session_name: "s-devops"
     register: assumed_role
 
@@ -67,13 +67,6 @@
     set_fact:
       password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=24') }}"
 
-# enable only for debugging purposes and never for live
-#  - ansible.builtin.debug:
-#      msg:
-#        - "====================================================================="
-#        - "{{ password }}"
-#        - "====================================================================="
-
   - name: template userdata
     template:
       src: "./templates/userdata.ps1.j2"
@@ -89,7 +82,7 @@
       metadata_options:
         http_endpoint: "enabled"
         http_tokens: "optional"
-      name: "{{ service }}-app-wincore-primer-{{ env }}"
+      name: "discovery-app-wincore-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -109,8 +102,8 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Environment: "{{ env }}"
-        Service: "{{ service }}"
+        Environment: "{{ account }}"
+        Service: "discovery"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -279,17 +272,11 @@
       src: "../../{{ key_name }}"
       dest: "c:\\tna-startup\\{{ key_name }}"
 
-  - ansible.builtin.debug:
-      msg:
-        - "====================================================================="
-        - "setup for {{ hostvars['localhost']['env'] }} - api tier"
-        - "====================================================================="
-
   - name: run server-setup script
     ansible.windows.win_powershell:
       chdir: "c:\\temp"
       script: |
-        ./server-setup.ps1 -environment "{{ hostvars['localhost']['env'] }}" -tier "api" -application "discovery" -keyfile "{{ key_name }}"
+        ./server-setup.ps1 -environment "{{ account }}" -tier "api" -application "discovery" -keyfile "{{ key_name }}"
     ignore_errors: yes
 
 - name: switch to localhost
@@ -336,14 +323,14 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "{{ service }}-app-primer-{{ env }}-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      name: "discovery-app-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
       description: "Discovery Backend server - wincore - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "{{ service }}-app-primer-{{ env }}-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "{{ service }}"
+        Name: "discovery-app-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Service: "discovery"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
