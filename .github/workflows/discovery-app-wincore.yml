@@ -44,6 +44,7 @@ on:
 jobs:
   create-ami:
     runs-on: "ubuntu-latest"
+    environment: ${{ inputs.account }}
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
