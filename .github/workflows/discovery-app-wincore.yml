@@ -1,6 +1,6 @@
 ---
-name: Build Discovery App AMI
-run-name: Build Discovery App AMI for ${{ inputs.account }} by @${{ github.actor }}
+name: Discovery App AMI
+run-name: Discovery App AMI for ${{ inputs.account }} by @${{ github.actor }}
 
 on:
   workflow_call:
