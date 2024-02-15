@@ -46,6 +46,7 @@ permissions:
 jobs:
   create-ami:
     runs-on: "ubuntu-latest"
+    environment: ${{ inputs.account }}
     env:
       account: "${{ inputs.account }}"
       ansible_var_file: "${{ inputs.ansible_var_file }}"
