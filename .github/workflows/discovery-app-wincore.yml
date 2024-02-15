@@ -77,10 +77,6 @@ jobs:
           aws_session_token: ${{ steps.creds.outputs.aws-session-token }}
           aws_region: ${{ inputs.region }}
 
-      - name: dump
-        run: |
-          ls actions/.github/workflows/
-
       - name: install python
         uses: actions/setup-python@v5
         with:
