@@ -6,29 +6,14 @@
   gather_facts: false
 
   tasks:
-    - name: load variables
-      ansible.builtin.include_vars:
-        file: "{{ ansible_var_file }}"
-
-    - name: get AWS session token
-      community.aws.sts_session_token:
-        duration_seconds: 3600
-      register: session_credentials
-
     - name: switch role credentials
       community.aws.sts_assume_role:
-        aws_access_key: "{{ session_credentials.sts_creds.access_key }}"
-        aws_secret_key: "{{ session_credentials.sts_creds.secret_key }}"
-        security_token: "{{ session_credentials.sts_creds.session_token }}"
-        role_arn: "{{ lookup ('env', 'AWS_ROLE_ARN') }}"
+        role_arn: "{{ role_arn }}"
         role_session_name: "s-devops"
       register: assumed_role
 
     - name: get Windows 2022 AMI
       amazon.aws.ec2_ami_info:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         owners: amazon
         region: "{{ region }}"
         filters:
@@ -42,9 +27,6 @@
 
     - name: create security group - allowing updates and downloads
       amazon.aws.ec2_group:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "ansible-ami-taxonomy-updater-sg"
         description: "security group allowing updates and downloads"
         region: "{{ region }}"
@@ -92,9 +74,6 @@
 
     - name: create deployment policy
       community.aws.iam_managed_policy:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         policy_name: "ansible-ami-taxonomy-updater-s3-policy"
         policy: "{{ lookup('file', './instance-role-policy.json') }}"
         state: "present"
@@ -102,9 +81,6 @@
 
     - name: create updater IAM role
       community.aws.iam_role:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "ansible-ami-taxonomy-updater-role"
         region: "{{ region }}"
         assume_role_policy_document: "{{ lookup('file', './updater-role-policy.json') }}"
@@ -116,13 +92,10 @@
 
     - name: provisioning instance
       amazon.aws.ec2_instance:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         key_name: "{{ key_name }}"
         image_id: "{{ latest_ami.image_id }}"#
         instance_role: "ansible-github-taxonomy-indexers-role"
-        instance_type: "t3a.medium"
+        instance_type: "{{ instance_type }}"
         metadata_options:
           http_endpoint: "enabled"
           http_tokens: "optional"
@@ -146,8 +119,8 @@
               volume_size: "{{ volume_size }}"
         vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
         tags:
-          Environment: "{{ env }}"
-          Service: "{{ service }}"
+          Environment: "{{ account }}"
+          Service: "taxonomy"
           Owner: "Digital Services"
           CreatedBy: "ansible"
           CostCentre: 53
@@ -243,17 +216,11 @@
         src: "./files/startup.ps1"
         dest: "c:\\tna-startup\\startup.ps1"
 
-    - ansible.builtin.debug:
-        msg:
-          - "====================================================================="
-          - "setup for {{ hostvars['localhost']['env'] }}"
-          - "====================================================================="
-
     - name: run server-setup script
       ansible.windows.win_powershell:
         chdir: "c:\\temp"
         script: |
-          ./server-setup.ps1 -environment "{{ hostvars['localhost']['env'] }}" -application "taxonomy"
+          ./server-setup.ps1 -environment "{{ account }}" -application "taxonomy"
       ignore_errors: yes
 
 - name: switch to localhost
@@ -301,18 +268,15 @@
   tasks:
     - name: create AMI
       amazon.aws.ec2_ami:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         instance_id: "{{ instance_id }}"
-        name: "{{ service }}-updater-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        name: "taxonomy-updater-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
         description: "Taxonomy updater - ready for deployment"
         region: "{{ region }}"
         state: "present"
         wait: yes
         tags:
-          Name: "{{ service }}-updater-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-          Service: "{{ service }}"
+          Name: "taxonomy-updater-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+          Service: "taxonomy"
           Owner: "Digital Services"
           CreatedBy: "ansible"
           CostCentre: 53
@@ -320,35 +284,23 @@
 
     - name: terminate instance
       ec2_instance:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         instance_ids: "{{ instance_id }}"
         region: "{{ region }}"
         state: "absent"
 
     - name: remove security group
       amazon.aws.ec2_group:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "ansible-ami-taxonomy-updater-sg"
         region: "{{ region }}"
         state: "absent"
 
     - name: remove updater IAM role
       community.aws.iam_role:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         name: "ansible-ami-taxonomy-updater-role"
         region: "{{ region }}"
         state: "absent"
 
     - name: remove deployment policy
       community.aws.iam_managed_policy:
-        aws_access_key: "{{ assumed_role.sts_creds.access_key }}"
-        aws_secret_key: "{{ assumed_role.sts_creds.secret_key }}"
-        security_token: "{{ assumed_role.sts_creds.session_token }}"
         policy_name: "ansible-ami-taxonomy-updater-s3-policy"
         state: "absent"

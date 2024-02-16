@@ -1,6 +1,6 @@
 ---
-name: Taxonomy Indexer AMI
-run-name: Taxonomy Indexer AMI for ${{ inputs.account }} by @${{ github.actor }}
+name: Taxonomy Updater AMI
+run-name: Taxonomy Updater AMI for ${{ inputs.account }} by @${{ github.actor }}
 
 on:
   workflow_call:
@@ -75,8 +75,8 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: '**/taxonomy-req.txt'
-      - run: pip install -r ${{ github.workspace }}/.github/workflows/taxonomy-req.txt
+          cache-dependency-path: '**/taxonomy-updater-req.txt'
+      - run: pip install -r ${{ github.workspace }}/.github/workflows/taxonomy-updater-req.txt
 
       - name: install ansible.windows
         run: ansible-galaxy collection install ansible.windows
@@ -87,7 +87,7 @@ jobs:
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/discovery/taxonomy-indexer
+          cd $cur_dir/discovery/taxonomy-updater
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
@@ -99,5 +99,5 @@ jobs:
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}'" \
-          --private-key $cur_dir/${{ env.SSH_KEY_FILE }} \
-          taxonomy-indexer-playbook.yml
+          --private-key $cur_dir/${{ inputs.key_name }} \
+          taxonomy-updater-playbook.yml
