@@ -106,9 +106,7 @@ jobs:
           account='${{ inputs.account }}' \
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
-          volume_size='${{ inputs.volume_size }}' \
-          volume_size='${{ inputs.volume_size }}' \
-          s3_deployment_bucket='${{ inputs.volume_size }}'" \
+          volume_size='${{ inputs.volume_size }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           discovery-api-wincore-playbook.yml
 ...
