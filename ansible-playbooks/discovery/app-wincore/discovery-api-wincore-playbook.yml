@@ -265,7 +265,7 @@
 
   - name: copy SSH key
     ansible.windows.win_copy:
-      src: "../../{{ key_name }}"
+      src: "{{ key_name }}"
       dest: "c:\\tna-startup\\{{ key_name }}"
 
   - name: run server-setup script
