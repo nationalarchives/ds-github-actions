@@ -147,7 +147,7 @@
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
         Name: "mysql-{{ project_name }}-primer"
-        Environment: "{{ env }}"
+        Environment: "{{ account }}"
         Service: "MySQL"
         Owner: "Digital Services"
         CreatedBy: "ansible"

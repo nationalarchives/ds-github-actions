@@ -4,28 +4,25 @@ name: Build MySQL AMI
 on:
   workflow_call:
     inputs:
-      account:
+      base_role:
         type: string
         required: true
-      ansible_var_file:
+      playbook_role:
         type: string
         required: true
       region:
         type: string
         required: true
-      key_name:
+      account:
         type: string
         required: true
       branch:
         type: string
         required: true
+      key_name:
+        type: string
+        required: true
       project_name:
-        type: string
-        required: true
-      base_role:
-        type: string
-        required: true
-      playbook_role:
         type: string
         required: true
       instance_type:
@@ -111,7 +108,7 @@ jobs:
           key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
           asm_key='/infrastructure/credentials/mysql-${{ inputs.project_name }}' \
-          env='${{ inputs.account }}' \
+          account='${{ inputs.account }}' \
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
