@@ -1,6 +1,5 @@
 ---
 name: Build MySQL AMI
-run-name: Build MySQL AMI for ${{ inputs.account }} by @${{ github.actor }}
 
 on:
   workflow_call:
@@ -38,6 +37,12 @@ on:
       asm_key:
         type: string
         required: true
+      s3_deployment_bucket:
+        type: string
+        required: true
+      s3_deployment_root:
+        type: string
+        required: true
 
 permissions:
   id-token: write
@@ -47,25 +52,13 @@ jobs:
   create-ami:
     runs-on: "ubuntu-latest"
     environment: ${{ inputs.account }}
-    env:
-      account: "${{ inputs.account }}"
-      ansible_var_file: "${{ inputs.ansible_var_file }}"
-      region: "${{ inputs.region }}"
-      key_name: "${{ inputs.key_name }}"
-      branch: "${{ inputs.branch }}"
-      project_name: "${{ inputs.project_name }}"
-      base_role: "${{ inputs.base_role }}"
-      playbook_role: "${{ inputs.playbook_role }}"
-      instance_type: "${{ inputs.instance_type }}"
-      volume_size: "${{ inputs.volume_size }}"
-      asm_key: "${{ inputs.asm_key }}"
 
     steps:
       - name: checkout repo
         uses: actions/checkout@v4
         with:
           path: main
-          ref: "${{ env.branch }}"
+          ref: "${{ inputs.branch }}"
 
       - name: Checkout ds-github-actions
         uses: actions/checkout@v4
@@ -77,20 +70,20 @@ jobs:
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: "${{ env.region }}"
-          role-to-assume: "${{ env.base_role }}"
+          aws-region: "${{ inputs.region }}"
+          role-to-assume: "${{ inputs.base_role }}"
           output-credentials: true
 
       - name: download key file
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://ds-${{ env.account }}-kpf-administration/mysql/${{ env.key_name }}
-          destination: ${{ env.key_name }}
+          source: s3://ds-${{ inputs.account }}-kpf-administration/mysql/${{ inputs.key_name }}
+          destination: ${{ inputs.key_name }}
           aws_access_key_id: ${{ steps.creds.outputs.aws-access-key-id }}
           aws_secret_access_key: ${{ steps.creds.outputs.aws-secret-access-key }}
           aws_session_token: ${{ steps.creds.outputs.aws-session-token }}
-          aws_region: ${{ env.region }}
+          aws_region: ${{ inputs.region }}
 
       - name: install python
         uses: actions/setup-python@v5
@@ -111,18 +104,20 @@ jobs:
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
-          export AWS_DEFAULT_REGION=${{ env.region }}
+          export AWS_DEFAULT_REGION=${{ inputs.region }}
           ansible-playbook \
-          --extra-vars "ansible_var_file='${{ env.ansible_var_file }}' \
-          project_name='${{ env.project_name }}' \
-          key_name='${{ env.key_name }}' \
-          role_arn='${{ env.playbook_role }}' \
-          asm_key='/infrastructure/credentials/mysql-${{ env.project_name }}' \
-          env='${{ env.account }}' \
-          region='${{ env.region }}' \
-          instance_type='${{ env.instance_type }}' \
-          volume_size='${{ env.volume_size }}' \
-          asm_key='${{ env.asm_key }}'" \
-          --private-key $cur_dir/${{ env.key_name }} \
+          --extra-vars " \
+          project_name='${{ inputs.project_name }}' \
+          key_name='${{ inputs.key_name }}' \
+          role_arn='${{ inputs.playbook_role }}' \
+          asm_key='/infrastructure/credentials/mysql-${{ inputs.project_name }}' \
+          env='${{ inputs.account }}' \
+          region='${{ inputs.region }}' \
+          instance_type='${{ inputs.instance_type }}' \
+          volume_size='${{ inputs.volume_size }}' \
+          asm_key='${{ inputs.asm_key }}' \
+          s3_deployment_bucket='${{ inputs.asm_key }}' \
+          s3_deployment_root='${{ inputs.asm_key }}'" \
+          --private-key $cur_dir/${{ inputs.key_name }} \
           mysql-base-playbook.yml
 ...
