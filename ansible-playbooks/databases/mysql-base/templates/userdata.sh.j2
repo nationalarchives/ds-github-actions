@@ -61,13 +61,13 @@ EOF
 # setting password for root to secrets manager parameters, secure mysql
 # and set administration access
 mysqladmin --user=root --password=$temp_pw password '{{ root_password }}'
-mysql --user=root --password={{ root_password }} < ~/mysql_secure_installation.sql
+mysqld --user=root --password={{ root_password }} < ~/mysql_secure_installation.sql
 
 # remove setup file containing passwords - avoiding security risks
 sudo rm ~/mysql_secure_installation.sql
 
 # set backup to include routines
-sudo sed -i "/\[mysqld\]/a \n[mysqldump]\n" /etc/my.cnf
+sudo sed -i "/\[mysqld\]/a [mysqldump]\n" /etc/my.cnf
 sudo sed -i "/\[mysqldump\]/a routines=true\n" /etc/my.cnf
 # set up server - need to be manually changed when replication is used!
 sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
