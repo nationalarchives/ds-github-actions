@@ -22,6 +22,15 @@ sudo wget -P /packages https://repo.mysql.com/mysql80-community-release-el9.rpm
 sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
 sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
+
+# set mysql parameters
+sudo sed -i "/\[mysqld\]/i [mysqldump]\n" /etc/my.cnf
+sudo sed -i "/\[mysqldump\]/a routines=true\n" /etc/my.cnf
+# set up server - need to be manually changed when replication is used!
+sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
+sudo sed -i "/server-id=101/a gtid_mode=ON\n" /etc/my.cnf
+sudo sed -i "/gtid_mode=ON/a enforce-gtid-consistency=ON\n" /etc/my.cnf
+
 sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
@@ -68,12 +77,6 @@ mysqld --user=root --password={{ root_password }} < ~/mysql_secure_installation.
 
 # remove setup file containing passwords - avoiding security risks
 sudo rm ~/mysql_secure_installation.sql
-
-# set backup to include routines
-sudo sed -i "/\[mysqld\]/a [mysqldump]\n" /etc/my.cnf
-sudo sed -i "/\[mysqldump\]/a routines=true\n" /etc/my.cnf
-# set up server - need to be manually changed when replication is used!
-sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
 
 sudo systemctl restart mysqld
 
