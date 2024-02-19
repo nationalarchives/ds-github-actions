@@ -26,6 +26,8 @@ sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
 
+sudo systemctl status mysqld > /my.log
+
 temp_pw="$(sudo grep "temporary password" /var/log/mysqld.log | grep -o '[^ ]\+$')"
 
 # get netmask form cidr
