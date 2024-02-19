@@ -28,7 +28,8 @@ sudo sed -i "/\[mysqld\]/i [mysqldump]\n" /etc/my.cnf
 sudo sed -i "/\[mysqldump\]/a routines=true\n" /etc/my.cnf
 # set up server - need to be manually changed when replication is used!
 sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
-sudo sed -i "/server-id=101/a gtid_mode=ON\n" /etc/my.cnf
+sudo sed -i "/server-id=101/a user=mysql\n" /etc/my.cnf
+sudo sed -i "/user=mysql/a gtid_mode=ON\n" /etc/my.cnf
 sudo sed -i "/gtid_mode=ON/a enforce-gtid-consistency=ON\n" /etc/my.cnf
 
 sudo chown -R mysql:mysql /var/lib/mysql/
