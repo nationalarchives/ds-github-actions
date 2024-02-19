@@ -22,6 +22,7 @@ sudo wget -P /packages https://repo.mysql.com/mysql80-community-release-el9.rpm
 sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
 sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
+sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
 
