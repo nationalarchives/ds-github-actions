@@ -11,7 +11,7 @@
       role_session_name: "s-devops-mysql-base"
     register: assumed_role
 
-  - name: get linux2 AMI
+  - name: get linux 2023 AMI
     amazon.aws.ec2_ami_info:
       owners: amazon
       region: "{{ region }}"
