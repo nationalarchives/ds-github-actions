@@ -102,7 +102,7 @@
     amazon.aws.ec2_key:
       name: "ansible-temp-ebs-build"
       key_type: rsa
-      file_name: ./ansible-temp-ebs-build
+      file_name: {{ cur_dir }}/ansible-temp-ebs-build
       force: true
       state: "present"
     no_log: true
