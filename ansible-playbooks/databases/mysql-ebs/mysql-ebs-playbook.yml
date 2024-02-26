@@ -110,7 +110,7 @@
     amazon.aws.ec2_instance:
       key_name: "ansible-temp-ebs-build"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "{{ ec2_iam_role }}"
+      instance_role: "{{ ec2_iam_role.rolen_ame }}"
       instance_type: "t3a.small"
       metadata_options:
         http_endpoint: "enabled"
