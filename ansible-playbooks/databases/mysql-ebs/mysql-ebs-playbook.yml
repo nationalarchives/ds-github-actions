@@ -37,7 +37,7 @@
       name: "ansible-ebs-{{ project_name }}-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
-      managed_policies: [{{ ebs_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
+      managed_policies: ["{{ ebs_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
       create_instance_profile: yes
       delete_instance_profile: yes
       purge_policies: yes
