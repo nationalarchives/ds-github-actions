@@ -105,10 +105,12 @@
       file_name: ./ansible-temp-ebs-build
       force: true
       state: "present"
+    no_log: true
+    register: aws_ec2_key_pair
 
   - name: provisioning temp instance
     amazon.aws.ec2_instance:
-      key_name: "ansible-temp-ebs-build"
+      key_name: "{{ aws_ec2_key_pair.key.name }}"
       image_id: "{{ latest_ami.image_id }}"#
       instance_role: "{{ ec2_iam_role.role_name }}"
       instance_type: "t3a.small"
@@ -163,7 +165,7 @@
       gather_facts: no
       groups: ec2hosts
       ansible_user: ec2-user
-      ansible_private_key_file: "./ansible-temp-ebs-build"
+      ansible_private_key_file: "{{ aws_ec2_key_pair.key.name }}"
 
   - name: wait for SSH service to bind on new instance
     wait_for:
