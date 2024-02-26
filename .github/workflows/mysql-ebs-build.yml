@@ -110,6 +110,5 @@ jobs:
           zone='${{ inputs.zone }}' \
           ebs_size='${{ inputs.ebs_size }}' \
           ebs_type='${{ inputs.ebs_type }}'" \
-          --private-key $cur_dir/ansible-temp-ebs-build \
           mysql-ebs-playbook.yml
 ...
