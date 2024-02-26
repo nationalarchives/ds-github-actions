@@ -158,13 +158,12 @@
         - "====================================================================="
 
   - name: register new ec2 as host
-    add_host:
+    ansible.builtin.add_host:
       hostname: "{{ instance_public_ip }}"
+      gather_facts: no
       groups: ec2hosts
       ansible_user: ec2-user
-      gather_facts: no
-      private_key_file: "ansible-temp-ebs-build"
-      ansible_ssh_private_key_file: "ansible-temp-ebs-build"
+      ansible_private_key_file: "ansible-temp-ebs-build"
 
   - name: wait for SSH service to bind on new instance
     wait_for:
