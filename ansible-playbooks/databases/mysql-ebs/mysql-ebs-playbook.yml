@@ -92,7 +92,7 @@
   - name: template userdata
     vars:
       region: "{{ region }}"
-      volume_name: "mysql-{{ ebs_name }}-ebs"
+      volume_name: "mysql-{{ project_name }}-ebs"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
