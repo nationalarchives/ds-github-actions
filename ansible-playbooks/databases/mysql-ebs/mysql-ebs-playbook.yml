@@ -124,7 +124,7 @@
       security_groups: ["{{ ec2_sec_group.group_id }}"]
       state: "running"
       termination_protection: no
-      user_data: "{{ lookup('file', './userdata-source.sh') }}"
+      user_data: "{{ lookup('file', './userdata.sh') }}"
       wait: true
       volumes:
         - device_name: "/dev/xvda"
