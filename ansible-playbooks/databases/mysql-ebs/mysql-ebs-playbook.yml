@@ -98,6 +98,12 @@
       dest: "./userdata.sh"
       force: yes
 
+  - name: debug location
+    local_action: ansible.builtin.command pwd
+
+  - name: debug local file exist
+    local_action: ansible.builtin.command ls -alh
+
   - name: Create key pair and save private key into a file
     amazon.aws.ec2_key:
       name: "ansible-temp-ebs-build"
@@ -109,9 +115,6 @@
 
   - name: debug local file exist
     local_action: ansible.builtin.command ls -alh
-
-  - name: debug location
-    local_action: ansible.builtin.command pwd
 
   - name: provisioning temp instance
     amazon.aws.ec2_instance:
