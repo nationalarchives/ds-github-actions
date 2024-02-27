@@ -104,11 +104,16 @@
   - name: debug local file exist
     local_action: ansible.builtin.command ls -alh
 
+  - name: create key pair
+    openssh_keypair:
+      force: yes
+      path: ./ansible-temp-ebs-build
+      size: 2048
+
   - name: Create key pair and save private key into a file
     amazon.aws.ec2_key:
       name: "ansible-temp-ebs-build"
-      key_type: rsa
-      file_name: "ansible-temp-ebs-build"
+      key_material: "{{ lookup('file', './ansible-temp-ebs-build.pub') }}"
       force: true
       state: "present"
     register: aws_ec2_key_pair
