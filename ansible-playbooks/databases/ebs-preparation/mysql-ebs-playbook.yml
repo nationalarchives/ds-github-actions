@@ -1,6 +1,6 @@
-# MySQL EBS playbook
+# EBS playbook
 ---
-- name: initialise MySQL EBS
+- name: initialise EBS
   hosts: localhost
   gather_facts: false
 
@@ -8,7 +8,7 @@
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
-      role_session_name: "s-devops-mysql-base"
+      role_session_name: "s-devops-ebs-base"
     register: assumed_role
 
   - name: get linux 2023 AMI
@@ -87,12 +87,12 @@
       volume_type: "{{ ebs_type }}"
       encrypted: "true"
       tags:
-        Name: "mysql-{{ project_name }}-ebs"
+        Name: "{{ project_name }}-ebs"
 
   - name: template userdata
     vars:
       region: "{{ region }}"
-      volume_name: "mysql-{{ project_name }}-ebs"
+      volume_name: "{{ project_name }}-ebs"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
@@ -111,7 +111,7 @@
       metadata_options:
         http_endpoint: "enabled"
         http_tokens: "required"
-      name : "mysql-ebs-temp-instance"
+      name : "ansible-ebs-temp-instance"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -131,7 +131,7 @@
       vpc_subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
       tags:
         Environment: "{{ account }}"
-        Service: "mysql-{{ project_name }}"
+        Service: "{{ project_name }}"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -202,14 +202,14 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ebs-mysql-{{ project_name }}-sg"
+      name: "ansible-ebs-{{ project_name }}-sg"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
       state: "absent"
 
   - name: remove postgres IAM role & instance profile
     community.aws.iam_role:
-      name: "ansible-ebs-mysql-{{ project_name }}-role"
+      name: "ansible-ebs-{{ project_name }}-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       purge_policies: yes
