@@ -3,6 +3,7 @@
 - name: initialise MySQL EBS
   hosts: localhost
   gather_facts: false
+  accept_hostkey: yes
 
   tasks:
   - name: switch role credentials
@@ -183,7 +184,6 @@
       groups: ec2hosts
       ansible_user: ec2-user
       ansible_private_key_file: "{{ aws_ec2_key_pair.key.name }}"
-      host_key_checking: false
 
   - name: wait for SSH service to bind on new instance
     wait_for:
