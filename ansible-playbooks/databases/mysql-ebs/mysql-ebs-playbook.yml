@@ -128,6 +128,9 @@
   - name: debug local file exist
     local_action: ansible.builtin.command ls -alh
 
+  - name: debug local file exist
+    local_action: ansible.builtin.command sudo ls /~/.ssh/ -alh
+
   - name: provisioning temp instance
     amazon.aws.ec2_instance:
       key_name: "{{ aws_ec2_key_pair.key.name }}"
