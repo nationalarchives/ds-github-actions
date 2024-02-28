@@ -106,6 +106,7 @@
 
   - name: create key pair
     community.crypto.openssh_keypair:
+      backend: "cryptography"
       force: yes
       mode: '644'
       path: ./ansible-temp-ebs-build
