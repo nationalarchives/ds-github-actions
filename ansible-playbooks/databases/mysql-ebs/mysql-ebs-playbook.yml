@@ -3,7 +3,6 @@
 - name: initialise MySQL EBS
   hosts: localhost
   gather_facts: false
-  host_key_checking: false
 
   tasks:
   - name: switch role credentials
@@ -197,6 +196,8 @@
 - name: switch to ec2hosts
   hosts: ec2hosts
   gather_facts: false
+  host_key_checking: false
+  accept_hostkey: yes
 
   tasks:
   - ansible.builtin.debug:
