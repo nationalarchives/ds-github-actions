@@ -104,20 +104,22 @@
   - name: debug local file exist
     local_action: ansible.builtin.command ls -alh
 
-  - name: create key pair
-    community.crypto.openssh_keypair:
-      backend: "cryptography"
-      force: yes
-      mode: '644'
-      path: ./ansible-temp-ebs-build
-      private_key_format: "pkcs1"
-      size: 2048
-      type: "rsa"
+#  - name: create key pair
+#    community.crypto.openssh_keypair:
+#      backend: "cryptography"
+#      force: yes
+#      mode: '644'
+#      path: ./ansible-temp-ebs-build
+#      private_key_format: "pkcs1"
+#      size: 2048
+#      type: "rsa"
 
   - name: Create key pair and save private key into a file
     amazon.aws.ec2_key:
       name: "ansible-temp-ebs-build"
-      key_material: "{{ lookup('file', './ansible-temp-ebs-build.pub') }}"
+#      key_material: "{{ lookup('file', './ansible-temp-ebs-build.pub') }}"
+      file_name: "ansible-temp-ebs-build"
+      key-type: "rsa""
       force: true
       state: "present"
     register: aws_ec2_key_pair
@@ -206,8 +208,6 @@
         - "====================================================================="
 
   - name: check if ec2 instance is ready
-    host_key_checking: false
-    accept_hostkey: yes
     ansible.builtin.stat:
       path: "/var/finish-source.txt"
     register: init_finished
