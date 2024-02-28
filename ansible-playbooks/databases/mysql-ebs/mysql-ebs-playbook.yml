@@ -102,38 +102,9 @@
     local_action: ansible.builtin.command pwd
     register: location
 
-  - name: debug local file exist
-    local_action: ansible.builtin.command ls -alh
-
-#  - name: create key pair
-#    community.crypto.openssh_keypair:
-#      backend: "cryptography"
-#      force: yes
-#      mode: '644'
-#      path: ./ansible-temp-ebs-build
-#      private_key_format: "pkcs1"
-#      size: 2048
-#      type: "rsa"
-
-  - name: Create key pair and save private key into a file
-    amazon.aws.ec2_key:
-      name: "ansible-temp-ebs-build"
-#      key_material: "{{ lookup('file', './ansible-temp-ebs-build.pub') }}"
-      file_name: "{{ location.stdout }}/ansible-temp-ebs-build"
-      key_type: "rsa"
-      force: true
-      state: "present"
-    register: aws_ec2_key_pair
-
-  - name: debug local file exist
-    local_action: ansible.builtin.command ls -alh
-
-  - name: debug local file exist
-    local_action: ansible.builtin.command sudo ls ~/.ssh/ -alh
-
   - name: provisioning temp instance
     amazon.aws.ec2_instance:
-      key_name: "{{ aws_ec2_key_pair.key.name }}"
+      key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
       instance_role: "{{ ec2_iam_role.role_name }}"
       instance_type: "t3a.small"
