@@ -119,7 +119,7 @@
       name: "ansible-temp-ebs-build"
 #      key_material: "{{ lookup('file', './ansible-temp-ebs-build.pub') }}"
       file_name: "ansible-temp-ebs-build"
-      key-type: "rsa""
+      key-type: "rsa"
       force: true
       state: "present"
     register: aws_ec2_key_pair
