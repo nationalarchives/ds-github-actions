@@ -45,7 +45,7 @@ permissions:
   contents: write
 
 jobs:
-  create-ebs:
+  deploy-ebs:
     runs-on: "ubuntu-latest"
     environment: ${{ inputs.account }}
 
