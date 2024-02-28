@@ -196,8 +196,6 @@
 - name: switch to ec2hosts
   hosts: ec2hosts
   gather_facts: false
-  host_key_checking: false
-  accept_hostkey: yes
 
   tasks:
   - ansible.builtin.debug:
@@ -208,6 +206,8 @@
         - "====================================================================="
 
   - name: check if ec2 instance is ready
+    host_key_checking: false
+    accept_hostkey: yes
     ansible.builtin.stat:
       path: "/var/finish-source.txt"
     register: init_finished
