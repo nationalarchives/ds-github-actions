@@ -159,6 +159,7 @@
       gather_facts: no
       groups: ec2hosts
       ansible_user: ec2-user
+      remote_user: ec2-user
 
   - name: wait for SSH service to bind on new instance
     wait_for:
