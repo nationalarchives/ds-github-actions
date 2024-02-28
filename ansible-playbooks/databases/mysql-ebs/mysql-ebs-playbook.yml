@@ -159,7 +159,6 @@
       gather_facts: no
       groups: ec2hosts
       ansible_user: ec2-user
-      ansible_private_key_file: "{{ aws_ec2_key_pair.key.name }}"
 
   - name: wait for SSH service to bind on new instance
     wait_for:
