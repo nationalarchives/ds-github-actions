@@ -110,7 +110,7 @@ jobs:
           zone='${{ inputs.zone }}' \
           ebs_size='${{ inputs.ebs_size }}' \
           ebs_type='${{ inputs.ebs_type }}' \ \
-          key_name='${{ inputs.key _name }}'" \
+          key_name='${{ inputs.key_name }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           ebs-playbook.yml
 ...
