@@ -3,7 +3,7 @@
 - name: initialise MySQL EBS
   hosts: localhost
   gather_facts: false
-  accept_hostkey: yes
+  host_key_checking: false
 
   tasks:
   - name: switch role credentials
