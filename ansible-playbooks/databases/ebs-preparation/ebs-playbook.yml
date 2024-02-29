@@ -174,7 +174,8 @@
   - ansible.builtin.debug:
       msg:
         - "====================================================================="
-        - "waiting for 3 minutes allowing the formatting of the EBS to finish"
+        - "checking status of new instance before ami can be build"
+        - "20 second interval with max duration of 5 minutes"
         - "====================================================================="
 
   - name: check if ec2 instance is ready
@@ -183,9 +184,8 @@
     remote_user: ec2-user
     register: init_finished
     until: "init_finished.stat.exists"
-    retries: 3
-    delay: 60
-    ignore_errors: yes
+    retries: 15
+    delay: 20
 
 - name: Cleanup
   hosts: localhost
