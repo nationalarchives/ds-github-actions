@@ -119,6 +119,14 @@
       dest: "./userdata.sh"
       force: yes
 
+  - name: create key pair and save private key into a file
+    amazon.aws.ec2_key:
+      name: "{{ key_name }}"
+      force: true
+      key_type: "rsa"
+      file_name: "{{ key_name }}"
+      state: "present"
+
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
@@ -232,6 +240,11 @@
     amazon.aws.ec2_instance:
       instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
+      state: "absent"
+
+  - name: remove key pair
+    amazon.aws.ec2_key:
+      name: "{{ key_name }}"
       state: "absent"
 
   - name: remove IAM role
