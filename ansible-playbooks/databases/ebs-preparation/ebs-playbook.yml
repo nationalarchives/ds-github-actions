@@ -105,7 +105,6 @@
       instance_role: "{{ ec2_iam_role.role_name }}"
       instance_type: "t3a.small"
       metadata_options:
-        http_endpoint: "enabled"
         http_tokens: "required"
       name : "ansible-ebs-temp-instance"
       network:

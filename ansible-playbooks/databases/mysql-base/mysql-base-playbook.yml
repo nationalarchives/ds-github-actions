@@ -157,22 +157,22 @@
 
   - name: get instance ip address
     set_fact:
-      prime_private_ip: "{{ ec2.instances[0].private_ip_address }}"
-      prime_public_ip: "{{ ec2.instances[0].public_ip_address }}"
-      prime_id: "{{ ec2.instances[0].instance_id }}"
+      instance_private_ip: "{{ ec2.instances[0].private_ip_address }}"
+      instance_public_ip: "{{ ec2.instances[0].public_ip_address }}"
+      instance_id: "{{ ec2.instances[0].instance_id }}"
 
   - ansible.builtin.debug:
       msg:
         - "====================================================================="
         - "instance started up"
-        - "instance private ip: {{ prime_private_ip }}"
-        - "instance id: {{ prime_id }}"
-        - "instance public ip {{ prime_public_ip }}"
+        - "instance private ip: {{ instance_private_ip }}"
+        - "instance id: {{ instance_id }}"
+        - "instance public ip {{ instance_public_ip }}"
         - "====================================================================="
 
   - name: register new ec2 as host
     add_host:
-      hostname: "{{ prime_public_ip }}"
+      hostname: "{{ instance_public_ip }}"
       groups: ec2hosts
       ansible_user: ec2-user
       remote_user: ec2-user
@@ -180,7 +180,7 @@
 
   - name: wait for SSH service to bind on new instance
     wait_for:
-      host: "{{ prime_public_ip }}"
+      host: "{{ instance_public_ip }}"
       port: 22
       delay: 90
       timeout: 600
@@ -195,7 +195,7 @@
       msg:
         - "====================================================================="
         - "checking status of new instance before ami can be build"
-        - "20 second interval with max duration of 15 minutes"
+        - "20 second interval with max duration of 5 minutes"
         - "====================================================================="
 
   - name: check if ec2 instance is ready
@@ -204,7 +204,7 @@
     remote_user: ec2-user
     register: init_finished
     until: "init_finished.stat.exists"
-    retries: 45
+    retries: 15
     delay: 20
 
 - name: switch to localhost
@@ -214,7 +214,7 @@
   tasks:
   - name: create AMI
     amazon.aws.ec2_ami:
-      instance_id: "{{ prime_id }}"
+      instance_id: "{{ instance_id }}"
       name: "mysql-{{ project_name }}-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
       description: "MySQL Instance - ready for deployment"
       region: "{{ region }}"
@@ -230,7 +230,7 @@
 
   - name: terminate instance
     amazon.aws.ec2_instance:
-      instance_ids: "{{ prime_id }}"
+      instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
       state: "absent"
 
