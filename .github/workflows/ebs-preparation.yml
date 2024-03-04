@@ -111,6 +111,6 @@ jobs:
           ebs_size='${{ inputs.ebs_size }}' \
           ebs_type='${{ inputs.ebs_type }}' \ \
           key_name='ansible-build-${{ inputs.account }}-${{ inputs.region }}'" \
-          --private-key $cur_dir/${{ inputs.key_name }} \
+          --private-key $cur_dir/ansible-build-${{ inputs.account }}-${{ inputs.region }} \
           ebs-playbook.yml
 ...
