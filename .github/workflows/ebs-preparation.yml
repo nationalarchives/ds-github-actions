@@ -74,8 +74,8 @@ jobs:
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://ds-${{ inputs.account }}-kpf-administration/ansible/${{ inputs.key_name }}
-          destination: ${{ inputs.key_name }}
+          source: s3://ds-${{ inputs.account }}-kpf-administration/ansible/ansible-build-${{ inputs.account }}-${{ inputs.region }}
+          destination: ansible-build-${{ inputs.account }}-${{ inputs.region }}
           aws_access_key_id: ${{ steps.creds.outputs.aws-access-key-id }}
           aws_secret_access_key: ${{ steps.creds.outputs.aws-secret-access-key }}
           aws_session_token: ${{ steps.creds.outputs.aws-session-token }}
@@ -110,7 +110,7 @@ jobs:
           zone='${{ inputs.zone }}' \
           ebs_size='${{ inputs.ebs_size }}' \
           ebs_type='${{ inputs.ebs_type }}' \ \
-          key_name='${{ inputs.key_name }}'" \
+          key_name='ansible-build-${{ inputs.account }}-${{ inputs.region }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           ebs-playbook.yml
 ...
