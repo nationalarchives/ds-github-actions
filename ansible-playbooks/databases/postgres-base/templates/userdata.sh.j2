@@ -64,7 +64,7 @@ sudo sed -i "s|trust|md5|" /var/lib/pgsql/data/postgresql.conf
 
 sudo systemctl restart postgresql
 
-cat << EOF > /finish-init.txt
+cat << EOF > /var/finish-init.txt
 [status]
 finished = true
 EOF
