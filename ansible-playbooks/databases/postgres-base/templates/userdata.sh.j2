@@ -50,7 +50,7 @@ ALTER USER postgres PASSWORD '{{root_password}}';
 EOF
 
 cat << 'EOF' > ~/db_user.sql
-CREATE ROLE {{adm_user}} WITH SUPERUSER LOGIN PASSWORD '{{adm_password}}';
+CREATE ROLE {{admin_user}} WITH SUPERUSER LOGIN PASSWORD '{{admin_password}}';
 EOF
 
 sudo systemctl start postgresql
