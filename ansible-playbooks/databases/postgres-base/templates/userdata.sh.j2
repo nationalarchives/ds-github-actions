@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# Update instance
+sudo dnf update -y
+#sudo yum update -y
+
+# create swap file
+sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+sudo chmod 0600 /var/swap.1
+sudo /sbin/mkswap /var/swap.1
+sudo /sbin/swapon /var/swap.1
+
+# Install Cloudwatch agent
+sudo dnf install amazon-cloudwatch-agent -y
+#sudo yum install amazon-cloudwatch-agent -y
+sudo dnf install collectd -y
+#sudo amazon-linux-extras install -y collectd
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+
+# Install and initialise PostgreSQL
+sudo dnf install postgresql15.x86_64 postgresql15-server -y
+#sudo amazon-linux-extras enable postgresql14
+#sudo yum install postgresql-server -y
+sudo postgresql-setup --initdb
+
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+sudo systemctl stop postgresql
+
+# Configure PostgreSQL for replication
+# the directories are specific for the version of postgres and linux 2 from AWS
+sudo sed -i "s|#listen_addresses = 'localhost'|listen_addresses = '*'|g" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f /postgres/server/archive/%f && cp %p /postgres/server/archive/%f'|" /var/lib/pgsql/data/postgresql.conf
+
+# Set up access to postgres from a list of IP CIDRs
+# allowed separators are in IFS
+IFS=',;: ' read -a cidrs <<< '{{network_cidrs}}'
+for cidr in "${cidrs[@]}"
+do
+    sudo sed -i "/# TYPE/a host all all $cidr md5\n" /var/lib/pgsql/data/pg_hba.conf
+done
+sudo sed -i "s|peer|trust|" /var/lib/pgsql/data/postgresql.conf
+
+# sql statements to secure the instance
+cat << 'EOF' > ~/secure_installation.sql
+ALTER USER postgres PASSWORD '{{root_password}}';
+EOF
+
+cat << 'EOF' > ~/db_user.sql
+CREATE ROLE {{adm_user}} WITH SUPERUSER LOGIN PASSWORD '{{adm_password}}';
+EOF
+
+sudo systemctl start postgresql
+
+psql -U postgres < ~/db_user.sql
+psql -U postgres < ~/secure_installation.sql
+
+sudo sed -i "s|trust|md5|" /var/lib/pgsql/data/postgresql.conf
+# secure local postgres access
+#sudo sed -i "s|local all postgres trust|local all postgres md5" /var/lib/pgsql/data/pg_hba.conf
+
+sudo systemctl restart postgresql
+
+cat << EOF > /finish-init.txt
+[status]
+finished = true
+EOF
