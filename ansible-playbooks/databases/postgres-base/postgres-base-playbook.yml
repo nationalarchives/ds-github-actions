@@ -95,7 +95,7 @@
         admin_password: "{{ secret_data.admin_password }}"
         repl_user: "{{ secret_data.repl_user }}"
         repl_password: "{{ secret_data.repl_password }}"
-        network_cidr: "{{ secret_data.network_cidr }}"
+        network_cidrs: "{{ secret_data.network_cidrs }}"
 
   - name: get network information
     ansible.builtin.set_fact:
@@ -111,7 +111,7 @@
       admin_password: "{{ admin_password }}"
       repl_user: "{{ repl_user }}"
       repl_password: "{{ repl_password }}"
-      network_cidr: "{{ network_cidr }}"
+      network_cidrs: "{{ network_cidrs }}"
       subnet_db_cidr_a: "{{ subnet_db_cidr_a }}"
       subnet_db_cidr_b: "{{ subnet_db_cidr_b }}"
     template:
