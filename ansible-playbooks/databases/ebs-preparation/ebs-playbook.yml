@@ -92,7 +92,7 @@
     register: ec2_vol
 
   - name: Create or update secure key/value pair with nominated kms key
-    community.aws.aws_ssm_parameter_store:
+    community.aws.ssm_parameter:
       name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
       description: "volume id of {{ project_name }}-{{ function }} database instance"
       string_type: "SecureString"
