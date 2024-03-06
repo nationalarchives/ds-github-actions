@@ -97,7 +97,7 @@
       description: "volume id of {{ project_name }}-{{ function }} database instance"
       overwrite_value: "always"
       string_type: "SecureString"
-      value: "{{ ec2_vol.id }}"
+      value: "{{ ec2_vol.volume_id }}"
 
   - name: template userdata
     vars:
