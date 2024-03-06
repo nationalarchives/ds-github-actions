@@ -26,7 +26,7 @@
         {{ findami.images | sort(attribute='creation_date') | last }}
 
   - name: create deployment policy
-    community.aws.iam_managed_policy:
+    amazon.aws.iam_managed_policy:
       policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
@@ -221,7 +221,7 @@
       state: "absent"
 
   - name: remove deployment policy
-    community.aws.iam_managed_policy:
-      group_id: "{{ ec2_sec_group.group_id }}"
+    amazon.aws.iam_managed_policy:
+      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy§"
       state: "absent"
 ...
