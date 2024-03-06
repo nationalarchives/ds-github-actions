@@ -123,7 +123,7 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-postgres-{{ project_name }}--{{ function }}role"
+      instance_role: "ansible-ami-postgres-{{ project_name }}-{{ function }}-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
