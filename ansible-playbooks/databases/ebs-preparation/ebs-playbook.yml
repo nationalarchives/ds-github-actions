@@ -89,7 +89,7 @@
       encrypted: "true"
       tags:
         Name: "{{ project_name }}-{{ function }}-ebs"
-      register: ec2_vol
+    register: ec2_vol
 
   - name: Create or update secure key/value pair with nominated kms key
     community.aws.aws_ssm_parameter_store:
