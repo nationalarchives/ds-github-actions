@@ -99,8 +99,8 @@
 
   - name: get network information
     ansible.builtin.set_fact:
-      subnet_db_cidr_a: "{{ lookup('amazon.aws.ssm_parameter', '/infrastructure/network/base/private_db_subnet_2a_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
-      subnet_db_cidr_b: "{{ lookup('amazon.aws.ssm_parameter', '/infrastructure/network/base/private_db_subnet_2b_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
+      subnet_db_cidr_a: "{{ lookup('amazon.aws.aws_ssm', '/infrastructure/network/base/private_db_subnet_2a_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
+      subnet_db_cidr_b: "{{ lookup('amazon.aws.aws_ssm', '/infrastructure/network/base/private_db_subnet_2b_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
 
   - name: template userdata
     vars:

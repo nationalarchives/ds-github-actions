@@ -88,6 +88,7 @@
       encrypted: "true"
       tags:
         Name: "{{ project_name }}-ebs"
+      register: ec2_vol
 
   - name: template userdata
     vars:
