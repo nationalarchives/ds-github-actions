@@ -91,10 +91,11 @@
         Name: "{{ project_name }}-{{ function }}-ebs"
     register: ec2_vol
 
-  - name: Create or update secure key/value pair with nominated kms key
+  - name: Write ssm parameter
     community.aws.ssm_parameter:
       name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
       description: "volume id of {{ project_name }}-{{ function }} database instance"
+      overwrite_value: "always"
       string_type: "SecureString"
       value: "{{ ec2_vol.id }}"
 
