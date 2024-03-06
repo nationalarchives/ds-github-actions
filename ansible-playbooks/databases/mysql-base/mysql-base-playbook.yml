@@ -33,14 +33,14 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-mysql-{{ project_name }}-s3-policy"
+      policy_name: "ansible-ami-mysql-{{ project_name }}-{{ function }}-s3-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
 
   - name: create base mysql IAM role
     community.aws.iam_role:
-      name: "ansible-ami-mysql-{{ project_name }}-role"
+      name: "ansible-ami-mysql-{{ project_name }}-{{ function }}-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
@@ -52,7 +52,7 @@
 
   - name: create security group - allowing updates and downloads
     amazon.aws.ec2_group:
-      name: "ansible-ami-mysql-{{ project_name }}-sg"
+      name: "ansible-ami-mysql-{{ project_name }}-{{ function }}-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -131,11 +131,11 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-mysql-{{ project_name }}-role"
+      instance_role: "ansible-ami-mysql-{{ project_name }}-{{ function }}-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "mysql-{{ project_name }}-primer"
+      name : "mysql-{{ project_name }}-{{ function }}-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -154,7 +154,7 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Name: "mysql-{{ project_name }}-primer"
+        Name: "mysql-{{ project_name }}-{{ function }}-primer"
         Environment: "{{ account }}"
         Service: "MySQL"
         Owner: "Digital Services"
@@ -249,13 +249,13 @@
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-mysql-{{ project_name }}-role"
+      name: "ansible-ami-mysql-{{ project_name }}-{{ function }}-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-mysql-{{ project_name }}-s3-policy"
+      policy_name: "ansible-ami-mysql-{{ project_name }}-{{ function }}-s3-policy"
       state: "absent"
 ...
