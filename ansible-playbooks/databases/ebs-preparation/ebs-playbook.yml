@@ -27,14 +27,14 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ebs-{{ project_name }}-policy"
+      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
     register: ebs_policy
 
   - name: EC2 IAM role
     community.aws.iam_role:
-      name: "ansible-ebs-{{ project_name }}-role"
+      name: "ansible-ebs-{{ project_name }}-{{ function }}-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["{{ ebs_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
@@ -45,8 +45,8 @@
     register: ec2_iam_role
 
   - name: create security group - allowing updates and downloads
-    amazon.aws.ec2_group:
-      name: "ansible-ebs-{{ project_name }}-sg"
+    amazon.aws.ec2_security_group:
+      name: "ansible-ebs-{{ project_name }}-{{ function }}-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -87,13 +87,21 @@
       volume_type: "{{ ebs_type }}"
       encrypted: "true"
       tags:
-        Name: "{{ project_name }}-ebs"
+        Name: "{{ project_name }}-{{ function }}-ebs"
       register: ec2_vol
+
+  - name: Create or update secure key/value pair with nominated kms key
+    aws_ssm_parameter_store:
+      name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
+      description: "This is your first key"
+      string_type: "SecureString"
+      key_id: "alias/demo"
+      value: "World"
 
   - name: template userdata
     vars:
       region: "{{ region }}"
-      volume_name: "{{ project_name }}-ebs"
+      volume_name: "{{ project_name }}-{{ function }}-ebs"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
@@ -127,7 +135,7 @@
       vpc_subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
       tags:
         Environment: "{{ account }}"
-        Service: "{{ project_name }}"
+        Service: "ansible-ebs-temp-instance"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -200,16 +208,19 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ebs-{{ project_name }}-sg"
-      region: "{{ region }}"
-      vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
+      name: "ansible-ebs-{{ project_name }}-{{ function }}-sg"
       state: "absent"
 
   - name: remove postgres IAM role & instance profile
     community.aws.iam_role:
-      name: "ansible-ebs-{{ project_name }}-role"
+      name: "ansible-ebs-{{ project_name }}-{{ function }}-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       purge_policies: yes
+      state: "absent"
+
+  - name: remove deployment policy
+    community.aws.iam_managed_policy:
+      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy§"
       state: "absent"
 ...

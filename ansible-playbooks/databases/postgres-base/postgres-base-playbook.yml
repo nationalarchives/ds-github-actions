@@ -51,7 +51,7 @@
     register: ec2_iam_role
 
   - name: create security group - allowing updates and downloads
-    amazon.aws.ec2_group:
+    amazon.aws.ec2_security_group:
       name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
@@ -232,6 +232,11 @@
     amazon.aws.ec2_instance:
       instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
+      state: "absent"
+
+  - name: remove security group
+    amazon.aws.ec2_security_group:
+      name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-sg"
       state: "absent"
 
   - name: remove IAM role
