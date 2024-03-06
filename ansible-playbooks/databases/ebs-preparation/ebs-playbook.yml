@@ -80,7 +80,8 @@
       state: "present"
     register: ec2_sec_group
 
-  - amazon.aws.ec2_vol:
+  - name: Create EBS volume
+    amazon.aws.ec2_vol:
       zone: "{{ zone }}"
       multi_attach: false
       volume_size: "{{ ebs_size }}"
@@ -95,7 +96,7 @@
       name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
       description: "volume id of {{ project_name }}-{{ function }} database instance"
       string_type: "SecureString"
-      value: {{ ec2_vol.}}
+      value: {{ ec2_vol.id }}
 
   - name: template userdata
     vars:
