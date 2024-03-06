@@ -222,6 +222,6 @@
 
   - name: remove deployment policy
     amazon.aws.iam_managed_policy:
-      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy§"
+      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy"
       state: "absent"
 ...
