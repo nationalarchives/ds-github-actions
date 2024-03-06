@@ -209,7 +209,7 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      group_id: "{{ ec2_sec_group.group_id }}"
+      name: "{{ ec2_sec_group.group_name }}"
       state: "absent"
 
   - name: remove postgres IAM role & instance profile
