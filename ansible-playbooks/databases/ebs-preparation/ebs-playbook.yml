@@ -91,14 +91,6 @@
         Name: "{{ project_name }}-{{ function }}-ebs"
     register: ec2_vol
 
-  - name: Write ssm parameter
-    community.aws.ssm_parameter:
-      name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
-      description: "volume id of {{ project_name }}-{{ function }} database instance"
-      overwrite_value: "always"
-      string_type: "SecureString"
-      value: "{{ ec2_vol.volume_id }}"
-
   - name: template userdata
     vars:
       region: "{{ region }}"
@@ -201,6 +193,14 @@
   gather_facts: false
 
   tasks:
+  - name: Write ssm parameter
+    community.aws.ssm_parameter:
+      name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
+      description: "volume id of {{ project_name }}-{{ function }} database instance"
+      overwrite_value: "always"
+      string_type: "SecureString"
+      value: "{{ ec2_vol.volume_id }}"
+
   - name: terminate ec2 by instance id
     amazon.aws.ec2_instance:
       instance_ids: "{{ instance_id }}"
@@ -222,6 +222,6 @@
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ebs-{{ project_name }}-{{ function }}-policy§"
+      group_id: "{{ ec2_sec_group.group_id }}"
       state: "absent"
 ...
