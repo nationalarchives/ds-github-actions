@@ -91,12 +91,11 @@
       register: ec2_vol
 
   - name: Create or update secure key/value pair with nominated kms key
-    aws_ssm_parameter_store:
+    community.aws.aws_ssm_parameter_store:
       name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
-      description: "This is your first key"
+      description: "volume id of {{ project_name }}-{{ function }} database instance"
       string_type: "SecureString"
-      key_id: "alias/demo"
-      value: "World"
+      value: {{ ec2_vol.}}
 
   - name: template userdata
     vars:
