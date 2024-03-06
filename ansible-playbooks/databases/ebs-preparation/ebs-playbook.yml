@@ -96,7 +96,7 @@
       name: "/infrastructure/databases/{{ project_name }}-{{ function }}/volume_id"
       description: "volume id of {{ project_name }}-{{ function }} database instance"
       string_type: "SecureString"
-      value: {{ ec2_vol.id }}
+      value: "{{ ec2_vol.id }}"
 
   - name: template userdata
     vars:
