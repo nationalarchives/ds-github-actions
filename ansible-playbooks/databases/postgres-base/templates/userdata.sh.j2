@@ -42,7 +42,7 @@ for cidr in "${cidrs[@]}"
 do
     sudo sed -i "/# TYPE/a host all all $cidr md5\n" /var/lib/pgsql/data/pg_hba.conf
 done
-sudo sed -i "s|peer|trust|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|peer|trust|" /var/lib/pgsql/data/pg_hba.conf
 
 # sql statements to secure the instance
 cat << 'EOF' > ~/secure_installation.sql
@@ -58,7 +58,7 @@ sudo systemctl start postgresql
 psql -U postgres < ~/db_user.sql
 psql -U postgres < ~/secure_installation.sql
 
-sudo sed -i "s|trust|md5|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|trust|md5|" /var/lib/pgsql/data/pg_hba.conf
 # secure local postgres access
 #sudo sed -i "s|local all postgres trust|local all postgres md5" /var/lib/pgsql/data/pg_hba.conf
 
