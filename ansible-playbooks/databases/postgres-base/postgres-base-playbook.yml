@@ -114,6 +114,7 @@
       network_cidrs: "{{ network_cidrs }}"
       subnet_db_cidr_a: "{{ subnet_db_cidr_a }}"
       subnet_db_cidr_b: "{{ subnet_db_cidr_b }}"
+      function: "{{ function }}"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
