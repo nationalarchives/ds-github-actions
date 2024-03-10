@@ -6,21 +6,21 @@ sudo dnf update -y
 sudo touch /var/log/var/log/ami-install.log
 
 # create swap file
-echo "create swap file" | sudo tee -a  /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - create swap file" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
 sudo chmod 0600 /var/swap.1
 sudo /sbin/mkswap /var/swap.1
 sudo /sbin/swapon /var/swap.1
 
 # Install Cloudwatch agent
-echo "install CloudWatch agent" | sudo tee -a  /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - install CloudWatch agent" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install amazon-cloudwatch-agent -y
 sudo dnf install collectd -y
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
 # Install and initialise PostgreSQL
-echo "install postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - install postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install postgresql15.x86_64 postgresql15-server -y
 sudo postgresql-setup --initdb
 
@@ -28,6 +28,8 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
 sudo systemctl stop postgresql
+
+echo "$(date '+%Y-%m-%d %T') - prepare postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
 
 # Configure PostgreSQL for replication
 # the directories are specific for the version of postgres and linux 2 from AWS
