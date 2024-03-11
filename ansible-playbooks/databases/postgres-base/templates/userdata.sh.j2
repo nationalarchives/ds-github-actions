@@ -33,12 +33,14 @@ echo "$(date '+%Y-%m-%d %T') - prepare postgres" | sudo tee -a  /var/log/ami-ins
 
 # Configure PostgreSQL for replication
 # the directories are specific for the version of postgres and linux 2 from AWS
+echo "$(date '+%Y-%m-%d %T') - set port and archive mode postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|#listen_addresses = 'localhost'|listen_addresses = '*'|g" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f /postgres/server/archive/%f && cp %p /postgres/server/archive/%f'|" /var/lib/pgsql/data/postgresql.conf
 
 # Set up access to postgres from a list of IP CIDRs
 # allowed separators are in IFS
+echo "$(date '+%Y-%m-%d %T') - set postgres access permission" | sudo tee -a  /var/log/ami-install.log > /dev/null
 IFS=',;: ' read -a cidrs <<< '{{network_cidrs}}'
 for cidr in "${cidrs[@]}"
 do
@@ -47,10 +49,12 @@ done
 sudo sed -i "s|peer|trust|" /var/lib/pgsql/data/pg_hba.conf
 
 # sql statements to secure the instance
+echo "$(date '+%Y-%m-%d %T') - create secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 cat << 'EOF' > ~/secure_installation.sql
 ALTER USER postgres PASSWORD '{{root_password}}';
 EOF
 
+echo "$(date '+%Y-%m-%d %T') - create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 cat << 'EOF' > ~/db_user.sql
 CREATE ROLE {{admin_user}} WITH SUPERUSER LOGIN PASSWORD '{{admin_password}}';
 CREATE ROLE {{repl_user}} WITH REPLICATION LOGIN PASSWORD '{{repl_password}}';
@@ -58,9 +62,12 @@ EOF
 
 sudo systemctl start postgresql
 
+echo "$(date '+%Y-%m-%d %T') - run secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 psql -U postgres < ~/db_user.sql
+echo "$(date '+%Y-%m-%d %T') - run create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 psql -U postgres < ~/secure_installation.sql
 
+echo "$(date '+%Y-%m-%d %T') - set all user connections to md5" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|trust|md5|" /var/lib/pgsql/data/pg_hba.conf
 # secure local postgres access
 #sudo sed -i "s|local all postgres trust|local all postgres md5" /var/lib/pgsql/data/pg_hba.conf
@@ -70,16 +77,18 @@ sudo systemctl stop postgresql
 DATA_DIR="/postgres/data"
 LOG_DIR="/postgres/log"
 
+echo "$(date '+%Y-%m-%d %T') - set data and log directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f /postgres/server/archive/%f && cp %p /postgres/server/archive/%f'|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|log_filename = 'postgresql-%a.log'|log_filename = 'postgresql_%y%m%d_%H%M%S.log'|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|logging_collector = off|logging_collector = on|" /var/lib/pgsql/data/postgresql.conf
 
 if [ "{{function}}" = "prime" ]; then
-  sudo sed -i 's/#wal_level = replica/wal_level = logical/' /var/lib/pgsql/data/postgresql.conf
-  sudo sed -i 's/#wal_log_hints = off/wal_log_hints = on/' /var/lib/pgsql/data/postgresql.conf
-  sudo sed -i 's/#max_replication_slots = 10/max_replication_slots = 10/' /var/lib/pgsql/data/postgresql.conf
-  sudo sed -i 's/#max_wal_senders = 10/max_wal_senders = 10/' /var/lib/pgsql/data/postgresql.conf
+  echo "$(date '+%Y-%m-%d %T') - set up prime server" | sudo tee -a  /var/log/ami-install.log > /dev/null
+  sudo sed -i 's|#wal_level = replica|wal_level = logical|' /var/lib/pgsql/data/postgresql.conf
+  sudo sed -i 's|#wal_log_hints = off|wal_log_hints = on|' /var/lib/pgsql/data/postgresql.conf
+  sudo sed -i 's|#max_replication_slots = 10|max_replication_slots = 10|' /var/lib/pgsql/data/postgresql.conf
+  sudo sed -i 's|#max_wal_senders = 10|max_wal_senders = 10|' /var/lib/pgsql/data/postgresql.conf
 fi
 
 #sudo systemctl restart postgresql
