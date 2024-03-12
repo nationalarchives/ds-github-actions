@@ -77,6 +77,9 @@ sudo systemctl stop postgresql
 DATA_DIR="/postgres/data"
 LOG_DIR="/postgres/log"
 
+echo "$(date '+%Y-%m-%d %T') - change service variable PGDATA" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo sed -i "s|Environment=PGDATA=.*$|Environment=PGDATA=$DATA_DIR|" /lib/systemd/system/postgresql.service
+
 echo "$(date '+%Y-%m-%d %T') - set data and log directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
 #sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
 #sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
