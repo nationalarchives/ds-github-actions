@@ -78,8 +78,8 @@ DATA_DIR="/postgres/data"
 LOG_DIR="/postgres/log"
 
 echo "$(date '+%Y-%m-%d %T') - set data and log directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
+#sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
+#sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|log_filename = 'postgresql-%a.log'|log_filename = 'postgresql_%y%m%d_%H%M%S.log'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|logging_collector = off|logging_collector = on|" /var/lib/pgsql/data/postgresql.conf
 
