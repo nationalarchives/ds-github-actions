@@ -21,7 +21,7 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-c
 
 # Install and initialise PostgreSQL
 echo "$(date '+%Y-%m-%d %T') - install postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo dnf install postgresql15.x86_64 postgresql15-server -y
+sudo dnf install postgresql16.x86_64 postgresql16-server -y
 sudo postgresql-setup --initdb
 
 sudo systemctl start postgresql
