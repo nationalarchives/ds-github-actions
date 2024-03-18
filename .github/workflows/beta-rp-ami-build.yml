@@ -91,7 +91,7 @@ jobs:
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/actions/ansible-playbooks/databases/beta/reverse-proxy
+          cd $cur_dir/actions/ansible-playbooks/beta/reverse-proxy
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
