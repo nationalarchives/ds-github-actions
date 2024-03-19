@@ -90,6 +90,8 @@
     vars:
       s3_deployment_bucket: "{{ s3_deployment_bucket }}"
       s3_deployment_root: "{{ s3_deployment_root }}"
+      s3_logfile_bucket: "{{ s3_logfile_bucket }}"
+      s3_logfile_root: "{{ s3_logfile_root }}"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"

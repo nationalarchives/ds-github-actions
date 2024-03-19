@@ -34,6 +34,12 @@ on:
       s3_deployment_root:
         type: string
         required: true
+      s3_logfile_bucket:
+        type: string
+        required: true
+      s3_logfile_root:
+        type: string
+        required: true
 
 permissions:
   id-token: write
@@ -104,8 +110,10 @@ jobs:
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
-          s3_deployment_bucket='${{ inputs.asm_key }}' \
-          s3_deployment_root='${{ inputs.asm_key }}'" \
+          s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
+          s3_deployment_root='${{ inputs.s3_deployment_root }}' \
+          s3_logfile_bucket='${{ inputs.s3_logfile_bucket }}' \
+          s3_logfile_root='${{ inputs.s3_logfile_root }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           beta-rp-playbook.yml
 ...
