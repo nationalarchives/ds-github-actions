@@ -46,7 +46,6 @@ sudo find /media -type f -exec sudo chmod 0664 {} \;
 # set environment variables
 echo 'export TRAEFIK_IMAGE="none"' |tee -a /etc/environment
 echo 'export WEBSERVER_IMAGE="none"' | tee -a /etc/environment
-sudo source /etc/environment
 
 cat << EOF > /var/finish-init.txt
 [status]

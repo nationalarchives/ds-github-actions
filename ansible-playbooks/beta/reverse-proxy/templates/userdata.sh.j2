@@ -3,7 +3,7 @@
 # Update instance
 sudo dnf update -y
 
-sudo touch /var/log/var/log/ami-install.log
+sudo touch /var/log/ami-install.log
 
 # create swap file
 echo "$(date '+%Y-%m-%d %T') - create swap file" | sudo tee -a  /var/log/ami-install.log > /dev/null
