@@ -8,12 +8,12 @@
   - name: check if subnet a
     set_fact:
       subnet_id: "{{ lookup( 'env', 'SUBNET_ID_A') }}"
-    when: "{{ zone }}" == "eu-west-2a"
+    when: zone == "eu-west-2a"
 
   - name: check if subnet b
     set_fact:
       subnet_id: "{{ lookup( 'env', 'SUBNET_ID_B') }}"
-    when: "{{ zone }}" == "eu-west-2b"
+    when: zone == "eu-west-2b"
 
   - name: switch role credentials
     community.aws.sts_assume_role:
