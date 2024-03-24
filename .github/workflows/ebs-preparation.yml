@@ -40,7 +40,9 @@ on:
     secrets:
       vpc_id:
         required: true
-      subnet_id:
+      subnet_id_a:
+        required: true
+      subnet_id_b:
         required: true
 
 permissions:
@@ -96,7 +98,8 @@ jobs:
       - name: run ansible playbook
         env:
           VPC_ID: ${{ secrets.vpc_id }}
-          SUBNET_ID: ${{ secrets.subnet_id }}
+          SUBNET_ID_A: ${{ secrets.subnet_id_a }}
+          SUBNET_ID_B: ${{ secrets.subnet_id_b }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/databases/ebs-preparation

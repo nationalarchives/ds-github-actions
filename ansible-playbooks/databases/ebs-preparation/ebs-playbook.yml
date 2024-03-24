@@ -5,6 +5,16 @@
   gather_facts: false
 
   tasks:
+  - name: check if subnet a
+    set_fact:
+      subnet_id: "{{ lookup( 'env', 'SUBNET_ID_A') }}"
+    when: "{{ zone }}" = 'eu-west-2a'
+
+  - name: check if subnet b
+    set_fact:
+      subnet_id: "{{ lookup( 'env', 'SUBNET_ID_B') }}"
+    when: "{{ zone }}" = 'eu-west-2b'
+
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
@@ -125,7 +135,7 @@
             delete_on_termination: true
             encrypted: true
             volume_size: "40"
-      vpc_subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
+      vpc_subnet_id: "{{ subnet_id }}"
       tags:
         Environment: "{{ account }}"
         Service: "ansible-ebs-temp-instance"
