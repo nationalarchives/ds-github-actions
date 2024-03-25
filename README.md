@@ -28,3 +28,6 @@ The actions should be kept up-to-date with the latest versions. Ensure you visit
 2) actions/setup-python@v4
 3) aws-actions/configure-aws-credentials@v1-node16
 
+### commands
+CHANGE REPLICATION SOURCE TO SOURCE_HOST = "host", SOURCE_PORT = port, SOURCE_USER = "user", SOURCE_PASSWORD = "password", SOURCE_AUTO_POSITION = 1;
+START REPLICA;
