@@ -1,22 +1,31 @@
 #!/bin/bash
 
+sudo touch /var/log/ami-install.log
+
+echo "$(date '+%Y-%m-%d %T') - update system" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo dnf update -y
 
 # create swap file
+echo "$(date '+%Y-%m-%d %T') - create swap file" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
 sudo chmod 0600 /var/swap.1
 sudo /sbin/mkswap /var/swap.1
 sudo /sbin/swapon /var/swap.1
 
 # Install Cloudwatch agent
+echo "$(date '+%Y-%m-%d %T') - install cloudwatch agent" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo dnf install amazon-cloudwatch-agent -y
+echo "$(date '+%Y-%m-%d %T') - install collectd" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo dnf install collectd -y
 
+echo "$(date '+%Y-%m-%d %T') - copy cloudwatch agent config" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo aws s3 cp s3://{{ s3_deployment_bucket  }}/{{ s3_deployment_root  }}/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
+echo "$(date '+%Y-%m-%d %T') - install wget" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo dnf install wget -y
 
+echo "$(date '+%Y-%m-%d %T') - install mysql" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo mkdir /packages
 sudo wget -P /packages https://repo.mysql.com/mysql80-community-release-el9.rpm
 sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
@@ -24,20 +33,26 @@ sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
 
 # set mysql parameters
-sudo sed -i "/\[mysqld\]/i [mysqldump]\n" /etc/my.cnf
-sudo sed -i "/\[mysqldump\]/a routines=true\n" /etc/my.cnf
+echo "$(date '+%Y-%m-%d %T') - set mysql config" | sudo tee -a /var/log/ami-install.log > /dev/null
 # set up server - need to be manually changed when replication is used!
 sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
 sudo sed -i "/server-id=101/a user=mysql\n" /etc/my.cnf
 sudo sed -i "/user=mysql/a gtid_mode=ON\n" /etc/my.cnf
 sudo sed -i "/gtid_mode=ON/a enforce-gtid-consistency=ON\n" /etc/my.cnf
+echo "" | sudo tee -a /etc/my.cnf > /dev/null
+echo "[mysqldump]" | sudo tee -a /etc/my.cnf > /dev/null
+echo "routines=true" | sudo tee -a /etc/my.cnf > /dev/null
+echo "" | sudo tee -a /etc/my.cnf > /dev/null
+echo "#[client]" | sudo tee -a /etc/my.cnf > /dev/null
+echo "#socket=/data/mysql.sock" | sudo tee -a /etc/my.cnf > /dev/null
 
 sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
 
-sudo systemctl status mysqld > /my.log
+sudo systemctl status mysqld > /var/log/my.log
 
+echo "$(date '+%Y-%m-%d %T') - secure mysql" | sudo tee -a /var/log/ami-install.log > /dev/null
 temp_pw="$(sudo grep "temporary password" /var/log/mysqld.log | grep -o '[^ ]\+$')"
 
 # get netmask form cidr
@@ -74,7 +89,7 @@ EOF
 # setting password for root to secrets manager parameters, secure mysql
 # and set administration access
 mysqladmin --user=root --password=$temp_pw password '{{ root_password }}'
-mysqld --user=root --password={{ root_password }} < ~/mysql_secure_installation.sql
+mysql --user=root --password={{ root_password }} < ~/mysql_secure_installation.sql
 
 # remove setup file containing passwords - avoiding security risks
 sudo rm ~/mysql_secure_installation.sql
