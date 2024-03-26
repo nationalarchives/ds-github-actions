@@ -82,6 +82,9 @@ sudo rm ~/mysql_secure_installation.sql
 
 sudo systemctl stop mysqld
 
+sudo mkdir /mysql.socket
+sudo chown mysql:mysql /mysql.socket
+
 cat << EOF > /var/finish-init.txt
 [status]
 finished = true
