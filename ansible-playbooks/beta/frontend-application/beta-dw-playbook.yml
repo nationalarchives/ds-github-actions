@@ -188,6 +188,16 @@
   gather_facts: true
 
   tasks:
+  - name: copy docker files to remote
+    ansible.builtin.copy:
+      src: ./docker
+      dest: /var
+
+  - name: copy scripts to remote
+    ansible.builtin.copy:
+      src: ./files/
+      dest: /usr/local/bin
+
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
