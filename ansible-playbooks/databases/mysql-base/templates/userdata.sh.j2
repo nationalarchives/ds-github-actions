@@ -82,7 +82,7 @@ GRANT ALL ON *.* TO '{{ admin_user }}'@'$at_entry';
 GRANT GRANT OPTION ON *.* TO '{{ admin_user }}'@'$at_entry';
 CREATE USER '{{ repl_user }}'@'$rep_subnet_a' IDENTIFIED BY '{{ repl_password }}';
 CREATE USER '{{ repl_user }}'@'$rep_subnet_b' IDENTIFIED BY '{{ repl_password }}';
-GRANT REPLICATION SLAVE ON *.* TO 'repl'@'$rep_subnet_a', 'repl'@'$rep_subnet_b'
+GRANT REPLICATION SLAVE ON *.* TO '{{ repl_user }}'@'$rep_subnet_a', '{{ repl_user }}'@'$rep_subnet_b';
 FLUSH PRIVILEGES;
 EOF
 
