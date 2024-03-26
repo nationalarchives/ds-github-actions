@@ -32,20 +32,6 @@ sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
 sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
 
-# set mysql parameters
-echo "$(date '+%Y-%m-%d %T') - set mysql config" | sudo tee -a /var/log/ami-install.log > /dev/null
-# set up server - need to be manually changed when replication is used!
-sudo sed -i "/\[mysqld\]/a server-id=101\n" /etc/my.cnf
-sudo sed -i "/server-id=101/a user=mysql\n" /etc/my.cnf
-sudo sed -i "/user=mysql/a gtid_mode=ON\n" /etc/my.cnf
-sudo sed -i "/gtid_mode=ON/a enforce-gtid-consistency=ON\n" /etc/my.cnf
-echo "" | sudo tee -a /etc/my.cnf > /dev/null
-echo "[mysqldump]" | sudo tee -a /etc/my.cnf > /dev/null
-echo "routines=true" | sudo tee -a /etc/my.cnf > /dev/null
-echo "" | sudo tee -a /etc/my.cnf > /dev/null
-echo "#[client]" | sudo tee -a /etc/my.cnf > /dev/null
-echo "#socket=/data/mysql.sock" | sudo tee -a /etc/my.cnf > /dev/null
-
 sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
@@ -94,7 +80,7 @@ mysql --user=root --password={{ root_password }} < ~/mysql_secure_installation.s
 # remove setup file containing passwords - avoiding security risks
 sudo rm ~/mysql_secure_installation.sql
 
-sudo systemctl restart mysqld
+sudo systemctl stop mysqld
 
 cat << EOF > /var/finish-init.txt
 [status]
