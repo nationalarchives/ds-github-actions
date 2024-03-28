@@ -210,7 +210,8 @@
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"
       force: yes
-    when: account == "dev" || account == "staging"
+    when: account == "dev" or
+          account == "staging"
 
   - name: template compose.yml
     vars:
