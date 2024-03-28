@@ -236,15 +236,15 @@
 
   - name: copy docker files to remote
     ansible.builtin.copy:
-      src: ./docker
-      dest: /var
+      src: ./docker/
+      dest: /var/docker/
     become: true
     become_user: root
 
   - name: copy scripts to remote
     ansible.builtin.copy:
       src: ./files/
-      dest: /usr/local/bin
+      dest: /usr/local/bin/
     become: true
     become_user: root
 
