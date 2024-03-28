@@ -192,11 +192,11 @@
     vars:
       secret_data: "{{ lookup('amazon.aws.aws_secret', 'application/etna/postgres', region=region, aws_access_key=assumed_role.sts_creds.access_key, aws_secret_key=assumed_role.sts_creds.secret_key, aws_security_token=assumed_role.sts_creds.session_token, on_denied='error') | from_json }}"
     set_fact:
-        db_password: "{{ secret_data.db_password }}"
-        db_user: "{{ secret_data.db_user }}"
-        db_host: "{{ secret_data.db_host }}"
-        db_port: "{{ secret_data.db_port }}"
-        db_name: "{{ secret_data.db_name }}"
+        db_password: "{{ secret_data.password }}"
+        db_user: "{{ secret_data.username }}"
+        db_host: "{{ secret_data.host }}"
+        db_port: "{{ secret_data.port }}"
+        db_name: "{{ secret_data.dbname }}"
 
   - name: template compose.yml
     vars:
