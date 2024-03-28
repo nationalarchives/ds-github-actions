@@ -237,8 +237,8 @@
 
   - name: copy docker files to remote
     ansible.builtin.copy:
-      src: "./docker/"
-      dest: "/var/docker/"
+      src: "./docker/compose.yml"
+      dest: "/var/docker/compose.yml"
       mode: u=rw,g=r,o=r
     become: true
 
