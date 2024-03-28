@@ -5,14 +5,9 @@ services:
     container_name: traefik
     image: traefik:v2.11
     command:
-      #- "--log.level=DEBUG"
-      #- "--api.insecure=true"
       - "--providers.docker=true"
-      #- "--providers.docker.exposedbydefault=false"
-      #- "--entrypoints.web.address=:80"
     labels:
-       # - "traefik.http.routers.api.rule=Host(`localhost`)"
-       - "traefik.http.routers.dashbord.rule=Host(`dev-private-beta.dev.local`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+       - "traefik.http.routers.dashbord.rule=Host(`{{local_domain}}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
        - "traefik.http.routers.api.service=api@internal"
     networks:
       - webgateway

@@ -188,6 +188,52 @@
   gather_facts: true
 
   tasks:
+  - name: set db secrets
+    vars:
+      secret_data: "{{ lookup('amazon.aws.aws_secret', 'application/etna/postgres', region=region, aws_access_key=assumed_role.sts_creds.access_key, aws_secret_key=assumed_role.sts_creds.secret_key, aws_security_token=assumed_role.sts_creds.session_token, on_denied='error') | from_json }}"
+    set_fact:
+        db_password: "{{ secret_data.root_password }}"
+        db_user: "{{ secret_data.admin_user }}"
+        db_host: "{{ secret_data.admin_password }}"
+        db_port: "{{ secret_data.repl_user }}"
+        db_name: "{{ secret_data.repl_password }}"
+
+  - name: template compose.yml
+    vars:
+      sub_domain: "{{ account }}-beta.nationalarchives.gov.uk"
+      db_password: "{{ db_password }}"
+      db_user: "{{ db_user }}"
+      db_host: "{{ db_host }}"
+      db_port: "{{ db_port }}"
+      db_name: "{{ db_name }}"
+    template:
+      src: "./templates/compose.yml.j2"
+      dest: "./docker/compose.yml"
+      force: yes
+    when: account == "dev" || account == "staging"
+
+  - name: template compose.yml
+    vars:
+      sub_domain: "beta.nationalarchives.gov.uk"
+      db_password: "{{ db_password }}"
+      db_user: "{{ db_user }}"
+      db_host: "{{ db_host }}"
+      db_port: "{{ db_port }}"
+      db_name: "{{ db_name }}"
+    template:
+      src: "./templates/compose.yml.j2"
+      dest: "./docker/compose.yml"
+      force: yes
+    when: account == "live"
+
+  - name: template compose.traefik.yml
+    vars:
+      local_domain: "beta.{{ account }}.local"
+    template:
+      src: "./templates/compose.traefik.yml.j2"
+      dest: "./docker/compose.traefik.yml"
+      force: yes
+
   - name: copy docker files to remote
     ansible.builtin.copy:
       src: ./docker

@@ -4,11 +4,11 @@ services:
     container_name: blue-web
     environment:
       - SECRET_KEY=c7566fb5c1da890395bde8fd360236d5f31bae78c95be8c2aa9f2cd217de0221
-      - DATABASE_HOST=postgres-main-prime.dev.local
-      - DATABASE_PORT=5432
-      - DATABASE_NAME=etna
-      - DATABASE_USER=etna_app_user
-      - DATABASE_PASSWORD=JHW25bZ2AVVX£qO!oySfGZhhr[v
+      - DATABASE_HOST={{ db_host }}
+      - DATABASE_PORT={{ db_port }}
+      - DATABASE_NAME={{ db_name }}
+      - DATABASE_USER={{ db_user }}
+      - DATABASE_PASSWORD={{ db_password }}
       - WAGTAILADMIN_BASE_URL=https://{{sub_domain}}
       - COOKIE_DOMAIN={{sub_domain}}
       - DJANGO_SETTINGS_MODULE=config.settings.production
@@ -18,13 +18,13 @@ services:
       - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
       - KONG_CLIENT_KEY=kjsd8242wdbjy827hwbryqr
       - KONG_CLIENT_VERIFY_CERTIFICATES=false
-    image: ghcr.io/nationalarchives/national-archives-website:latest
+    image: ::frontend-application::
       #image: traefik/whoami
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
       - "traefik.http.routers.web.entrypoints=web"
-      - "traefik.http.routers.web.rule=Host(`{{local_domain}}`) || PathPrefix(`/`)"
+      - "traefik.http.routers.web.rule=Host(`{{sub_domain}}`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
       - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/"
