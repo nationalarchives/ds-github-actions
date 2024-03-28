@@ -237,10 +237,11 @@
 
   - name: copy docker files to remote
     ansible.builtin.copy:
-      src: "./docker/compose.yml"
+      src: "./docker/"
       dest: "/var/docker/"
-      mode: u=rw,g=r,o=r
+      mode: u=rw,g=rx,o=rx
     become: true
+    become_user: ec2-user
 
   - name: copy scripts to remote
     ansible.builtin.copy:
@@ -248,6 +249,7 @@
       dest: "/usr/local/bin/"
       mode: u=rwx,g=rx,o=rx
     become: true
+    become_user: ec2-user
 
   - name: create AMI
     amazon.aws.ec2_ami:
