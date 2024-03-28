@@ -241,7 +241,7 @@
       dest: "/var/docker/"
       mode: u=rw,g=rx,o=rx
     become: true
-    become_user: ec2-user
+    become_user: root
 
   - name: copy scripts to remote
     ansible.builtin.copy:
@@ -249,7 +249,7 @@
       dest: "/usr/local/bin/"
       mode: u=rwx,g=rx,o=rx
     become: true
-    become_user: ec2-user
+    become_user: root
 
   - name: create AMI
     amazon.aws.ec2_ami:
