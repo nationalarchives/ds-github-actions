@@ -239,6 +239,7 @@
     ansible.builtin.copy:
       src: "./docker/"
       dest: "/var/docker/"
+      mode: u=rw,g=r,o=r
     become: true
     become_user: root
 
@@ -246,6 +247,7 @@
     ansible.builtin.copy:
       src: "./files/"
       dest: "/usr/local/bin/"
+      mode: u=rwx,g=rx,o=rx
     become: true
     become_user: root
 
