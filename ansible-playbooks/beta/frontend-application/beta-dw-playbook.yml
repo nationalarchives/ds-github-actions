@@ -198,6 +198,9 @@
         db_port: "{{ secret_data.port }}"
         db_name: "{{ secret_data.dbname }}"
 
+  - name: debug
+    ansible.builtin.command: sudo ls ./docker/
+
   - name: template compose.yml
     vars:
       sub_domain: "{{ account }}-beta.nationalarchives.gov.uk"
@@ -235,6 +238,9 @@
       dest: "./docker/compose.traefik.yml"
       force: yes
 
+  - name: debug
+    ansible.builtin.command: sudo ls ./docker/
+
   - name: copy docker files to remote
     ansible.builtin.copy:
       src: "./docker/"
@@ -242,6 +248,9 @@
       mode: u=rw,g=rx,o=rx
     become: true
     become_user: root
+
+  - name: debug
+    ansible.builtin.command: sudo ls ./files/
 
   - name: copy scripts to remote
     ansible.builtin.copy:
