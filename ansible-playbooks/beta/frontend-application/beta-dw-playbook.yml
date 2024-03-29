@@ -198,11 +198,6 @@
         db_port: "{{ secret_data.port }}"
         db_name: "{{ secret_data.dbname }}"
 
-  - name: debug
-    ansible.builtin.command: sudo ls ./docker/
-    register: std
-  - debug: msg="{{ std.stdout }}"
-
   - name: template compose.yml
     vars:
       sub_domain: "{{ account }}-beta.nationalarchives.gov.uk"
@@ -240,31 +235,19 @@
       dest: "./docker/compose.traefik.yml"
       force: yes
 
-  - name: debug
-    ansible.builtin.command: sudo ls ./docker/
-    register: std
-  - debug: msg="{{ std.stdout }}"
-
   - name: copy docker files to remote
     ansible.builtin.copy:
-      src: "./docker/"
-      dest: "/var/docker/"
-      mode: u=rw,g=rx,o=rx
+      src: ./docker/
+      dest: /var/docker/
+      remote_src: yes
     become: true
-    become_user: root
-
-  - name: debug
-    ansible.builtin.command: sudo ls ./files/
-    register: std
-  - debug: msg="{{ std.stdout }}"
 
   - name: copy scripts to remote
     ansible.builtin.copy:
-      src: "./files/"
-      dest: "/usr/local/bin/"
-      mode: u=rwx,g=rx,o=rx
+      src: ./files/
+      dest: /usr/local/bin/
+      remote_src: yes
     become: true
-    become_user: root
 
   - name: create AMI
     amazon.aws.ec2_ami:
