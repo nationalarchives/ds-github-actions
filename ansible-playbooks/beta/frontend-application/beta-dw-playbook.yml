@@ -200,6 +200,8 @@
 
   - name: debug
     ansible.builtin.command: sudo ls ./docker/
+    register: std
+  - debug: msg="{{ sto.stdout }}"
 
   - name: template compose.yml
     vars:
@@ -240,6 +242,8 @@
 
   - name: debug
     ansible.builtin.command: sudo ls ./docker/
+    register: std
+  - debug: msg="{{ sto.stdout }}"
 
   - name: copy docker files to remote
     ansible.builtin.copy:
@@ -251,6 +255,8 @@
 
   - name: debug
     ansible.builtin.command: sudo ls ./files/
+    register: std
+  - debug: msg="{{ sto.stdout }}"
 
   - name: copy scripts to remote
     ansible.builtin.copy:
