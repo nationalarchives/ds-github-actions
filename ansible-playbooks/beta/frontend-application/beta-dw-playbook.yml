@@ -239,14 +239,14 @@
     ansible.builtin.copy:
       src: ./docker/
       dest: /var/docker/
-      remote_src: yes
+      force: yes
     become: true
 
   - name: copy scripts to remote
     ansible.builtin.copy:
       src: ./files/
       dest: /usr/local/bin/
-      remote_src: yes
+      force: yes
     become: true
 
   - name: create AMI
