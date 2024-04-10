@@ -19,7 +19,7 @@ set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
 
 # update traefik version if needed
 if [[ "$TRAEFIK_IMAGE" != "$exp_traefik_image" ]] || [[ "$set_traefik_image" != "$exp_traefik_image" ]]; then
-  sudo yq -i ".services.traefik.image = \"$exp_traefik_image)\"" /var/docker/compose.traefik.yml
+  sudo yq -i ".services.traefik.image = \"$exp_traefik_image\"" /var/docker/compose.traefik.yml
   export TRAEFIK_IMAGE="$exp_traefik_image"
   sudo sed -i "s|export TRAEFIK_IMAGE=.*|export TRAEFIK_IMAGE=\"$exp_traefik_image\"|g" /etc/environment
 fi
