@@ -18,7 +18,7 @@ services:
       - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
       - KONG_CLIENT_KEY=kjsd8242wdbjy827hwbryqr
       - KONG_CLIENT_VERIFY_CERTIFICATES=false
-    image: ::frontend-application::
+    image: frontend-application-image
       #image: traefik/whoami
     labels:
       - "traefik.enable=true"
