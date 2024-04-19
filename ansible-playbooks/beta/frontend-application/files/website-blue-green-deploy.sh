@@ -1,10 +1,11 @@
 #!/bin/bash
 
-set -euo pipefail  # Enable strict mode
-
 BLUE_SERVICE="blue-web"
 GREEN_SERVICE="green-web"
 SERVICE_PORT=8080
+
+ACTIVE_SERVICE=$GREEN_SERVICE
+INACTIVE_SERVICE=$BLUE_SERVICE
 
 TIMEOUT=60 #in seconds
 SLEEP_INTERVAL=5  # Time to sleep between retries in seconds
@@ -14,28 +15,38 @@ TRAEFIK_NETWORK="traefik_webgateway"
 TRAEFIK_API_URL="http://localhost:8080/api/http/services"
 
 # Find which service is currently active
-if docker ps --format "{{.Names}}" | grep -q "$BLUE_SERVICE"; then
+echo "status of services"
+blue_up=$(sudo docker inspect -f '{{.State.Running}}' $BLUE_SERVICE 2> /dev/null)
+green_up=$(sudo docker inspect -f '{{.State.Running}}' $GREEN_SERVICE 2> /dev/null)
+
+echo "service running"
+blue_ps=$(sudo docker ps --all --format "{{.Names}}" | grep "$BLUE_SERVICE")
+green_ps=$(sudo docker ps --all --format "{{.Names}}" | grep "$GREEN_SERVICE")
+
+if [ ! -z "$blue_ps" ] && [ ! -z "$blue_up" ]; then
+  echo "$BLUE_SERVICE -> $BLUE_SERVICE"
   ACTIVE_SERVICE=$BLUE_SERVICE
   INACTIVE_SERVICE=$GREEN_SERVICE
-elif docker ps --format "{{.Names}}" | grep -q "$GREEN_SERVICE"; then
+else
+  sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $BLUE_SERVICE
+fi
+
+if [ ! -z "$green_ps" ] && [ ! -z "$green_up" ]; then
+  echo "$GREEN_SERVICE -> $BLUE_SERVICE"
   ACTIVE_SERVICE=$GREEN_SERVICE
   INACTIVE_SERVICE=$BLUE_SERVICE
 else
-  ACTIVE_SERVICE=""
-  INACTIVE_SERVICE=$BLUE_SERVICE
+  sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $GREEN_SERVICE
 fi
-
-echo "Active service: $ACTIVE_SERVICE"
-echo "Inactive service: $INACTIVE_SERVICE"
 
 # Start the new environment
 echo "Starting $INACTIVE_SERVICE container"
-/usr/local/bin/docker-compose --file /var/docker/compose.yml up --remove-orphans --detach $INACTIVE_SERVICE
+sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml up --remove-orphans --detach $INACTIVE_SERVICE
 
 # Wait for the new environment to become healthy
 echo "Waiting for $INACTIVE_SERVICE to become healthy..."
 for ((i=1; i<=$MAX_RETRIES; i++)); do
-  CONTAINER_IP=$(docker inspect --format='{{range $key, $value := .NetworkSettings.Networks}}{{if eq $key "'"$TRAEFIK_NETWORK"'"}}{{$value.IPAddress}}{{end}}{{end}}' "$INACTIVE_SERVICE" || true)
+  CONTAINER_IP=$(sudo docker inspect --format='{{range $key, $value := .NetworkSettings.Networks}}{{if eq $key "'"$TRAEFIK_NETWORK"'"}}{{$value.IPAddress}}{{end}}{{end}}' "$INACTIVE_SERVICE" || true)
   if [[ -z "$CONTAINER_IP" ]]; then
     # The docker inspect command failed, so sleep for a bit and retry
     sleep "$SLEEP_INTERVAL"
@@ -44,7 +55,7 @@ for ((i=1; i<=$MAX_RETRIES; i++)); do
 
   HEALTH_CHECK_URL="http://$CONTAINER_IP:$SERVICE_PORT/"
   # N.B.: We use docker to execute curl because on macOS we are unable to directly access the docker-managed Traefik network.
-  if docker run --net $TRAEFIK_NETWORK --rm curlimages/curl:8.00.1 --fail --silent "$HEALTH_CHECK_URL" >/dev/null; then
+  if sudo docker run --net $TRAEFIK_NETWORK --rm curlimages/curl:8.00.1 --fail --silent "$HEALTH_CHECK_URL" >/dev/null; then
     echo "$INACTIVE_SERVICE is healthy using IP $CONTAINER_IP"
     break
   fi
@@ -55,7 +66,7 @@ done
 # If the new environment is not healthy within the timeout, stop it and exit with an error
 if ! docker run --net $TRAEFIK_NETWORK --rm curlimages/curl:8.00.1 --fail --silent "$HEALTH_CHECK_URL" >/dev/null; then
   echo "$INACTIVE_SERVICE did not become healthy within $TIMEOUT seconds"
-  /usr/local/bin/docker-compose --file /var/docker/compose.yml stop --timeout=30 $INACTIVE_SERVICE
+  sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $INACTIVE_SERVICE
   exit 1
 fi
 
@@ -76,12 +87,12 @@ done
 # If Traefik does not recognize the new container within the timeout, stop it and exit with an error
 if [[ -z "$TRAEFIK_SERVER_STATUS" ]]; then
   echo "Traefik did not recognize $INACTIVE_SERVICE within $TIMEOUT seconds"
-  /usr/local/bin/docker-compose --file /var/docker/compose.yml stop --timeout=30 $INACTIVE_SERVICE
+  sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $INACTIVE_SERVICE
   exit 1
 fi
 
 # Set Traefik priority label to 0 on the old service and stop the old environment if it was previously running
 if [[ -n "$ACTIVE_SERVICE" ]]; then
   echo "Stopping $ACTIVE_SERVICE container"
-  /usr/local/bin/docker-compose --file /var/docker/compose.yml stop --timeout=30 $ACTIVE_SERVICE
+  sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $ACTIVE_SERVICE
 fi
