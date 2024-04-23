@@ -163,10 +163,10 @@
   - name: register new ec2 as host
     ansible.builtin.add_host:
       hostname: "{{ instance_public_ip }}"
-      gather_facts: no
       groups: ec2hosts
       ansible_user: ec2-user
       remote_user: ec2-user
+      gather_facts: no
 
   - name: wait for SSH service to bind on new instance
     wait_for:
@@ -175,7 +175,6 @@
       delay: 90
       timeout: 600
       state: started
-    tags: [ami]
 
 - name: switch to ec2hosts
   hosts: ec2hosts
