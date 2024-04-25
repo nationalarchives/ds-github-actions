@@ -44,7 +44,7 @@ echo "$(date '+%Y-%m-%d %T') - set postgres access permission" | sudo tee -a  /v
 IFS=',;: ' read -a cidrs <<< '{{network_cidrs}}'
 for cidr in "${cidrs[@]}"
 do
-    sudo sed -i "/# TYPE/a host all all $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
+    sudo sed -i "/# TYPE/a host all all $cidr md5\n" /var/lib/pgsql/data/pg_hba.conf
 done
 sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
 
@@ -67,11 +67,9 @@ psql -U postgres < ~/db_user.sql
 echo "$(date '+%Y-%m-%d %T') - run create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 psql -U postgres < ~/secure_installation.sql
 
-echo "$(date '+%Y-%m-%d %T') - set all user connections to scram-sha-256" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo sed -i "s|trust|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
-sudo sed -i "s|indent|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
-# secure local postgres access
-#sudo sed -i "s|local all postgres trust|local all postgres scram-sha-256" /var/lib/pgsql/data/pg_hba.conf
+echo "$(date '+%Y-%m-%d %T') - set all user connections to md5" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo sed -i "s|trust|md5|g" /var/lib/pgsql/data/pg_hba.conf
+sudo sed -i "s|ident|md5|g" /var/lib/pgsql/data/pg_hba.conf
 
 sudo systemctl stop postgresql
 
