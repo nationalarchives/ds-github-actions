@@ -45,7 +45,7 @@ echo "$(date '+%Y-%m-%d %T') - set postgres access permission" | sudo tee -a  /v
 IFS=',;: ' read -a cidrs <<< '{{network_cidrs}}'
 for cidr in "${cidrs[@]}"
 do
-    sudo sed -i "/# TYPE/a host all all $cidr md5\n" /var/lib/pgsql/data/pg_hba.conf
+    sudo sed -i "/# TYPE/a host all all $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
 done
 sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
 
