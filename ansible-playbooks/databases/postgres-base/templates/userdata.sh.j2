@@ -16,6 +16,7 @@ sudo /sbin/swapon /var/swap.1
 echo "$(date '+%Y-%m-%d %T') - install CloudWatch agent" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install amazon-cloudwatch-agent -y
 sudo dnf install collectd -y
+sudo dnf install collectd-postgresql -y
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
@@ -67,9 +68,9 @@ psql -U postgres < ~/db_user.sql
 echo "$(date '+%Y-%m-%d %T') - run create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 psql -U postgres < ~/secure_installation.sql
 
-echo "$(date '+%Y-%m-%d %T') - set all user connections to md5" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo sed -i "s|trust|md5|g" /var/lib/pgsql/data/pg_hba.conf
-sudo sed -i "s|ident|md5|g" /var/lib/pgsql/data/pg_hba.conf
+echo "$(date '+%Y-%m-%d %T') - set all user connections to scram-sha-256" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo sed -i "s|trust|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
+sudo sed -i "s|ident|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
 
 sudo systemctl stop postgresql
 
