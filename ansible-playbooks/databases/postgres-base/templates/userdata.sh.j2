@@ -36,17 +36,26 @@ echo "$(date '+%Y-%m-%d %T') - prepare postgres" | sudo tee -a  /var/log/ami-ins
 # the directories are specific for the version of postgres and linux 2 from AWS
 echo "$(date '+%Y-%m-%d %T') - set port and archive mode postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|#listen_addresses = 'localhost'|listen_addresses = '*'|g" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#full_page_writes = on|full_page_writes = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f /postgres/server/archive/%f && cp %p /postgres/server/archive/%f'|" /var/lib/pgsql/data/postgresql.conf
 
 # Set up access to postgres from a list of IP CIDRs
 # allowed separators are in IFS
-echo "$(date '+%Y-%m-%d %T') - set postgres access permission" | sudo tee -a  /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - set general postgres access permission" | sudo tee -a  /var/log/ami-install.log > /dev/null
 IFS=',;: ' read -a cidrs <<< '{{network_cidrs}}'
 for cidr in "${cidrs[@]}"
 do
     sudo sed -i "/# TYPE/a host all all $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
 done
+
+echo "$(date '+%Y-%m-%d %T') - set replicator postgres access permission" | sudo tee -a  /var/log/ami-install.log > /dev/null
+IFS=',;: ' read -a cidrs <<< '{{replica_cidrs}}'
+for cidr in "${cidrs[@]}"
+do
+    sudo sed -i "/# TYPE/a host replication all $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
+done
+
 sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
 
 # sql statements to secure the instance
@@ -71,6 +80,7 @@ psql -U postgres < ~/secure_installation.sql
 echo "$(date '+%Y-%m-%d %T') - set all user connections to scram-sha-256" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|trust|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
 sudo sed -i "s|ident|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
+sudo sed -i "s|md5|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
 
 sudo systemctl stop postgresql
 

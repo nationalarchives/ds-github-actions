@@ -96,6 +96,7 @@
         repl_user: "{{ secret_data.repl_user }}"
         repl_password: "{{ secret_data.repl_password }}"
         network_cidrs: "{{ secret_data.network_cidrs }}"
+        replica_cidrs: "{{ secret_data.replica_cidrs }}"
 
   - name: get network information
     ansible.builtin.set_fact:
