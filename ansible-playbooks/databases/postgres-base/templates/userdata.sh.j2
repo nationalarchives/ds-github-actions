@@ -104,8 +104,6 @@ sudo sed -i 's|#wal_log_hints = off|wal_log_hints = on|' /var/lib/pgsql/data/pos
 sudo sed -i 's|#max_replication_slots = 10|max_replication_slots = 10|' /var/lib/pgsql/data/postgresql.conf
 sudo sed -i 's|#max_wal_senders = 10|max_wal_senders = 10|' /var/lib/pgsql/data/postgresql.conf
 
-#sudo systemctl restart postgresql
-
 cat << EOF > /var/finish-init.txt
 [status]
 finished = true
