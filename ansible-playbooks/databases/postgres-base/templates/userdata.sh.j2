@@ -17,7 +17,7 @@ echo "$(date '+%Y-%m-%d %T') - install CloudWatch agent" | sudo tee -a  /var/log
 sudo dnf install amazon-cloudwatch-agent -y
 sudo dnf install collectd -y
 sudo dnf install collectd-postgresql -y
-sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
 # Install and initialise PostgreSQL

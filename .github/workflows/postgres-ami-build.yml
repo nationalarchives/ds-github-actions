@@ -111,14 +111,14 @@ jobs:
           function='${{ inputs.function }}' \
           key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
-          asm_key='/infrastructure/credentials/postgres-${{ inputs.project_name }}-${{ inputs.function }}' \
+          asm_key='${{ inputs.asm_key }}' \
           account='${{ inputs.account }}' \
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
           asm_key='${{ inputs.asm_key }}' \
-          s3_deployment_bucket='${{ inputs.asm_key }}' \
-          s3_deployment_root='${{ inputs.asm_key }}'" \
+          s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
+          s3_deployment_root='${{ inputs.s3_deployment_root }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           postgres-base-playbook.yml
 ...
