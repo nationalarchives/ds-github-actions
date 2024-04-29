@@ -86,6 +86,7 @@ sudo systemctl stop postgresql
 
 DATA_DIR="/postgres/data"
 LOG_DIR="/postgres/log"
+ARCHIVE_DIR="/postgres/archive"
 
 echo "$(date '+%Y-%m-%d %T') - change service variable PGDATA" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|Environment=PGDATA=.*$|Environment=PGDATA=$DATA_DIR|" /lib/systemd/system/postgresql.service
@@ -95,6 +96,9 @@ sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /v
 sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|log_filename = 'postgresql-%a.log'|log_filename = 'postgresql_%y%m%d_%H%M%S.log'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|logging_collector = off|logging_collector = on|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f ${ARCHIVE_DIR}/%f && cp %p ${ARCHIVE_DIR}/%f'|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|#full_page_writes = on|full_page_writes = on|" /var/lib/pgsql/data/postgresql.conf
 
 if [ "{{function}}" = "prime" ]; then
   echo "$(date '+%Y-%m-%d %T') - set up prime server" | sudo tee -a  /var/log/ami-install.log > /dev/null
