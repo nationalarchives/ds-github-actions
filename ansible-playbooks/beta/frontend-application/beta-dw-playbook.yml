@@ -251,8 +251,9 @@
       mode: '0755'
     loop:
       - { file_name: startup.sh }
-      - { file_name: traefik-run.sh }
-      - { file_name: traefik-stop.sh }
+      - { file_name: traefik-up.sh }
+      - { file_name: traefik-down.sh }
+      - { file_name: traefik-deploy.sh }
       - { file_name: website-blue-green-deploy.sh }
 
 - name: switch to localhost
