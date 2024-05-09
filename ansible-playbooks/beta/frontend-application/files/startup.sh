@@ -38,7 +38,7 @@ elif [ ! -z "$TRAEFIK_ID" ] && [ "$TRAEFIK_UP" != "true" ]; then
   # traefik is in a exit state
   echo "traefik has exited - try to restart"
   source /usr/local/bin/traefik-deploy.sh --restart
-elif [ $update_traefik = "yes" ]; then
+elif [ "$update_traefik" == "yes" ]; then
   echo "updating traefik to $exp_traefik_image ..."
   source /usr/local/bin/traefik-deploy.sh --down
   source /usr/local/bin/traefik-deploy.sh --up

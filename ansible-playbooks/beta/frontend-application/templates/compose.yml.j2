@@ -12,12 +12,15 @@ services:
       - WAGTAILADMIN_BASE_URL=https://{{sub_domain}}
       - COOKIE_DOMAIN={{sub_domain}}
       - DJANGO_SETTINGS_MODULE=config.settings.production
-      - CSRF_TRUSTED_ORIGINS=https://{{sub_domain}}
+      - CSRF_TRUSTED_ORIGIN=https://{{sub_domain}}
       - DATABASE_ENGINE=django.db.backends.postgresql
       - KONG_CLIENT_BASE_URL=https://aa83a1e6831944fa8bcf17f5ce391b73-58be9fd587cba13e.elb.eu-west-2.amazonaws.com/api/v1/data
       - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
       - KONG_CLIENT_KEY=kjsd8242wdbjy827hwbryqr
       - KONG_CLIENT_VERIFY_CERTIFICATES=false
+      - RECORD_DETAIL_REQUIRE_LOGIN=false
+      - SEARCH_VIEWS_REQUIRE_LOGIN=false
+      - DEBUG=false
     image: frontend-application-image
       #image: traefik/whoami
     labels:
