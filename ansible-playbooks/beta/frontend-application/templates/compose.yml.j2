@@ -21,7 +21,6 @@ services:
       - SEARCH_VIEWS_REQUIRE_LOGIN=false
       - DEBUG=false
     image: frontend-application-image
-      #image: traefik/whoami
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
