@@ -31,6 +31,9 @@ on:
       s3_deployment_bucket:
         type: string
         required: true
+      s3_deployment_root:
+        type: string
+        required: true
       ses_host:
         type: string
         required: true
