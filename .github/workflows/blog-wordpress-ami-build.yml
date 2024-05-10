@@ -150,7 +150,9 @@ jobs:
           cdn_bucket_name='${{ inputs.cdn_bucket_name }}' \
           cdn_aws_region='${{ inputs.cdn_aws_region }}' \
           cdn_cloudfront_url='${{ inputs.cdn_cloudfront_url }}' \
-          cdn_dir='${{ inputs.cdn_dir }}'" \
+          cdn_dir='${{ inputs.cdn_dir }}' \
+          vpc_id='${{ secrets.vpc_id }}' \
+          subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           blog-wordpress-playbook.yml
 ...
