@@ -66,10 +66,8 @@ on:
         required: true
     secrets:
       vpc_id:
-        type: string
         required: true
       subnet_id:
-        type: string
         required: true
 
 permissions:
