@@ -121,9 +121,6 @@ jobs:
           pip install -r ${{ github.workspace }}/actions/.github/workflows/blog-wordpress-ami-build-req.txt
 
       - name: run ansible playbook
-        env:
-          VPC_ID: ${{ secrets.vpc_id }}
-          SUBNET_ID: ${{ secrets.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/blog
