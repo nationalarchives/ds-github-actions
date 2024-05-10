@@ -136,15 +136,15 @@ jobs:
           volume_size='${{ inputs.volume_size }}' \
           s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
           s3_deployment_root='${{ inputs.s3_deployment_root }}' \
-          ses_host='${{ inputs.ses_host }}'" \
-          ses_port='${{ inputs.ses_port }}'" \
-          ses_secure='${{ inputs.ses_secure }}'" \
-          ses_from_email='${{ inputs.ses_from_email }}'" \
-          ses_from_name='${{ inputs.ses_from_name }}'" \
-          domain='${{ inputs.domain }}'" \
-          cdn_bucket_name='${{ inputs.cdn_bucket_name }}'" \
-          cdn_aws_region='${{ inputs.cdn_aws_region }}'" \
-          cdn_cloudfront_url='${{ inputs.cdn_cloudfront_url }}'" \
+          ses_host='${{ inputs.ses_host }}' \
+          ses_port='${{ inputs.ses_port }}' \
+          ses_secure='${{ inputs.ses_secure }}' \
+          ses_from_email='${{ inputs.ses_from_email }}' \
+          ses_from_name='${{ inputs.ses_from_name }}' \
+          domain='${{ inputs.domain }}' \
+          cdn_bucket_name='${{ inputs.cdn_bucket_name }}' \
+          cdn_aws_region='${{ inputs.cdn_aws_region }}' \
+          cdn_cloudfront_url='${{ inputs.cdn_cloudfront_url }}' \
           cdn_dir='${{ inputs.cdn_dir }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           blog-wordpress-playbook.yml
