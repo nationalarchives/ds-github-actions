@@ -1,5 +1,5 @@
 ---
-name: Build Beta DW AMI
+name: Blog WordPress AMI
 
 on:
   workflow_call:
@@ -31,7 +31,34 @@ on:
       s3_deployment_bucket:
         type: string
         required: true
-      s3_deployment_root:
+      ses_host:
+        type: string
+        required: true
+      ses_port:
+        type: string
+        required: true
+      ses_secure:
+        type: string
+        required: true
+      ses_from_email:
+        type: string
+        required: true
+      ses_from_name:
+        type: string
+        required: true
+      domain:
+        type: string
+        required: true
+      cdn_bucket_name:
+        type: string
+        required: true
+      cdn_aws_region:
+        type: string
+        required: true
+      cdn_cloudfront_url:
+        type: string
+        required: true
+      cdn_dir:
         type: string
         required: true
 
@@ -69,7 +96,7 @@ jobs:
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://ds-${{ inputs.account }}-kpf-administration/beta/${{ inputs.key_name }}
+          source: s3://ds-${{ inputs.account }}-kpf-administration/blog/${{ inputs.key_name }}
           destination: ${{ inputs.key_name }}
           aws_access_key_id: ${{ steps.creds.outputs.aws-access-key-id }}
           aws_secret_access_key: ${{ steps.creds.outputs.aws-secret-access-key }}
@@ -81,9 +108,9 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: '**/beta-dw-ami-build-req.txt'
+          cache-dependency-path: '**/blog-wordpress-ami-build-req.txt'
       - run: |
-          pip install -r ${{ github.workspace }}/actions/.github/workflows/beta-dw-ami-build-req.txt
+          pip install -r ${{ github.workspace }}/actions/.github/workflows/blog-wordpress-ami-build-req.txt
 
       - name: run ansible playbook
         env:
@@ -91,7 +118,7 @@ jobs:
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/actions/ansible-playbooks/beta/frontend-application
+          cd $cur_dir/actions/ansible-playbooks/blog/frontend-application
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
@@ -105,7 +132,17 @@ jobs:
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
           s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
-          s3_deployment_root='${{ inputs.s3_deployment_root }}'" \
+          s3_deployment_root='${{ inputs.s3_deployment_root }}' \
+          ses_host='${{ inputs.ses_host }}'" \
+          ses_port='${{ inputs.ses_port }}'" \
+          ses_secure='${{ inputs.ses_secure }}'" \
+          ses_from_email='${{ inputs.ses_from_email }}'" \
+          ses_from_name='${{ inputs.ses_from_name }}'" \
+          domain='${{ inputs.domain }}'" \
+          cdn_bucket_name='${{ inputs.cdn_bucket_name }}'" \
+          cdn_aws_region='${{ inputs.cdn_aws_region }}'" \
+          cdn_cloudfront_url='${{ inputs.cdn_cloudfront_url }}'" \
+          cdn_dir='${{ inputs.cdn_dir }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
-          beta-dw-playbook.yml
+          blog-wordpress-playbook.yml
 ...
