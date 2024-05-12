@@ -22,10 +22,10 @@ The actions should be kept up-to-date with the latest versions. Ensure you visit
 1) actions/checkout@v3
 2) aws-actions/configure-aws-credentials@v2
 3) microsoft/setup-msbuild@v1.1
-4) actions/setup-python@v4
+4) actions/setup-python@v5
 #### nginx
 1) actions/checkout@v3
-2) actions/setup-python@v4
+2) actions/setup-python@v5
 3) aws-actions/configure-aws-credentials@v1-node16
 
 ### commands
