@@ -40,6 +40,21 @@ on:
       s3_logfile_root:
         type: string
         required: true
+      wp_int_siteurl:
+        type: string
+        required: true
+      wp_public_siteurl:
+        type: string
+        required: true
+      wp_editor_siteurl:
+        type: string
+        required: true
+      pod_siteurl:
+        type: string
+        required: true
+      pod_root:
+        type: string
+        required: true
     secrets:
       vpc_id:
         required: true
