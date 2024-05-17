@@ -1,0 +1,259 @@
+#!/bin/bash
+
+# Update yum
+sudo yum update -y
+
+# Install apache
+sudo yum install -y httpd httpd-tools mod_ssl
+sudo systemctl enable httpd
+sudo systemctl start httpd
+
+# Install php 7.4
+sudo amazon-linux-extras enable php7.4
+sudo yum clean metadata
+sudo yum install php php-common php-pear -y
+sudo yum install php-{cli,cgi,curl,mbstring,gd,mysqlnd,gettext,json,xml,fpm,intl,zip,simplexml,gd} -y
+
+# Install ImageMagick
+sudo yum -y install php-devel gcc ImageMagick ImageMagick-devel
+sudo bash -c "yes '' | pecl install -f imagick"
+sudo bash -c "echo 'extension=imagick.so' > /etc/php.d/imagick.ini"
+
+sudo systemctl restart php-fpm.service
+sudo systemctl restart httpd.service
+
+# Install NFS packages
+sudo yum install -y amazon-efs-utils
+sudo yum install -y nfs-utils
+sudo service nfs start
+sudo service nfs status
+
+# Install Cloudwatch agent
+sudo yum install amazon-cloudwatch-agent -y
+sudo amazon-linux-extras install -y collectd
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+
+sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+sudo /sbin/mkswap /var/swap.1
+sudo /sbin/swapon /var/swap.1s
+
+# Install WP CLI
+mkdir /build
+cd /build
+sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+sudo chmod +x wp-cli.phar
+sudo mv wp-cli.phar /usr/local/bin/wp
+wp cli info
+cd /
+
+# client required by wp config command
+sudo yum install mysql -y
+
+# Change Apache base config file to point to different root
+# /etc/httpd/conf/httpd.conf
+sudo sed -i 's/DocumentRoot "\/var\/www\/html"/DocumentRoot "\/var\/www"/g' /etc/httpd/conf/httpd.conf
+sudo sed -i 's/Directory "\/var\/www\/html"/Directory "\/var\/www"/g' /etc/httpd/conf/httpd.conf
+
+cd /var/www/html
+
+wp core download --allow-root
+
+# Create WP config file
+/usr/local/bin/wp config create --dbhost={{ db_host }} --dbname={{ db_name }} --dbuser={{ db_username }} --dbpass="{{ db_password }}" --allow-root --extra-php <<PHP
+/* Turn HTTPS 'on' if HTTP_X_FORWARDED_PROTO matches 'https' */
+if (isset(\$_SERVER['HTTP_X_FORWARDED_PROTO']) &&  strpos(\$_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false) {
+    \$_SERVER['HTTPS'] = 'on';
+}
+define( 'WP_ENV', '{{ env }}' );
+define( 'PUBLIC_SITEURL', '{{ wp_public_siteurl }}' );
+define( 'EDITOR_SITEURL', '{{ wp_editor_siteurl }}' );
+define( 'INT_SITEURL', '{{ wp_int_siteurl }}' );
+define( 'FORCE_SSL_ADMIN', false );
+define( 'ADMIN_COOKIE_PATH', '/' );
+define( 'COOKIEPATH', '/' );
+define( 'SITECOOKIEPATH', '/' );
+define( 'COOKIE_DOMAIN', 'nationalarchives.gov.uk' );
+define( 'WP_ALLOW_MULTISITE', true );
+define( 'MULTISITE', true );
+define( 'SUBDOMAIN_INSTALL', true );
+define( 'DOMAIN_CURRENT_SITE', '{{ wp_int_siteurl }}' );
+define( 'PATH_CURRENT_SITE', '/' );
+define( 'SITE_ID_CURRENT_SITE', 1 );
+define( 'BLOG_ID_CURRENT_SITE', 1 );
+define( 'WP_MEMORY_LIMIT', '256M' );
+define( 'WP_MAX_MEMORY_LIMIT', '2048M' );
+define( 'SMTP_SES', true);
+define( 'SMTP_SES_USER', '{{ ses_username }}' );
+define( 'SMTP_SES_PASS', '{{ ses_password }}' );
+define( 'SMTP_SES_HOST', '{{ ses_host }}' );
+define( 'SMTP_SES_PORT', {{ ses_port }} );
+define( 'SMTP_SES_SECURE', '{{ ses_secure }}' );
+define( 'SMTP_SES_FROM_EMAIL', '{{ ses_from_email }}' );
+define( 'SMTP_SES_FROM_NAME', '{{ ses_from_name }}' );
+if (WP_ENV == 'dev') {
+    define( 'WP_DEBUG', true );
+    define( 'WP_DEBUG_LOG', true );
+    define( 'WP_DEBUG_DISPLAY', false );
+}
+@ini_set( 'upload_max_size' , '64M' );
+@ini_set( 'post_max_size', '128M');
+@ini_set( 'memory_limit', '256M' );
+PHP
+
+# Reset .htaccess
+/usr/local/bin/wp rewrite flush --allow-root 2>>/var/www/html/wp-cli.log
+
+# Download TNA theme and licensed plugins
+mkdir /home/ec2-user/themes
+curl -H "Authorization: token {{ github_token }}" -L https://github.com/nationalarchives/tna/archive/master.zip > /home/ec2-user/themes/tna.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/acf-flexible-content.zip ~/plugins/acf-flexible-content.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/acf-options-page.zip ~/plugins/acf-options-page.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/acf-repeater.zip ~/plugins/acf-repeater.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/advanced-custom-fields-code-area-field.zip ~/plugins/advanced-custom-fields-code-area-field.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/post-tags-and-categories-for-pages.zip ~/plugins/post-tags-and-categories-for-pages.zip
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ service }}/plugins/wds-active-plugin-data.zip ~/plugins/wds-active-plugin-data.zip
+
+# Install themes
+/usr/local/bin/wp theme install /home/ec2-user/themes/tna.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-base/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-about-us-foi/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-pressroom/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-home/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-contact/archive/develop.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/ds-wp-child-education/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-legal/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-labs/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-suffrage/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-ourrole/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/great-wharton-theme/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-latin/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-commercial-opportunities/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-black-history/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-design-guide/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-help-legal/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-get-involved/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-web-archive/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-domesday/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-about-us-research/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/ds-wp-child-about-us/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-re-using-psi/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-archives-inspire/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-about-us-jobs/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/ds-wp-child-information-management/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-first-world-war/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-cabinet-papers-100/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-base-child-stories-resource/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-about-us-commercial/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/ds-wp-child-help-with-your-research/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-currency-converter/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-base-long-form/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-research-redesign/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-archives-sector/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-portals/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+
+# Install plugins
+/usr/local/bin/wp plugin install wordpress-seo --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install advanced-custom-fields --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install classic-editor --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install cms-tree-page-view --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install tablepress --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install tinymce-advanced --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install transients-manager --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install wordpress-importer --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install wp-super-cache --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install members --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/acf-flexible-content.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/acf-options-page.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/acf-repeater.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/advanced-custom-fields-code-area-field.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/post-tags-and-categories-for-pages.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install ~/plugins/wds-active-plugin-data.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/tna-editorial-review/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/tna-password-message/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/tna-profile-page/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/tna-forms/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/ds-wp-plugin-newsletter/archive/refs/heads/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/ds-tna-wp-ses/archive/refs/heads/main.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/ds-tna-wp-aws/archive/refs/heads/main.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp plugin install https://github.com/nationalarchives/ds-cookie-consent/archive/refs/heads/develop.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+
+# Rename TNA theme dir
+sudo mv /var/www/html/wp-content/themes/tna-master /var/www/html/wp-content/themes/tna
+
+# install places of deposit from zip file
+cd /var/www
+sudo aws s3 cp s3://{{ s3_deployment_bucket }}/places-of-deposit/ds-places-of-deposit.zip ./ds-places-of-deposit.zip
+unzip ds-places-of-deposit.zip
+
+# change connection - replace existing entry on line 17
+sudo sed -i "17s|PDO('mysql:host=[^;]*;|PDO('mysql:host={{ pod_db_name }};|" /var/www/ds-places-of-deposit/includes/connection.php
+
+# change db user and password - replace existing entries
+sudo sed -i 's|remote_username = "[^"]*"|remote_username = "{{ pod_db_username }}"|' /var/www/ds-places-of-deposit/includes/constants-and-globals.php
+sudo sed -i 's|remote_password = "[^"]*"|remote_password = "{{ pod_db_password }}"|' /var/www/ds-places-of-deposit/includes/constants-and-globals.php
+
+# Set file permissions for apache
+sudo usermod -a -G apache ec2-user
+sudo usermod -a -G apache ssm-user
+sudo chown apache:apache /var/www -R
+sudo find /var/www -type d -exec chmod 775 {} \;
+sudo find /var/www -type f -exec chmod 664 {} \;
+sudo systemctl restart httpd
+
+# overwrite the logrotate file
+
+sudo cat << 'EOF' > httpd
+# rotating apache log files on a daily bases
+# file location /etc/logrotate.d/
+/var/log/httpd/*log {
+    create 0644 root root
+    daily
+    dateext
+    rotate 10
+    missingok
+    notifempty
+    delaycompress
+    compress
+    sharedscripts
+    postrotate
+        /bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true
+        /usr/local/sbin/logfile_archive.sh > /var/log/httpd/logfile_archive_log.txt
+    endscript
+}
+
+EOF
+
+sudo mv httpd /etc/logrotate.d/httpd
+
+# write script files to /usr/local/sbin/
+sudo cat << 'EOF' > logfile_archive.sh
+#!/bin/bash
+
+# get instance id from IMDSv2`
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+InstanceId=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/instance-id)
+
+for i in /var/log/httpd/*.gz
+        do
+                REMOVEPATH="${i#*httpd?}"
+                NEWNAME="${REMOVEPATH/%.gz/_$InstanceId.gz}"
+                sudo aws s3 cp "$i" s3://{{ s3_logfile_bucket }}/{{ s3_logfile_root }}/"$NEWNAME"
+        done
+
+sudo rm /var/log/httpd/*.gz
+
+EOF
+
+sudo mv logfile_archive.sh /usr/local/sbin/logfile_archive.sh
+sudo chmod u+x /usr/local/sbin/logfile_archive.sh
+
+## cronjob for logfile archiving
+#printf "%s\n" "17 0 * * * root /usr/local/sbin/logfile_archive.sh >>/usr/local/sbin/logfile_archive.out 2>&1" "" >> archivelogfiles
+#sudo mv archivelogfiles /etc/cron.d/
+#sudo chmod 0644 /etc/cron.d/archivelogfiles
+
+cat << EOF > /var/finish-init.txt
+[status]
+finished = true
+EOF

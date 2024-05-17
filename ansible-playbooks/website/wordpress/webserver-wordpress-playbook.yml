@@ -1,0 +1,329 @@
+# WordPress webserver playbook
+---
+
+- name: create WordPress webserver AMI
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+  - name: switch role credentials
+    community.aws.sts_assume_role:
+      role_arn: "{{ role_arn }}"
+      role_session_name: "s-devops"
+    register: assumed_role
+
+  - name: get linux2 AMI
+    amazon.aws.ec2_ami_info:
+      owners: amazon
+      region: "{{ region }}"
+      filters:
+        name: "amzn2-ami-hvm*"
+    register: findami
+
+  - name: set latest AMI
+    set_fact:
+      latest_ami: >
+        {{ findami.images | sort(attribute='creation_date') | last }}
+
+  - name: set wordpress database credentials
+    vars:
+      secret_data: "{{ lookup('amazon.aws.aws_secret', 'application/website/wp/credentials', region=region, aws_access_key=assumed_role.sts_creds.access_key, aws_secret_key=assumed_role.sts_creds.secret_key, aws_security_token=assumed_role.sts_creds.session_token, on_denied='warn') | from_json }}"
+    set_fact:
+      db_host: "{{ secret_data.db_host }}"
+      db_name: "{{ secret_data.db_name }}"
+      db_username: "{{ secret_data.db_username }}"
+      db_password: "{{ secret_data.db_password }}"
+      github_token: "{{ secret_data.github_token }}"
+      ses_username: "{{ secret_data.ses_username }}"
+      ses_password: "{{ secret_data.ses_password }}"
+
+  - name: set secrets for places of deposit
+    vars:
+      secret_data: "{{ lookup('amazon.aws.aws_secret', 'application/places-of-deposit', region=region, aws_access_key=assumed_role.sts_creds.access_key, aws_secret_key=assumed_role.sts_creds.secret_key, aws_security_token=assumed_role.sts_creds.session_token, on_denied='warn') | from_json }}"
+    set_fact:
+        pod_db_username: "{{ secret_data.username }}"
+        pod_db_password: "{{ secret_data.password }}"
+        pod_db_name: "{{ secret_data.db_instance }}"
+
+  - name: template deployment policy
+    template:
+      src: "./templates/instance-role-policy.json.j2"
+      dest: "./instance-role-policy.json"
+      force: yes
+
+  - name: get RDS security group ID
+    amazon.aws.ec2_group_info:
+      filters:
+        group-name:
+          - "mysql-ami-build-sg"
+    register: db_sg
+  - ansible.builtin.debug:
+      msg:
+        - "====================================================================="
+        - "{{ db_sg.security_groups[0].group_id }}"
+        - "====================================================================="
+
+  - name: create deployment policy
+    community.aws.iam_managed_policy:
+      policy_name: "ansible-ami-website-wp-s3-policy"
+      policy: "{{ lookup('file', './instance-role-policy.json') }}"
+      state: "present"
+    register: s3_policy
+
+  - name: create webserver IAM role
+    community.aws.iam_role:
+      name: "ansible-ami-website-wp-role"
+      region: "{{ region }}"
+      assume_role_policy_document: "{{ lookup('file', './wp-role-policy.json') }}"
+      managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
+      create_instance_profile: yes
+      delete_instance_profile: yes
+      purge_policies: yes
+      state: "present"
+    register: wp_iam_role
+
+  - name: create security group - allowing updates and downloads
+    amazon.aws.ec2_group:
+      name: "ansible-ami-website-wp-sg"
+      description: "security group allowing updates and downloads"
+      region: "{{ region }}"
+      vpc_id: "{{ vpc_id }}"
+      rules:
+        - proto: "tcp"
+          from_port: 22
+          to_port: 22
+          cidr_ip: "0.0.0.0/0"
+          rule_desc: "allow incoming ssh connections"
+        - proto: "tcp"
+          from_port: 1024
+          to_port: 65535
+          cidr_ip: "0.0.0.0/0"
+          rule_desc: "for updates and downloads"
+      rules_egress:
+        - proto: "tcp"
+          from_port: 80
+          to_port: 80
+          cidr_ip: "0.0.0.0/0"
+          rule_desc: "allow updates and downloads"
+        - proto: "tcp"
+          from_port: 443
+          to_port: 443
+          cidr_ip: "0.0.0.0/0"
+          rule_desc: "allow updates and downloads"
+        - proto: "tcp"
+          from_port: 1024
+          to_port: 65535
+          cidr_ip: "0.0.0.0/0"
+          rule_desc: "allow replies"
+      state: "present"
+    register: ec2_sec_group
+
+  - name: template userdata
+    template:
+      src: "./templates/userdata.sh.j2"
+      dest: "./userdata.sh"
+      force: yes
+
+  - name: template wordpress.conf
+    template:
+      src: "./templates/wordpress.conf.j2"
+      dest: "./wordpress.conf"
+      force: yes
+
+  - name: provisioning instance
+    amazon.aws.ec2_instance:
+      key_name: "{{ key_name }}"
+      image_id: "{{ latest_ami.image_id }}"#
+      instance_role: "ansible-ami-website-wp-role"
+      instance_type: "t3a.large"
+      metadata_options:
+        http_endpoint: "enabled"
+        http_tokens: "required"
+      name : "{{ service }}-wp-primer"
+      network:
+        assign_public_ip: yes
+        delete_on_termination: yes
+        subnet_id: "{{ subnet_id }}"
+      region: "{{ region }}"
+      security_groups: ["{{ ec2_sec_group.group_id }}", "{{ db_sg.security_groups[0].group_id }}"]
+      state: "running"
+      termination_protection: no
+      user_data: "{{ lookup('file', './userdata.sh') }}"
+      wait: true
+      volumes:
+        - device_name: "/dev/xvda"
+          ebs:
+            delete_on_termination: true
+            encrypted: true
+            volume_size: "{{ volume_size }}"
+      vpc_subnet_id: "{{ subnet_id }}"
+      tags:
+        Environment: "{{ account }}"
+        Service: "{{ service }}"
+        Owner: "Digital Services"
+        CreatedBy: "ansible"
+        CostCentre: 53
+        Terraform: false
+    register: ec2
+
+  - name: get instance ip address
+    set_fact:
+      instance_private_ip: "{{ ec2.instances[0].private_ip_address }}"
+      instance_public_ip: "{{ ec2.instances[0].public_ip_address }}"
+      instance_id: "{{ ec2.instances[0].instance_id }}"
+
+  - ansible.builtin.debug:
+      msg:
+        - "====================================================================="
+        - "instance started up"
+        - "instance private ip: {{ instance_private_ip }}"
+        - "instance id: {{ instance_id }}"
+        - "instance public ip {{ instance_public_ip }}"
+        - "====================================================================="
+
+  - name: register new ec2 as host
+    add_host:
+      hostname: "{{ instance_public_ip }}"
+      groups: ec2hosts
+      ansible_user: ec2-user
+      remote_user: ec2-user
+      gather_facts: no
+
+  - name: wait for SSH service to bind on new instance
+    wait_for:
+      host: "{{ instance_public_ip }}"
+      port: 22
+      delay: 90
+      timeout: 600
+      state: started
+    tags: [ami]
+
+- name: switch to ec2hosts - checking if setup has finished
+  hosts: ec2hosts
+  become: yes
+  gather_facts: false
+  tasks:
+  - ansible.builtin.debug:
+      msg:
+        - "====================================================================="
+        - "checking status of new instance before ami can be build"
+        - "20 second interval with max duration of 15 minutes"
+        - "====================================================================="
+
+  - name: load variables
+    ansible.builtin.include_vars:
+      file: "{{ ansible_var_file }}"
+
+  - name: check if ec2 instance is ready
+    ansible.builtin.stat:
+      path: "/var/finish-init.txt"
+    remote_user: ec2-user
+    register: init_finished
+    until: "init_finished.stat.exists"
+    retries: 45
+    delay: 20
+
+  - name: check if wp-config.php exists
+    ansible.builtin.stat:
+      path: "/var/www/html/wp-config.php"
+    remote_user: ec2-user
+    register: wpconfig
+    until: "wpconfig.stat.exists"
+    retries: 9
+    delay: 20
+
+  - name: check if tna theme exists
+    ansible.builtin.stat:
+      path: "/var/www/html/wp-content/themes/tna"
+    remote_user: ec2-user
+    register: tnatheme
+    until: "tnatheme.stat.exists"
+    retries: 15
+    delay: 20
+
+  - name: copy .htaccess
+    ansible.builtin.copy:
+      src: ./files/.htaccess
+      dest: /var/www/html/.htaccess
+      owner: apache
+      group: apache
+
+  - name: copy healthcheck.html
+    ansible.builtin.copy:
+      src: ./files/healthcheck.html
+      dest: /var/www/html/healthcheck.html
+      owner: apache
+      group: apache
+
+  - name: copy robots.txt
+    ansible.builtin.copy:
+      src: "./files/robots-{{ account }}.txt"
+      dest: /var/www/html/robots.txt
+      owner: apache
+      group: apache
+
+  - name: copy phpinfo.php
+    ansible.builtin.copy:
+      src: ./files/phpinfo.php
+      dest: /var/www/html/phpinfo.php
+      owner: apache
+      group: apache
+
+  - name: copy wp-cli.yml
+    ansible.builtin.copy:
+      src: ./files/wp-cli.yml
+      dest: /var/www/html/wp-cli.yml
+      owner: apache
+
+  - name: copy wordpress.conf
+    ansible.builtin.copy:
+      src: ./wordpress.conf
+      dest: /etc/httpd/conf.d/wordpress.conf
+      owner: apache
+      group: apache
+
+- name: switch to localhost
+  hosts: localhost
+  gather_facts: true
+
+  tasks:
+  - name: create AMI
+    amazon.aws.ec2_ami:
+      instance_id: "{{ instance_id }}"
+      name: "{{ service }}-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      description: "Website webserver - ready for deployment"
+      region: "{{ region }}"
+      state: "present"
+      wait: yes
+      tags:
+        Name: "{{ service }}-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Service: "{{ service }}"
+        Owner: "Digital Services"
+        CreatedBy: "ansible"
+        CostCentre: 53
+        Terraform: false
+
+  - name: terminate instance
+    ec2_instance:
+      instance_ids: "{{ instance_id }}"
+      region: "{{ region }}"
+      state: "absent"
+
+  - name: remove security group
+    amazon.aws.ec2_group:
+      name: "ansible-ami-website-wp-sg"
+      region: "{{ region }}"
+      state: "absent"
+
+  - name: remove IAM role
+    community.aws.iam_role:
+      name: "ansible-ami-website-wp-role"
+      region: "{{ region }}"
+      delete_instance_profile: yes
+      state: "absent"
+
+  - name: remove deployment policy
+    community.aws.iam_managed_policy:
+      policy_name: "ansible-ami-website-wp-s3-policy"
+      state: "absent"
+...
