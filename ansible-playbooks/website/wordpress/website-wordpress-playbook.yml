@@ -139,7 +139,7 @@
       metadata_options:
         http_endpoint: "enabled"
         http_tokens: "required"
-      name : "{{ service }}-wp-primer"
+      name : "website-wp-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -159,7 +159,7 @@
       vpc_subnet_id: "{{ subnet_id }}"
       tags:
         Environment: "{{ account }}"
-        Service: "{{ service }}"
+        Service: "website"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -290,14 +290,14 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "{{ service }}-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      name: "website-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
       description: "Website webserver - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "{{ service }}-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "{{ service }}"
+        Name: "website-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Service: "website"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
