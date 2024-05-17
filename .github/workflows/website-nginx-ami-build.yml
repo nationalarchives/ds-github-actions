@@ -80,7 +80,7 @@ jobs:
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
           command: cp
-          source: s3://ds-${{ inputs.account }}-kpf-administration/media/${{ inputs.key_name }}
+          source: s3://ds-${{ inputs.account }}-kpf-administration/wp-website/${{ inputs.key_name }}
           destination: ${{ inputs.key_name }}
           aws_access_key_id: ${{ steps.creds.outputs.aws-access-key-id }}
           aws_secret_access_key: ${{ steps.creds.outputs.aws-secret-access-key }}
