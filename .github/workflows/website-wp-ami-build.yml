@@ -131,6 +131,11 @@ jobs:
           s3_deployment_root='${{ inputs.s3_deployment_root }}' \
           s3_logfile_bucket='${{ inputs.s3_logfile_bucket }}' \
           s3_logfile_root='${{ inputs.s3_logfile_root }}' \
+          wp_int_siteurl='${{ inputs.wp_int_siteurl }}' \
+          wp_public_siteurl='${{ inputs.wp_public_siteurl }}' \
+          wp_editor_siteurl='${{ inputs.wp_editor_siteurl }}' \
+          pod_siteurl='${{ inputs.pod_siteurl }}' \
+          pod_root='${{ inputs.pod_root }}' \
           vpc_id='${{ secrets.vpc_id }}' \
           subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
