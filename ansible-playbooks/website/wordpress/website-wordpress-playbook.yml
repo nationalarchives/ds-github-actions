@@ -210,10 +210,6 @@
         - "20 second interval with max duration of 15 minutes"
         - "====================================================================="
 
-  - name: load variables
-    ansible.builtin.include_vars:
-      file: "{{ ansible_var_file }}"
-
   - name: check if ec2 instance is ready
     ansible.builtin.stat:
       path: "/var/finish-init.txt"
