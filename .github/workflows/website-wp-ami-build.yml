@@ -55,6 +55,21 @@ on:
       pod_root:
         type: string
         required: true
+      ses_host:
+        type: string
+        required: true
+      ses_port:
+        type: string
+        required: true
+      ses_secure:
+        type: string
+        required: true
+      ses_from_email:
+        type: string
+        required: true
+      ses_from_name:
+        type: string
+        required: true
     secrets:
       vpc_id:
         required: true
@@ -136,6 +151,11 @@ jobs:
           wp_editor_siteurl='${{ inputs.wp_editor_siteurl }}' \
           pod_siteurl='${{ inputs.pod_siteurl }}' \
           pod_root='${{ inputs.pod_root }}' \
+          ses_host='${{ inputs.ses_host }}' \
+          ses_port='${{ inputs.ses_port }}' \
+          ses_secure='${{ inputs.ses_secure }}' \
+          ses_from_email='${{ inputs.ses_from_email }}' \
+          ses_from_name='${{ inputs.ses_from_name }}' \
           vpc_id='${{ secrets.vpc_id }}' \
           subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
