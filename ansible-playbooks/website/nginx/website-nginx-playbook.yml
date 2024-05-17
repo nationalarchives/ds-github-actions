@@ -179,13 +179,6 @@
     retries: 45
     delay: 20
 
-  - ansible.builtin.debug:
-      msg:
-        - "====================================================================="
-        - "wp-config.php"
-        - "{{ wpconfig_finished.stat.exists }}"
-        - "====================================================================="
-
 - name: switch to localhost
   hosts: localhost
   gather_facts: true
