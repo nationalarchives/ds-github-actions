@@ -18,5 +18,9 @@ RewriteRule ^ - [L]
 RewriteRule ^(wp-(content|admin|includes).*) \$1 [L]
 RewriteRule ^(.*\.php)$ \$1 [L]
 RewriteRule . index.php [L]
+
+# Remove PHP version information
+RequestHeader unset X-Forwarded-For
+
 # END WordPress
 Options All -Indexes
