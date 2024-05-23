@@ -124,6 +124,19 @@
       dest: "./userdata.sh"
       force: yes
 
+  - name: template wordpress setup script
+    template:
+      src: "./templates/wordpress-setup.sh.j2"
+      dest: "./wordpress-setup.sh"
+      force: yes
+
+  - name: upload wordpress setup file to S3
+    amazon.aws.s3_object:
+      bucket: "ds-{{ account }}-deployment-source
+      object: /website/wordpress/wordpress-setup.sh
+      src: "./wordpress-setup.sh"
+      mode: put
+
   - name: template wordpress.conf
     template:
       src: "./templates/wordpress.conf.j2"

@@ -65,8 +65,7 @@ echo "$(date '+%Y-%m-%d %T') - set replicator postgres access permission" | sudo
 IFS=',;: ' read -a cidrs <<< '{{replica_cidrs}}'
 for cidr in "${cidrs[@]}"
 do
-    sudo sed -i "/# TYPE/a host replication all $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
-    sudo sed -i "/# TYPE/a host all replicator $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
+    sudo sed -i "/# TYPE/a host replication replicator $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
 done
 
 sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
