@@ -193,6 +193,10 @@ sudo sed -i "17s|PDO('mysql:host=[^;]*;|PDO('mysql:host={{ pod_db_name }};|" /va
 sudo sed -i 's|remote_username = "[^"]*"|remote_username = "{{ pod_db_username }}"|' /var/www/ds-places-of-deposit/includes/constants-and-globals.php
 sudo sed -i 's|remote_password = "[^"]*"|remote_password = "{{ pod_db_password }}"|' /var/www/ds-places-of-deposit/includes/constants-and-globals.php
 
+# remove PHP version exposure
+sudo sed -i 's/expose_php = On/expose_php = Off/' /etc/php.ini
+sudo systemctl restart php-fpm
+
 # Set file permissions for apache
 sudo usermod -a -G apache ec2-user
 sudo usermod -a -G apache ssm-user
