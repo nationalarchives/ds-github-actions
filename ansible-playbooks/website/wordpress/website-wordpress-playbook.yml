@@ -132,8 +132,8 @@
 
   - name: upload wordpress setup file to S3
     amazon.aws.s3_object:
-      bucket: "ds-{{ account }}-deployment-source
-      object: /website/wordpress/wordpress-setup.sh
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/wordpress-setup.sh"
       src: "./wordpress-setup.sh"
       mode: put
 
