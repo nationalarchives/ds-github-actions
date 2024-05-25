@@ -98,13 +98,13 @@
       volume_type: "{{ ebs_type }}"
       encrypted: "true"
       tags:
-        Name: "{{ project_name }}-{{ function }}-ebs"
+        Name: "{{ project_name }}-{{ function }}-data"
     register: ec2_vol
 
   - name: template userdata
     vars:
       region: "{{ region }}"
-      volume_name: "{{ project_name }}-{{ function }}-ebs"
+      volume_name: "{{ project_name }}-{{ function }}-data"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
