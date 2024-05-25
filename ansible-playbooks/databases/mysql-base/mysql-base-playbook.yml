@@ -222,7 +222,8 @@
 
   tasks:
   - name: copy my.cnf to remote
-    copy:
+    ansible.builtin.copy:
+      become: yes
       src: ./my.cnf
       dest: /etc/my.cnf
       owner: mysql
