@@ -120,6 +120,14 @@
       dest: "./userdata.sh"
       force: yes
 
+  - name: create my.cnf
+    vars:
+      random_id: "{{ 4294967295 | random(start=1, step=1, seed=inventory_hostname) }}"
+    template:
+      src: "./templates/my.cnf.j2"
+      dest: "./my.cnf"
+      force: yes
+
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
@@ -213,17 +221,9 @@
   gather_facts: true
 
   tasks:
-  - name: create my.cnf
-    vars:
-      random_id: "{{ 4294967295 | random(start=1, step=1, seed=inventory_hostname) }}"
-    template:
-      src: "./templates/my.cnf.j2"
-      dest: "./my.cnf"
-      force: yes
-
   - name: copy my.cnf to remote
     copy:
-      src: ./my.cn
+      src: ./my.cnf
       dest: /etc/my.cnf
       owner: mysql
       group: mysql
