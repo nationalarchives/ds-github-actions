@@ -227,7 +227,6 @@
       dest: /etc/my.cnf
       owner: mysql
       group: mysql
-    become: yes
 
   - name: create AMI
     amazon.aws.ec2_ami:
