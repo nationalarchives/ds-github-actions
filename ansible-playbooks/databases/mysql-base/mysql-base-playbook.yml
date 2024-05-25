@@ -223,11 +223,11 @@
   tasks:
   - name: copy my.cnf to remote
     ansible.builtin.copy:
-      become: yes
       src: ./my.cnf
       dest: /etc/my.cnf
       owner: mysql
       group: mysql
+    become: yes
 
   - name: create AMI
     amazon.aws.ec2_ami:
