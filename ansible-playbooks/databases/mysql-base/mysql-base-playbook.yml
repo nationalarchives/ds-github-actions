@@ -227,6 +227,7 @@
       dest: /etc/my.cnf
       owner: mysql
       group: mysql
+      force: yes
     become: yes
 
   - name: create AMI
