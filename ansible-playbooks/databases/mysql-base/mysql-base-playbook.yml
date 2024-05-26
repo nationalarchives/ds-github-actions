@@ -216,18 +216,18 @@
     retries: 15
     delay: 20
 
+  - name: copy my.cnf to remote
+    ansible.builtin.copy:
+      src: ./my.cnf
+      dest: /etc/my.cnf
+      force: yes
+    become: yes
+
 - name: switch to localhost
   hosts: localhost
   gather_facts: true
 
   tasks:
-  - name: copy my.cnf to remote
-    ansible.builtin.copy:
-      src: ./my.cnf
-      dest: /etc/my-inital.cnf
-      force: yes
-    become: yes
-
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
