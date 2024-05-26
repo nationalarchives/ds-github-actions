@@ -63,7 +63,7 @@ rep_subnet_b=$(cidr_mask {{ subnet_db_cidr_b }})
 # sql statements to secure the instance and setup replication user
 cat << EOF > ~/mysql_secure_installation.sql
 DELETE FROM mysql.user WHERE User='';
-#DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 CREATE USER '{{ admin_user }}'@'$at_entry' IDENTIFIED BY '{{ admin_password }}';
@@ -78,7 +78,7 @@ EOF
 # setting password for root to secrets manager parameters, secure mysql
 # and set administration access
 mysqladmin --user=root --password=$temp_pw password '{{ root_password }}'
-mysql --user=root --password={{ root_password }} < ~/mysql_secure_installation.sql
+mysql --user=root --password='{{ root_password }}' < ~/mysql_secure_installation.sql
 
 # remove setup file containing passwords - avoiding security risks
 sudo rm ~/mysql_secure_installation.sql
