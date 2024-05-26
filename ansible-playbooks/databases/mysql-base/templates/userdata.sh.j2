@@ -32,6 +32,9 @@ sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
 sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
 
+if [ ! -d "/var/lib/mysql" ]; then
+  sudo mkdir /var/lib/mysql
+fi
 sudo chown -R mysql:mysql /var/lib/mysql/
 sudo systemctl start mysqld
 sudo systemctl enable mysqld
@@ -60,7 +63,7 @@ rep_subnet_b=$(cidr_mask {{ subnet_db_cidr_b }})
 # sql statements to secure the instance and setup replication user
 cat << EOF > ~/mysql_secure_installation.sql
 DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+#DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DROP DATABASE IF EXISTS test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 CREATE USER '{{ admin_user }}'@'$at_entry' IDENTIFIED BY '{{ admin_password }}';
