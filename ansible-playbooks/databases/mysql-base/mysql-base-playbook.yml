@@ -224,9 +224,7 @@
   - name: copy my.cnf to remote
     ansible.builtin.copy:
       src: ./my.cnf
-      dest: /etc/my.cnf
-      owner: mysql
-      group: mysql
+      dest: /etc/my-inital.cnf
       force: yes
     become: yes
 
