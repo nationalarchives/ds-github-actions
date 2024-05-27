@@ -27,7 +27,8 @@
 
   - name: set random suffix
     set_fact:
-      suffix: "{{ 99999999 | random(start=1, step=1, seed=inventory_hostname) }}"
+      random_seed: "{{ ansible_date_time.date }}{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}"
+      suffix: "{{ 99999999 | random(start=1, step=1, seed=random_seed) }}"
 
   - name: template deployment policy
     template:
