@@ -58,7 +58,8 @@ sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/plugins/
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/plugins/wds-active-plugin-data.zip ~/plugins/wds-active-plugin-data.zip
 
 # Install themes
-/usr/local/bin/wp theme install /home/ec2-user/themes/tna.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+#/usr/local/bin/wp theme install /home/ec2-user/themes/tna.zip --force --allow-root 2>>/var/www/html/wp-cli.log
+/usr/local/bin/wp theme install https://github.com/nationalarchives/tna/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
 /usr/local/bin/wp theme install https://github.com/nationalarchives/tna-base/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
 /usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-about-us-foi/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
 /usr/local/bin/wp theme install https://github.com/nationalarchives/tna-child-pressroom/archive/master.zip --force --allow-root 2>>/var/www/html/wp-cli.log
