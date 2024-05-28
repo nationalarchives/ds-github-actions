@@ -33,9 +33,9 @@
       db_name: "{{ secret_data.db_name }}"
       db_username: "{{ secret_data.db_username }}"
       db_password: "{{ secret_data.db_password }}"
-      github_token: "{{ secret_data.github_token }}"
       ses_username: "{{ secret_data.ses_username }}"
       ses_password: "{{ secret_data.ses_password }}"
+      # github_token: "{{ secret_data.github_token }}"
 
   - name: set secrets for places of deposit
     vars:

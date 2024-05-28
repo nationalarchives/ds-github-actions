@@ -49,7 +49,7 @@ PHP
 
 # Download TNA theme and licensed plugins
 mkdir /home/ec2-user/themes
-curl -H "Authorization: token {{ github_token }}" -L https://github.com/nationalarchives/tna/archive/master.zip > /home/ec2-user/themes/tna.zip
+#curl -H "Authorization: token {{ github_token }}" -L https://github.com/nationalarchives/tna/archive/master.zip > /home/ec2-user/themes/tna.zip
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/plugins/acf-flexible-content.zip ~/plugins/acf-flexible-content.zip
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/plugins/acf-options-page.zip ~/plugins/acf-options-page.zip
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/plugins/acf-repeater.zip ~/plugins/acf-repeater.zip
