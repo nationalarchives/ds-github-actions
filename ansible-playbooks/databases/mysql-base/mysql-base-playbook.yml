@@ -25,10 +25,9 @@
       latest_ami: >
         {{ findami.images | sort(attribute='creation_date') | last }}
 
-  - name: set random suffix
+  - name: set suffix
     set_fact:
-      random_seed: "{{ ansible_date_time.iso8601_basic_short }}"
-      suffix: "{{ 99999999 | random(start=1, step=1, seed=random_seed) }}"
+      suffix: "{{ ansible_date_time.iso8601_basic_short }}"
 
   - name: template deployment policy
     template:
