@@ -2,7 +2,7 @@
 ---
 - name: initialise EBS
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
 
   tasks:
   - name: check if subnet a
@@ -99,6 +99,7 @@
       encrypted: "true"
       tags:
         Name: "{{ project_name }}-{{ function }}-data"
+        CreatedAt: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}:{{ ansible_date_time.second }}""
     register: ec2_vol
 
   - name: template userdata
