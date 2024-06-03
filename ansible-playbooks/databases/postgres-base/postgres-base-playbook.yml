@@ -2,7 +2,7 @@
 ---
 - name: create Postgres Base AMI
   hosts: localhost
-  gather_facts: false
+  gather_facts: true
 
   tasks:
   - name: switch role credentials
