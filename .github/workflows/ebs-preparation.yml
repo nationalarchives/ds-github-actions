@@ -19,6 +19,9 @@ on:
       account:
         type: string
         required: true
+      db_type:
+        type: string
+        required: true
       project_name:
         type: string
         required: true
@@ -109,6 +112,7 @@ jobs:
           export AWS_DEFAULT_REGION=${{ inputs.region }}
           ansible-playbook -vvv \
           --extra-vars " \
+          db_type='${{ inputs.db_type }}' \
           project_name='${{ inputs.project_name }}' \
           function='${{ inputs.function }}' \
           role_arn='${{ inputs.playbook_role }}' \

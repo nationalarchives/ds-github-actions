@@ -99,7 +99,9 @@
       encrypted: "true"
       tags:
         Name: "{{ project_name }}-{{ function }}-data"
-        CreatedAt: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}:{{ ansible_date_time.second }}""
+        CreatedAt: "{{ ansible_date_time.date }}-{{ ansible_date_time.hour }}:{{ ansible_date_time.minute }}:{{ ansible_date_time.second }}"
+        snapshot: "true"
+        db_type: "{{ db_type }}"
     register: ec2_vol
 
   - name: template userdata

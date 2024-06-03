@@ -106,6 +106,14 @@
       subnet_db_cidr_a: "{{ lookup('amazon.aws.aws_ssm', '/infrastructure/network/base/private_db_subnet_2a_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
       subnet_db_cidr_b: "{{ lookup('amazon.aws.aws_ssm', '/infrastructure/network/base/private_db_subnet_2b_cidr', access_key=assumed_role.sts_creds.access_key, secret_key=assumed_role.sts_creds.secret_key, session_token=assumed_role.sts_creds.session_token, on_denied='error') }}"
 
+  - name: create my.cnf
+    vars:
+      random_id: "{{ 4294967295 | random(start=1, step=1, seed=ansible_facts["date_time"]["epoch"]) }}"
+    template:
+      src: "./templates/my.cnf.j2"
+      dest: "./my.cnf"
+      force: yes
+
   - name: template userdata
     vars:
       s3_deployment_bucket: "{{ s3_deployment_bucket }}"
@@ -121,14 +129,6 @@
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
-      force: yes
-
-  - name: create my.cnf
-    vars:
-      random_id: "{{ 4294967295 | random(start=1, step=1, seed=inventory_hostname) }}"
-    template:
-      src: "./templates/my.cnf.j2"
-      dest: "./my.cnf"
       force: yes
 
   - name: provisioning instance
