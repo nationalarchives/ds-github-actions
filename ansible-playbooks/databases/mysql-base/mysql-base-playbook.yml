@@ -27,7 +27,7 @@
 
   - name: set suffix
     set_fact:
-      suffix: "{{ ansible_date_time.iso8601_basic_short }}"
+      suffix: "{{ ansible_date_time.epoch }}"
 
   - name: template deployment policy
     template:

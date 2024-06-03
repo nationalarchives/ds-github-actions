@@ -25,9 +25,6 @@ on:
       project_name:
         type: string
         required: true
-      function:
-        type: string
-        required: true
       instance_type:
         type: string
         required: true

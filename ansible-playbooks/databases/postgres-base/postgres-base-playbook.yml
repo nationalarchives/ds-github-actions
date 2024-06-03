@@ -25,6 +25,10 @@
       latest_ami: >
         {{ findami.images | sort(attribute='creation_date') | last }}
 
+  - name: set suffix
+    set_fact:
+      suffix: "{{ ansible_date_time.epoch }}"
+
   - name: template deployment policy
     template:
       src: "./templates/instance-role-policy.json.j2"
@@ -33,14 +37,14 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-s3-policy"
+      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-s3-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
 
   - name: create base postgres IAM role
     community.aws.iam_role:
-      name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-role"
+      name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
@@ -52,7 +56,7 @@
 
   - name: create security group - allowing updates and downloads
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-sg"
+      name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -115,7 +119,6 @@
       network_cidrs: "{{ network_cidrs }}"
       subnet_db_cidr_a: "{{ subnet_db_cidr_a }}"
       subnet_db_cidr_b: "{{ subnet_db_cidr_b }}"
-      function: "{{ function }}"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
@@ -125,11 +128,11 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-postgres-{{ project_name }}-{{ function }}-role"
+      instance_role: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "postgres-{{ project_name }}-{{ function }}-primer"
+      name : "postgres-{{ project_name }}-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -148,7 +151,7 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Name: "postgres-{{ project_name }}-{{ function }}-primer"
+        Name: "postgres-{{ project_name }}-primer"
         Environment: "{{ account }}"
         Service: "Postgres"
         Owner: "Digital Services"
@@ -235,21 +238,29 @@
       instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
       state: "absent"
+    tags:
+      - always
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-sg"
+      name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-sg"
       state: "absent"
+    tags:
+      - always
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-role"
+      name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
+    tags:
+      - always
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ function }}-s3-policy"
+      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-s3-policy"
       state: "absent"
+    tags:
+      - always
 ...
