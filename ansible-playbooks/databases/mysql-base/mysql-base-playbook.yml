@@ -252,15 +252,11 @@
       instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
       state: "absent"
-    tags:
-      - always
   -
   - name: remove security group
     amazon.aws.ec2_security_group:
       name: "ansible-ami-mysql-{{ project_name }}-{{ suffix }}-sg"
       state: "absent"
-    tags:
-      - always
 
   - name: remove IAM role
     community.aws.iam_role:
@@ -268,13 +264,9 @@
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
-    tags:
-      - always
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
       policy_name: "ansible-ami-mysql-{{ project_name }}-{{ suffix }}-s3-policy"
       state: "absent"
-    tags:
-      - always
 ...
