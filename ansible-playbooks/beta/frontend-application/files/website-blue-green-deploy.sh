@@ -64,7 +64,7 @@ for ((i=1; i<=$MAX_RETRIES; i++)); do
 done
 
 # If the new environment is not healthy within the timeout, stop it and exit with an error
-if ! docker run --net $TRAEFIK_NETWORK --rm curlimages/curl:8.00.1 --fail --silent "$HEALTH_CHECK_URL" >/dev/null; then
+if ! sudo docker run --net $TRAEFIK_NETWORK --rm curlimages/curl:8.00.1 --fail --silent "$HEALTH_CHECK_URL" >/dev/null; then
   echo "$INACTIVE_SERVICE did not become healthy within $TIMEOUT seconds"
   sudo /usr/local/bin/docker-compose --file /var/docker/compose.yml down --timeout=30 $INACTIVE_SERVICE
   exit 1
