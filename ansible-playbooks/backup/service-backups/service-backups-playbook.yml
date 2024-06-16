@@ -73,6 +73,19 @@
       state: "present"
     register: ec2_sec_group
 
+  - name: debug
+    ansible.builtin.script:
+      cmd: ls
+      register: out_ls
+
+  - name: debug
+    ansible.builtin.script:
+      cmd: pwd
+      register: out_pwd
+
+  - debug: var=out_pwd.stdout_lines
+  - debug: var=out_ls.stdout_lines
+
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
