@@ -25,12 +25,19 @@
       latest_ami: >
         {{ findami.images | sort(attribute='creation_date') | last }}
 
+  - name: create deployment policy
+    community.aws.iam_managed_policy:
+      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-s3-policy"
+      policy: "{{ lookup('file', './files/instance-role-policy.json') }}"
+      state: "present"
+    register: s3_policy
+
   - name: create base beta rp IAM role
     community.aws.iam_role:
       name: "ansible-ami-service-backups-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
-      managed_policies: ["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
+      managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
       create_instance_profile: yes
       delete_instance_profile: yes
       purge_policies: yes
