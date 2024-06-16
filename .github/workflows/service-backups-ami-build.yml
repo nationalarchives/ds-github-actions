@@ -90,5 +90,5 @@ jobs:
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
-          beta-dw-playbook.yml
+          service-backups-playbook.yml
 ...
