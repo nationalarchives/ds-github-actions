@@ -73,14 +73,6 @@
       state: "present"
     register: ec2_sec_group
 
-  - name: run script
-    ansible.builtin.shell:
-      cmd: ls
-
-  - name: run script
-    ansible.builtin.shell:
-      cmd: pwd
-
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
@@ -97,7 +89,7 @@
       security_groups: ["{{ ec2_sec_group.group_id }}"]
       state: "running"
       termination_protection: no
-      user_data: "{{ lookup('file', './actions/files/userdata.sh') }}"
+      user_data: "{{ lookup('file', './files/userdata.sh') }}"
       wait: true
       volumes:
         - device_name: "/dev/xvda"
