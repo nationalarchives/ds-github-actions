@@ -27,7 +27,7 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-postgres-{{ project_name }}-{{ suffix }}-s3-policy"
+      policy_name: "ansible-ami-service-backup-s3-policy"
       policy: "{{ lookup('file', './files/instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
