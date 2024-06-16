@@ -74,12 +74,12 @@
     register: ec2_sec_group
 
   - name: run script
-    ansible.builtin.script:
+    ansible.builtin.command:
       cmd: ls
       register: out_ls
 
   - name: run script
-    ansible.builtin.script:
+    ansible.builtin.command:
       cmd: pwd
       register: out_pwd
 
