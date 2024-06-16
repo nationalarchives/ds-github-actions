@@ -26,6 +26,7 @@ sudo dnf install git -y
 
 echo "$(date '+%Y-%m-%d %T') - install python 3.11" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install python3.11 -y
+echo "$(date '+%Y-%m-%d %T') - install pip" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install python3.11-pip -y
 
 cat << EOF > /var/finish-init.txt
