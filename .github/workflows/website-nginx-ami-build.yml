@@ -92,9 +92,9 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: '**/website-nginx-ami-build-req.txt'
+          cache-dependency-path: '**/base-python-req.txt'
       - run: |
-          pip install -r ${{ github.workspace }}/actions/.github/workflows/website-nginx-ami-build-req.txt
+          pip install -r ${{ github.workspace }}/actions/.github/workflows/base-python-req.txt
 
       - name: run ansible playbook
         run: |

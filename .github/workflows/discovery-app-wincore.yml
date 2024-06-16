@@ -82,9 +82,9 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: 'actions/.github/workflows/discovery-app-wincore-req.txt'
+          cache-dependency-path: 'actions/.github/workflows/base-wincore-req.txt'
       - run: |
-          pip install -r actions/.github/workflows/discovery-app-wincore-req.txt
+          pip install -r actions/.github/workflows/base-wincore-req.txt
 
       - name: install ansible.windows
         run: ansible-galaxy collection install ansible.windows
