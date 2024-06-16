@@ -76,17 +76,10 @@
   - name: run script
     ansible.builtin.shell:
       cmd: ls
-      register: out_ls
 
   - name: run script
     ansible.builtin.shell:
       cmd: pwd
-      register: out_pwd
-
-  - ansible.builtin.debug:
-      msg: "{{ out_pwd.stdout_lines }}"
-  - ansible.builtin.debug:
-      msg: "{{ out_ls.stdout_lines }}"
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
