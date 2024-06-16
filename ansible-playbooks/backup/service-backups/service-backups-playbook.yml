@@ -100,8 +100,7 @@
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
         Name: "service-backups-primer"
-        Environment: "{{ account }}"
-        Service: "Beta"
+        Service: "Service Backups"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
