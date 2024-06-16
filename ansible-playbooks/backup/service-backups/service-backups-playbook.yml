@@ -27,7 +27,7 @@
 
   - name: create base beta rp IAM role
     community.aws.iam_role:
-      name: "ansible-ami-beta-rp-role"
+      name: "ansible-ami-service-backups-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
@@ -39,7 +39,7 @@
 
   - name: create security group - allowing updates and downloads
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-beta-rp-sg"
+      name: "ansible-ami-service-backups-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -80,7 +80,7 @@
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "beta-rp-primer"
+      name : "service-backups-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -89,7 +89,7 @@
       security_groups: ["{{ ec2_sec_group.group_id }}"]
       state: "running"
       termination_protection: no
-      user_data: "{{ lookup('file', './files/userdata.sh') }}"
+      user_data: "{{ lookup('file', './actions/files/userdata.sh') }}"
       wait: true
       volumes:
         - device_name: "/dev/xvda"
@@ -99,7 +99,7 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Name: "beta-rp-primer"
+        Name: "service-backups-primer"
         Environment: "{{ account }}"
         Service: "Beta"
         Owner: "Digital Services"
@@ -168,13 +168,13 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "beta-rp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      name: "service-backups-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
       description: "Beta RP Instance - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "beta-rp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Name: "service-backups-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
         Service: "Beta"
         Owner: "Digital Services"
         CreatedBy: "ansible"
@@ -189,18 +189,18 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-beta-rp-sg"
+      name: "ansible-ami-service-backups-sg"
       state: "absent"
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-beta-rp-role"
+      name: "ansible-ami-service-backups-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-beta-rp-s3-policy"
+      policy_name: "ansible-ami-service-backups-s3-policy"
       state: "absent"
 ...
