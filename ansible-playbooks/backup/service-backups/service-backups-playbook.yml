@@ -84,9 +84,9 @@
       register: out_pwd
 
   - ansible.builtin.debug:
-    msg: "{{ out_pwd.stdout_lines }}"
+      msg: "{{ out_pwd.stdout_lines }}"
   - ansible.builtin.debug:
-    msg: "{{ out_ls.stdout_lines }}"
+      msg: "{{ out_ls.stdout_lines }}"
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
