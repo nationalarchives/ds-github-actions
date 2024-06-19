@@ -109,7 +109,7 @@ def main():
                 os.system(clone)
                 os.chdir(entry["name"])
                 git_fetch = "git fetch --all"
-                os.system(clone)
+                os.system(git_fetch)
                 os.chdir("..")
 
                 shutil.make_archive(entry["name"], format='zip', root_dir=root_dir, base_dir=entry["name"])
@@ -155,13 +155,13 @@ def main():
         summary_file.write("end at: {count}\n".format(count=str(datetime.now())))
         summary_file.write("private repos: {count}\n".format(count=str(private_repos)))
         summary_file.write("public repos: {count}\n".format(count=str(public_repos)))
-        summary_file.write("total repos: \n".format(count=str(private_repos + public_repos)))
+        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos)))
         summary_file.close()
 
         s3_client.put_object(
             Body=open(summary_file_name, 'rb'),
             Bucket=bucket_name,
-            Key="{key}/{file_name}".format(key=bucket_key, file_name=summary_file),
+            Key="{key}/{file_name}".format(key=bucket_key, file_name=summary_file_name),
         )
         os.remove(summary_file_name)
 
