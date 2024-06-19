@@ -1,0 +1,8 @@
+# GitHub repository intake timer
+#
+
+[Unit]
+Description=Backup GitHub repositories
+
+[Service]
+ExecStart=/usr/bin/python3.11 /backup-scripts/repo-intake.py

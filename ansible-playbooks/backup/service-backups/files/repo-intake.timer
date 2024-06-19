@@ -1,0 +1,12 @@
+# GitHub repository intake timer
+#
+
+[Unit]
+Description=Backup GitHub repositories
+
+[Timer]
+Unit=repo-intake.service
+OnCalendar=Sun *-*-* 22:15:00
+
+[Install]
+WantedBy=default.target

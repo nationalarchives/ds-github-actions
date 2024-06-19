@@ -7,10 +7,10 @@ sudo dnf update
 
 # create swap file
 echo "$(date '+%Y-%m-%d %T') - create swap file" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo /bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
-sudo chmod 0600 /var/swap.1
-sudo /sbin/mkswap /var/swap.1
-sudo /sbin/swapon /var/swap.1
+sudo fallocate -l 4G /swapfile
+sudo chmod 0600 /swapfile
+sudo /sbin/mkswap /swapfile
+sudo /sbin/swapon /swapfile
 
 # Install Cloudwatch agent
 echo "$(date '+%Y-%m-%d %T') - install CloudWatch agent" | sudo tee -a  /var/log/ami-install.log > /dev/null
@@ -28,6 +28,20 @@ echo "$(date '+%Y-%m-%d %T') - install python 3.11" | sudo tee -a  /var/log/ami-
 sudo dnf install python3.11 -y
 echo "$(date '+%Y-%m-%d %T') - install pip" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install python3.11-pip -y
+
+echo "$(date '+%Y-%m-%d %T') - install python libs" | sudo tee -a  /var/log/ami-install.log > /dev/null
+python3.11 -m pip install requests
+python3.11 -m pip install boto3
+echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo -H python3.11 -m pip3 install requests
+sudo -H python3.11 -m pip3 install boto3
+
+echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo mkdir /github-backup
+sudo chmod 0777 /github-backup
+
+sudo systemctl enable repo-intake.timer
+sudo systemctl start repo-intake.timer
 
 cat << EOF > /var/finish-init.txt
 [status]
