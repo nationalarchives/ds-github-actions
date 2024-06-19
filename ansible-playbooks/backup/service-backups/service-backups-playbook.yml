@@ -166,6 +166,21 @@
     retries: 15
     delay: 20
 
+  - name: copy repo_intake python script
+    ansible.builtin.copy:
+      src: ./files/repo_intake.py
+      dest: /backup-scrpits/repo_intake.py
+
+  - name: copy repo-intake timer
+    ansible.builtin.copy:
+      src: ./files/repo-intake.timer
+      dest: /etc/systemd/system/repo-intake.timer
+
+  - name: copy repo-intake service
+    ansible.builtin.copy:
+      src: ./files/repo-intake.service
+      dest: /etc/systemd/system/repo-intake.service
+
 - name: switch to localhost
   hosts: localhost
   gather_facts: true

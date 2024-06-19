@@ -7,6 +7,7 @@ Description=Backup GitHub repositories
 [Timer]
 Unit=repo-intake.service
 OnCalendar=Sun *-*-* 22:15:00
+Persistent=true
 
 [Install]
 WantedBy=default.target
