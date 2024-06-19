@@ -173,6 +173,7 @@
       owner: root
       group: root
       mode: '0755'
+    become: yes
 
   - name: copy repo_intake python script
     ansible.builtin.copy:
@@ -181,16 +182,19 @@
       owner: root
       group: root
       mode: 'u+x,g+x,o+x'
+    become: yes
 
   - name: copy repo-intake timer
     ansible.builtin.copy:
       src: ./files/repo-intake.timer
       dest: /etc/systemd/system/repo-intake.timer
+    become: yes
 
   - name: copy repo-intake service
     ansible.builtin.copy:
       src: ./files/repo-intake.service
       dest: /etc/systemd/system/repo-intake.service
+    become: yes
 
 - name: switch to localhost
   hosts: localhost
