@@ -166,10 +166,21 @@
     retries: 15
     delay: 20
 
+  - name: Create directory backup-scripts
+    ansible.builtin.file:
+      path: /backup-scripts
+      state: directory
+      owner: root
+      group: root
+      mode: '0755'
+
   - name: copy repo_intake python script
     ansible.builtin.copy:
       src: ./files/repo_intake.py
-      dest: /backup-scrpits/repo_intake.py
+      dest: /backup-scripts/repo_intake.py
+      owner: root
+      group: root
+      mode: 'u+x,g+x,o+x'
 
   - name: copy repo-intake timer
     ansible.builtin.copy:
