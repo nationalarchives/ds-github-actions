@@ -71,7 +71,10 @@ GRANT ALL ON *.* TO '{{ admin_user }}'@'$admin_at';
 GRANT GRANT OPTION ON *.* TO '{{ admin_user }}'@'$admin_at';
 CREATE USER '{{ repl_user }}'@'$rep_subnet_a' IDENTIFIED BY '{{ repl_password }}';
 CREATE USER '{{ repl_user }}'@'$rep_subnet_b' IDENTIFIED BY '{{ repl_password }}';
-GRANT REPLICATION SLAVE ON *.* TO '{{ repl_user }}'@'$rep_subnet_a', '{{ repl_user }}'@'$rep_subnet_b';
+GRANT REPLICATION CLIENT, REPLICATION SLAVE, SUPER ON *.* TO '{{ repl_user }}'@'$rep_subnet_a', '{{ repl_user }}'@'$rep_subnet_b';
+CREATE USER '{{ bkup_user }}'@'$rep_subnet_a' IDENTIFIED BY '{{ bkup_password }}';
+CREATE USER '{{ bkup_user }}'@'$rep_subnet_b' IDENTIFIED BY '{{ bkup_password }}';
+GRANT EVENT, LOCK TABLES, PROCESS, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW ON *.* TO '{{ bkup_user }}'@'$rep_subnet_a', '{{ bkup_user }}'@'$rep_subnet_b';
 FLUSH PRIVILEGES;
 EOF
 
