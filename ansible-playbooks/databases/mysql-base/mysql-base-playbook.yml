@@ -116,6 +116,14 @@
       dest: "./my.cnf"
       force: yes
 
+  - name: template backup script
+    vars:
+      account: "{{ account }}"
+    template:
+      src: "./templates/mysql-daily-backup.sh.j2"
+      dest: "./mysql-daily-backup.sh"
+      force: yes
+
   - name: template userdata
     vars:
       s3_deployment_bucket: "{{ s3_deployment_bucket }}"
@@ -228,6 +236,25 @@
       src: ./my.cnf
       dest: /etc/my.cnf
       force: yes
+    become: yes
+
+  - name: copy mysql-daily-backup.sh to remote
+    ansible.builtin.copy:
+      src: ./mysql-daily-backup.sh
+      dest: /usr/local/sbin/mysql-daily-backup.sh
+      force: yes
+    become: yes
+
+  - name: copy mysql-daily-backup timer
+    ansible.builtin.copy:
+      src: ./files/mysql-daily-backup.timer
+      dest: /etc/systemd/system/mysql-daily-backup.timer
+    become: yes
+
+  - name: copy mysql-daily-backup service
+    ansible.builtin.copy:
+      src: ./files/mysql-daily-backup.service
+      dest: /etc/systemd/system/mysql-daily-backup.service
     become: yes
 
 - name: switch to localhost

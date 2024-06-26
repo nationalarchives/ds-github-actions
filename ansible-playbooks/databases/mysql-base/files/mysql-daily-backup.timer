@@ -1,0 +1,13 @@
+# MySQL daily backup timer
+#
+
+[Unit]
+Description=Daily MySQL Backup Timer
+
+[Timer]
+Unit=mysql-dailybackup.service
+OnCalendar=Sun *-*-* 22:15:00
+Persistent=true
+
+[Install]
+WantedBy=default.target

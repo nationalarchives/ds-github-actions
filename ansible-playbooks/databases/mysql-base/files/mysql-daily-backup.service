@@ -1,0 +1,8 @@
+# MySQL daily backup service call
+#
+
+[Unit]
+Description=Daily MySQL Backup service call
+
+[Service]
+ExecStart=/usr/local/sbin/mysql-daily-backup.sh

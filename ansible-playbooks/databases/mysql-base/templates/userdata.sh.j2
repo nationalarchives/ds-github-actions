@@ -44,6 +44,7 @@ sudo systemctl status mysqld > /var/log/my.log
 echo "$(date '+%Y-%m-%d %T') - secure mysql" | sudo tee -a /var/log/ami-install.log > /dev/null
 temp_pw="$(sudo grep "temporary password" /var/log/mysqld.log | grep -o '[^ ]\+$')"
 
+echo "$(date '+%Y-%m-%d %T') - create bash CIDR function" | sudo tee -a /var/log/ami-install.log > /dev/null
 # get netmask form cidr
 function cidr_mask() {
   ip=`echo $1 | cut -d"/" -f1`
@@ -57,10 +58,13 @@ function cidr_mask() {
   echo "$ip/$mask"
 }
 
+echo "$(date '+%Y-%m-%d %T') - get subnet mask from CIDR" | sudo tee -a /var/log/ami-install.log > /dev/null
 admin_at=$(cidr_mask {{ network_cidr }})
 rep_subnet_a=$(cidr_mask {{ subnet_db_cidr_a }})
 rep_subnet_b=$(cidr_mask {{ subnet_db_cidr_b }})
+
 # sql statements to secure the instance and setup replication user
+echo "$(date '+%Y-%m-%d %T') - create mysql script" | sudo tee -a /var/log/ami-install.log > /dev/null
 cat << EOF > ~/mysql_secure_installation.sql
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -74,22 +78,30 @@ CREATE USER '{{ repl_user }}'@'$rep_subnet_b' IDENTIFIED BY '{{ repl_password }}
 GRANT REPLICATION CLIENT, REPLICATION SLAVE, SUPER ON *.* TO '{{ repl_user }}'@'$rep_subnet_a', '{{ repl_user }}'@'$rep_subnet_b';
 CREATE USER '{{ bkup_user }}'@'$rep_subnet_a' IDENTIFIED BY '{{ bkup_password }}';
 CREATE USER '{{ bkup_user }}'@'$rep_subnet_b' IDENTIFIED BY '{{ bkup_password }}';
-GRANT EVENT, LOCK TABLES, PROCESS, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW ON *.* TO '{{ bkup_user }}'@'$rep_subnet_a', '{{ bkup_user }}'@'$rep_subnet_b';
+CREATE USER '{{ bkup_user }}'@'localhost' IDENTIFIED BY '{{ bkup_password }}';
+GRANT EVENT, LOCK TABLES, PROCESS, RELOAD, SELECT, SHOW DATABASES, SHOW VIEW ON *.* TO '{{ bkup_user }}'@'$rep_subnet_a', '{{ bkup_user }}'@'$rep_subnet_b', '{{ bkup_user }}'@'localhost';
 FLUSH PRIVILEGES;
 EOF
 
 # setting password for root to secrets manager parameters, secure mysql
 # and set administration access
+echo "$(date '+%Y-%m-%d %T') - secure root account" | sudo tee -a /var/log/ami-install.log > /dev/null
 mysqladmin --user=root --password=$temp_pw password '{{ root_password }}'
 mysql --user=root --password='{{ root_password }}' < ~/mysql_secure_installation.sql
 
 # remove setup file containing passwords - avoiding security risks
+echo "$(date '+%Y-%m-%d %T') - remove mysql script" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo rm ~/mysql_secure_installation.sql
 
+echo "$(date '+%Y-%m-%d %T') - prep mysql" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo systemctl stop mysqld
 
 sudo mkdir /mysql.socket
 sudo chown mysql:mysql /mysql.socket
+
+echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo mkdir /data/backups
+sudo chmod 0777 /data/backups
 
 cat << EOF > /var/finish-init.txt
 [status]
