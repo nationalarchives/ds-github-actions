@@ -1,6 +1,6 @@
-# service playbook
+# da x posts backup playbook
 ---
-- name: create service backups AMI
+- name: create da x post backup AMI
   hosts: localhost
   gather_facts: false
 
@@ -27,14 +27,14 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-service-backup-s3-policy"
+      policy_name: "ansible-ami-da-x-posts-backup-s3-policy"
       policy: "{{ lookup('file', './files/instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
 
   - name: create IAM role
     community.aws.iam_role:
-      name: "ansible-ami-service-backups-role"
+      name: "ansible-ami-da-x-posts-backup-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
@@ -46,7 +46,7 @@
 
   - name: create security group - allowing updates and downloads
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-service-backups-sg"
+      name: "ansible-ami-da-x-posts-backup-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -87,7 +87,7 @@
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "service-backups-primer"
+      name : "da-x-posts-backup-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -106,8 +106,8 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Name: "service-backups-primer"
-        Service: "Service Backups"
+        Name: "da-x-posts-backup-primer"
+        Service: "X Posts Backup"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -184,16 +184,10 @@
       mode: 'u+x,g+x,o+x'
     become: yes
 
-  - name: copy repo-intake timer
+  - name: copy watch_sftp_dir service
     ansible.builtin.copy:
-      src: ./files/repo-intake.timer
-      dest: /etc/systemd/system/repo-intake.timer
-    become: yes
-
-  - name: copy repo-intake service
-    ansible.builtin.copy:
-      src: ./files/repo-intake.service
-      dest: /etc/systemd/system/repo-intake.service
+      src: ./files/watch_sftp_dir.service
+      dest: /etc/systemd/system/watch_sftp_dir.service
     become: yes
 
 - name: switch to localhost
@@ -204,13 +198,13 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "service-backups-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      name: "da-x-posts-backup-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
       description: "Beta RP Instance - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "service-backups-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Name: "da-x-posts-backup-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
         Service: "Beta"
         Owner: "Digital Services"
         CreatedBy: "ansible"
@@ -225,18 +219,18 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-service-backups-sg"
+      name: "ansible-ami-da-x-posts-backup-sg"
       state: "absent"
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-service-backups-role"
+      name: "ansible-ami-da-x-posts-backup-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-service-backups-s3-policy"
+      policy_name: "ansible-ami-da-x-posts-backup-s3-policy"
       state: "absent"
 ...

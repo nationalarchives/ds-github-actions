@@ -1,0 +1,8 @@
+# Trigger event when upload by SFTP
+#
+
+[Unit]
+Description=trigger event for SFTP
+
+[Service]
+ExecStart=/usr/local/sbin/watch_sftp_dir.sh
