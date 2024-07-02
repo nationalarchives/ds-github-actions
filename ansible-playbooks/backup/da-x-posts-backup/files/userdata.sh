@@ -28,6 +28,20 @@ echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /v
 sudo mkdir /sftp-data
 sudo chmod 0755 /sftp-data
 
+echo "$(date '+%Y-%m-%d %T') - update sshd config file" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo tee -a /etc/ssh/sshd_config <<< "
+Match Group sftp
+    ChrootDirectory /sftp-data
+    PermitTunnel no
+    AllowAgentForwarding no
+    AllowTcpForwarding no
+    X11Forwarding no
+    ForceCommand internal-sftp -d /%u/uploads
+"
+
+echo "$(date '+%Y-%m-%d %T') - create sftp user group" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo groupadd sftp
+
 echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo mkdir /sftp-users
 sudo chmod 0700 /sftp-users

@@ -169,7 +169,16 @@
   - name: copy watch_sftp_dir.sh
     ansible.builtin.copy:
       src: ./files/watch_sftp_dir.sh
-      dest: /usr/local/sbin//watch_sftp_dir.sh
+      dest: /usr/local/sbin/watch_sftp_dir.sh
+      owner: root
+      group: root
+      mode: 'u+x,g+x,o+x'
+    become: yes
+
+  - name: copy create_sftp_users.sh
+    ansible.builtin.copy:
+      src: ./files/create_sftp_users.sh
+      dest: /usr/local/sbin/create_sftp_users.sh
       owner: root
       group: root
       mode: 'u+x,g+x,o+x'
