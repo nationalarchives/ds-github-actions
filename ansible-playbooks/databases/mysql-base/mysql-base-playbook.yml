@@ -118,10 +118,10 @@
 
   - name: template backup script
     vars:
-      account: "{{ account }}"
+      project_name: "ds-{{ project_name }}"
     template:
-      src: "./templates/mysql-daily-backup.sh.j2"
-      dest: "./mysql-daily-backup.sh"
+      src: "./templates/daily-backup.sh.j2"
+      dest: "./daily-backup.sh"
       force: yes
 
   - name: template userdata
@@ -238,23 +238,25 @@
       force: yes
     become: yes
 
-  - name: copy mysql-daily-backup.sh to remote
+  - name: copy daily-backup.sh to remote
     ansible.builtin.copy:
-      src: ./mysql-daily-backup.sh
-      dest: /usr/local/sbin/mysql-daily-backup.sh
+      src: ./daily-backup.sh
+      dest: /usr/local/sbin/daily-backup.sh
       force: yes
     become: yes
 
-  - name: copy mysql-daily-backup timer
+  - name: copy daily-backup timer
     ansible.builtin.copy:
-      src: ./files/mysql-daily-backup.timer
-      dest: /etc/systemd/system/mysql-daily-backup.timer
+      src: ./files/daily-backup.timer
+      dest: /etc/systemd/system/daily-backup.timer
+      force: yes
     become: yes
 
-  - name: copy mysql-daily-backup service
+  - name: copy daily-backup service
     ansible.builtin.copy:
-      src: ./files/mysql-daily-backup.service
-      dest: /etc/systemd/system/mysql-daily-backup.service
+      src: ./files/daily-backup.service
+      dest: /etc/systemd/system/daily-backup.service
+      force: yes
     become: yes
 
 - name: switch to localhost
