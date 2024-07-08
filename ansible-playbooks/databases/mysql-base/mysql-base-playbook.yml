@@ -118,6 +118,7 @@
 
   - name: template backup script
     vars:
+      account: "{{ account }}"
       project_name: "ds-{{ project_name }}"
     template:
       src: "./templates/daily-backup.sh.j2"

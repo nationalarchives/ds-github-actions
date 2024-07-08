@@ -40,5 +40,5 @@ echo "$(openssl dgst -sha1 < /data/backups/$backup_name.zip)" >> /data/backups/$
 echo "$(openssl dgst -sha256 < /data/backups/$backup_name.zip)" >> /data/backups/$backup_name.meta.txt
 
 echo "$(date '+%Y-%m-%d %T') - copy files to S3" | sudo tee -a /var/log/ami-install.log > /dev/null
-aws s3 cp /data/backups/ s3://ds-dev-backups/mysql/ --recursive --exclude "*" --include "$backup_name.zip" --include "$backup_name.meta.txt"
+aws s3 cp /data/backups/ s3://ds-${account}-backups/databases/mysql/ --recursive --exclude "*" --include "$backup_name.zip" --include "$backup_name.meta.txt"
 
