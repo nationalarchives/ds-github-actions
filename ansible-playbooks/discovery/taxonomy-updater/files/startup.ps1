@@ -24,6 +24,12 @@ try {
 		Add-content $runFlag -value "$Time - startup script is activated"
 	}
 
+	write-log -Message "update code from S3"
+	aws s3 cp s3://ds-staging-deployment-source/taxonomy/taxonomy-daily-index.zip /temp/taxonomy-daily-index.zip
+
+	write-log -Message "write code"
+	expand-archive -Path \temp\taxonomy-daily-index.zip -DestinationPath \ -force
+
 	write-log -Message "starting updater"
 
 	write-log -Message "--- live-process - NationalArchives.Taxonomy.Batch.exe"
