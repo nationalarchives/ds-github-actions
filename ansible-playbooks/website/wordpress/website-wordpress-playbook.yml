@@ -271,13 +271,6 @@
       owner: apache
       group: apache
 
-  - name: copy phpinfo.php
-    ansible.builtin.copy:
-      src: ./files/phpinfo.php
-      dest: /var/www/html/phpinfo.php
-      owner: apache
-      group: apache
-
   - name: copy wp-cli.yml
     ansible.builtin.copy:
       src: ./files/wp-cli.yml
