@@ -5,7 +5,7 @@
 Description=Daily Database Backup Timer
 
 [Timer]
-Unit=dailybackup.service
+Unit=daily-backup.service
 OnCalendar=*-*-* 22:15:00
 Persistent=true
 
