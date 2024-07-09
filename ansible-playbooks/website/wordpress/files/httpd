@@ -1,0 +1,17 @@
+# rotating apache log files on a daily bases
+# file location /etc/logrotate.d/
+/var/log/httpd/*log {
+    create 0644 root root
+    daily
+    dateext
+    rotate 10
+    missingok
+    notifempty
+    delaycompress
+    compress
+    sharedscripts
+    postrotate
+        /bin/systemctl reload httpd.service > /dev/null 2>/dev/null || true
+        /usr/local/sbin/logfile_archive.sh > /var/log/httpd/logfile_archive_log.txt
+    endscript
+}

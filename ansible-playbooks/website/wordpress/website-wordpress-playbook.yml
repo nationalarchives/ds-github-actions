@@ -124,12 +124,23 @@
       dest: "./userdata.sh"
       force: yes
 
+  - name: template logfile archive script
+    template:
+      src: "./templates/logfile_archive.sh.j2"
+      dest: "./logfile_archive.sh"
+      force: yes
+  - name: upload logfile_archive.sh to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/logfile_archive.sh"
+      src: "./logfile_archive.sh"
+      mode: put
+
   - name: template wordpress setup script
     template:
       src: "./templates/wordpress-setup.sh.j2"
       dest: "./wordpress-setup.sh"
       force: yes
-
   - name: upload wordpress setup file to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
@@ -142,6 +153,47 @@
       src: "./templates/wordpress.conf.j2"
       dest: "./wordpress.conf"
       force: yes
+  - name: upload wordpress.conf to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/wordpress.conf"
+      src: "./wordpress.conf"
+      mode: put
+
+  - name: upload httpd to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/httpd"
+      src: "./files/httpd"
+      mode: put
+
+  - name: upload wp-cli.yml to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/wp-cli.yml"
+      src: "./files/wp-cli.yml"
+      mode: put
+
+  - name: upload .htaccess to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/robots.txt"
+      src: "./files/robots-{{ account }}.txt"
+      mode: put
+
+  - name: upload wp-cli.yml to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/.htaccess"
+      src: "./files/.htaccess"
+      mode: put
+
+  - name: upload wp-cli.yml to S3
+    amazon.aws.s3_object:
+      bucket: "{{ s3_deployment_bucket }}"
+      object: "/{{ s3_deployment_root }}/healthcheck.html"
+      src: "./files/healthcheck.html"
+      mode: put
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
@@ -249,40 +301,6 @@
     until: "tnatheme.stat.exists"
     retries: 15
     delay: 20
-
-  - name: copy .htaccess
-    ansible.builtin.copy:
-      src: ./files/.htaccess
-      dest: /var/www/html/.htaccess
-      owner: apache
-      group: apache
-
-  - name: copy healthcheck.html
-    ansible.builtin.copy:
-      src: ./files/healthcheck.html
-      dest: /var/www/html/healthcheck.html
-      owner: apache
-      group: apache
-
-  - name: copy robots.txt
-    ansible.builtin.copy:
-      src: "./files/robots-{{ account }}.txt"
-      dest: /var/www/html/robots.txt
-      owner: apache
-      group: apache
-
-  - name: copy wp-cli.yml
-    ansible.builtin.copy:
-      src: ./files/wp-cli.yml
-      dest: /var/www/html/wp-cli.yml
-      owner: apache
-
-  - name: copy wordpress.conf
-    ansible.builtin.copy:
-      src: ./wordpress.conf
-      dest: /etc/httpd/conf.d/wordpress.conf
-      owner: apache
-      group: apache
 
 - name: switch to localhost
   hosts: localhost
