@@ -56,38 +56,38 @@ sudo sed -i 's/DocumentRoot "\/var\/www\/html"/DocumentRoot "\/var\/www"/g' /etc
 sudo sed -i 's/Directory "\/var\/www\/html"/Directory "\/var\/www"/g' /etc/httpd/conf/httpd.conf
 
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/logfile_archive.sh \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/logfile_archive.sh \
   /usr/local/sbin/logfile_archive.sh
 sudo chmod +x /usr/local/sbin/logfile_archive.sh
 
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/httpd \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/httpd \
   /etc/logrotate.d/httpd
 
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress.conf \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/wordpress.conf \
   /etc/httpd/conf.d/wordpress.conf
 sudo chown apache:apache /etc/httpd/conf.d/wordpress.conf
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wp-cli.yml \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/wp-cli.yml \
   /var/www/html/wp-cli.yml
 sudo chown apache:apache /var/www/html/wp-cli.yml
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/robots.txt \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/robots.txt \
   /var/www/html/robots.txt
 sudo chown apache:apache /var/www/html/robots.txt
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/healthcheck.html \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/healthcheck.html \
   /var/www/html/healthcheck.html
 sudo chown apache:apache /var/www/html/healthcheck.html
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/.htaccess \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/.htaccess \
   /var/www/html/.htaccess
 sudo chown apache:apache /var/www/html/.htaccess
 
 # copy & call wordpress setup script
 sudo aws s3 cp \
-  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress-setup.sh \
+  s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/wordpress/wordpress-setup.sh \
   ./wordpress-setup.sh
 sudo chmod +x ./wordpress-setup.sh
 ./wordpress-setup.sh

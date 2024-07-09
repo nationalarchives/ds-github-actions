@@ -132,7 +132,7 @@
   - name: upload logfile_archive.sh to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/logfile_archive.sh"
+      object: "/{{ s3_deployment_root }}/wordpress/logfile_archive.sh"
       src: "./logfile_archive.sh"
       mode: put
 
@@ -144,7 +144,7 @@
   - name: upload wordpress setup file to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/wordpress-setup.sh"
+      object: "/{{ s3_deployment_root }}/wordpress/wordpress-setup.sh"
       src: "./wordpress-setup.sh"
       mode: put
 
@@ -156,42 +156,42 @@
   - name: upload wordpress.conf to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/wordpress.conf"
+      object: "/{{ s3_deployment_root }}/wordpress/wordpress.conf"
       src: "./wordpress.conf"
       mode: put
 
   - name: upload httpd to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/httpd"
+      object: "/{{ s3_deployment_root }}/wordpress/httpd"
       src: "./files/httpd"
       mode: put
 
   - name: upload wp-cli.yml to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/wp-cli.yml"
+      object: "/{{ s3_deployment_root }}/wordpress/wp-cli.yml"
       src: "./files/wp-cli.yml"
       mode: put
 
   - name: upload .htaccess to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/robots.txt"
+      object: "/{{ s3_deployment_root }}/wordpress/robots.txt"
       src: "./files/robots-{{ account }}.txt"
       mode: put
 
   - name: upload wp-cli.yml to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/.htaccess"
+      object: "/{{ s3_deployment_root }}/wordpress/.htaccess"
       src: "./files/.htaccess"
       mode: put
 
   - name: upload wp-cli.yml to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
-      object: "/{{ s3_deployment_root }}/healthcheck.html"
+      object: "/{{ s3_deployment_root }}/wordpress/healthcheck.html"
       src: "./files/healthcheck.html"
       mode: put
 
