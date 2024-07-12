@@ -16,7 +16,7 @@ on:
       account:
         type: string
         required: true
-      deploy-repo:
+      repo:
         type: string
         required: true
       release:
@@ -104,7 +104,7 @@ jobs:
       - prepare
     env:
       user: "${{ github.actor }}"
-      repo: "${{ inputs.deploy-repo }}"
+      repo: "${{ inputs.repo }}"
       deploy_env: "${{ inputs.account }}"
       region: "${{ inputs.region }}"
     environment: "${{ inputs.github-environment }}"
