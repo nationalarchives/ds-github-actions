@@ -75,6 +75,7 @@ def main():
         current_page = 1
         private_repos = 0
         public_repos = 0
+        error_repos = 0
         bucket_key = "{base}/{org}_{index}".format(base=bucket_base_key, org=organisation, index=bucket_index)
 
         url = "https://api.github.com/orgs/{org}/repos".format(org=organisation)
@@ -100,50 +101,50 @@ def main():
                     url_parts = entry["clone_url"].split("//")
                     github_creds = "{user}:{token}@".format(user=user,token=token)
                     repo_url = url_parts[0] + "//" + github_creds + url_parts[1]
-                    private_repos +=1
+                    private_repos += 1
                 else:
                     repo_url = entry["clone_url"]
-                    public_repos +=1
+                    public_repos += 1
 
-                clone = "git clone {repo}".format(repo=repo_url)
+                clone = "git clone --mirror {repo}".format(repo=repo_url)
+                repo_dir = "{repos_base_name}.git".format(repos_base_name=entry["name"])
                 os.system(clone)
-                os.chdir(entry["name"])
-                git_fetch = "git fetch --all"
-                os.system(git_fetch)
-                os.chdir("..")
 
-                shutil.make_archive(entry["name"], format='zip', root_dir=root_dir, base_dir=entry["name"])
+                if os.path.isdir(repo_dir):
+                    shutil.make_archive(entry["name"], format='zip', root_dir=root_dir, base_dir=repo_dir)
 
-                try:
-                    shutil.rmtree(entry["name"])
-                except OSError as e:
-                    print("issues with " + entry["name"])
+                    try:
+                        shutil.rmtree(repo_dir)
+                    except OSError as e:
+                        print("issues with " + repo_dir)
 
-                # run checksum
-                meta_file = open(meta_file_name, "a")
-                meta_file.write('{\n')
-                meta_file.write('  "file_name":"{name}",\n'.format(name=entry["name"]))
-                meta_file.write('  "file_size":"{size}",\n'.format(size=str(os.path.getsize(archive_name))))
-                meta_file.write('  "created_at:":"{date}",\n'.format(date=str(os.path.getctime(archive_name))))
-                meta_file.write('  "sha1":"{sha1}",\n'.format(sha1=sha1sum(archive_name)))
-                meta_file.write('  "sha256":"{sha256}",\n'.format(sha256=sha256sum(archive_name)))
-                meta_file.write('}\n')
-                meta_file.close()
+                    # run checksum
+                    meta_file = open(meta_file_name, "a")
+                    meta_file.write('{\n')
+                    meta_file.write('  "file_name":"{name}",\n'.format(name=repo_dir))
+                    meta_file.write('  "file_size":"{size}",\n'.format(size=str(os.path.getsize(archive_name))))
+                    meta_file.write('  "created_at:":"{date}",\n'.format(date=str(os.path.getctime(archive_name))))
+                    meta_file.write('  "sha1":"{sha1}",\n'.format(sha1=sha1sum(archive_name)))
+                    meta_file.write('  "sha256":"{sha256}",\n'.format(sha256=sha256sum(archive_name)))
+                    meta_file.write('}\n')
+                    meta_file.close()
 
-                s3_client.put_object(
-                    Body=open(archive_name, 'rb'),
-                    Bucket=bucket_name,
-                    Key="{key}/{file_name}".format(key=bucket_key, file_name=archive_name),
-                )
+                    s3_client.put_object(
+                        Body=open(archive_name, 'rb'),
+                        Bucket=bucket_name,
+                        Key="{key}/{file_name}".format(key=bucket_key, file_name=archive_name),
+                    )
 
-                s3_client.put_object(
-                    Body=open(meta_file_name, 'rb'),
-                    Bucket=bucket_name,
-                    Key="{key}/{file_name}".format(key=bucket_key, file_name=meta_file_name),
-                )
+                    s3_client.put_object(
+                        Body=open(meta_file_name, 'rb'),
+                        Bucket=bucket_name,
+                        Key="{key}/{file_name}".format(key=bucket_key, file_name=meta_file_name),
+                    )
 
-                os.remove(archive_name)
-                os.remove(meta_file_name)
+                    os.remove(archive_name)
+                    os.remove(meta_file_name)
+                else:
+                    error_repos += 1
 
             current_page += 1
 
@@ -155,7 +156,8 @@ def main():
         summary_file.write("end at: {count}\n".format(count=str(datetime.now())))
         summary_file.write("private repos: {count}\n".format(count=str(private_repos)))
         summary_file.write("public repos: {count}\n".format(count=str(public_repos)))
-        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos)))
+        summary_file.write("error repos: {count}\n".format(count=str(error_repos)))
+        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos + error_repos)))
         summary_file.close()
 
         s3_client.put_object(
