@@ -1,6 +1,6 @@
-# Blog WordPress DW playbook
+# Beta Redis playbook
 ---
-- name: create blog WordPress AMI
+- name: create beta redis AMI
   hosts: localhost
   gather_facts: false
 
@@ -8,15 +8,15 @@
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
-      role_session_name: "s-devops-beta-dw"
+      role_session_name: "s-devops-beta-redis"
     register: assumed_role
 
-  - name: get linux2 AMI
+  - name: get linux 2023 AMI
     amazon.aws.ec2_ami_info:
       owners: amazon
       region: "{{ region }}"
       filters:
-        name: "amzn2-ami-hvm*"
+        name: "al2023-ami-2023*"
         architecture: "x86_64"
     register: findami
 
@@ -25,62 +25,37 @@
       latest_ami: >
         {{ findami.images | sort(attribute='creation_date') | last }}
 
-  - name: set secrets
-    vars:
-      secret_data: "{{ lookup('amazon.aws.aws_secret', 'application/blog/wp/credentials', region=region, aws_access_key=assumed_role.sts_creds.access_key, aws_secret_key=assumed_role.sts_creds.secret_key, aws_security_token=assumed_role.sts_creds.session_token, on_denied='warn') | from_json }}"
-    set_fact:
-      db_host: "{{ secret_data.db_host }}"
-      db_name: "{{ secret_data.db_name }}"
-      db_user: "{{ secret_data.db_username }}"
-      db_pass: "{{ secret_data.db_password }}"
-      ses_user: "{{ secret_data.ses_username }}"
-      ses_pass: "{{ secret_data.ses_password }}"
-      # github_token: "{{ secret_data.github_token }}"
-
   - name: template deployment policy
     template:
       src: "./templates/instance-role-policy.json.j2"
       dest: "./instance-role-policy.json"
       force: yes
 
-  - name: get RDS security group ID
-    amazon.aws.ec2_group_info:
-      filters:
-        group-name:
-          - "mysql-main-prime-sg"
-    register: db_sg
-
-  - ansible.builtin.debug:
-      msg:
-        - "====================================================================="
-        - "{{ db_sg.security_groups[0].group_id }}"
-        - "====================================================================="
-
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-blog-wp-s3-policy"
+      policy_name: "ansible-ami-beta-redis-s3-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
 
-  - name: create blog IAM role
+  - name: create base beta redis IAM role
     community.aws.iam_role:
-      name: "ansible-ami-blog-wp-role"
+      name: "ansible-ami-beta-redis-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
-      managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"]
+      managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerRearedisrite"]
       create_instance_profile: yes
       delete_instance_profile: yes
       purge_policies: yes
       state: "present"
-    register: blog_iam_role
+    register: ec2_iam_role
 
   - name: create security group - allowing updates and downloads
-    amazon.aws.ec2_group:
-      name: "ansible-ami-blog-wp-sg"
+    amazon.aws.ec2_security_group:
+      name: "ansible-ami-beta-redis-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
-      vpc_id: "{{ vpc_id }}"
+      vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
       rules:
         - proto: "tcp"
           from_port: 22
@@ -112,6 +87,9 @@
     register: ec2_sec_group
 
   - name: template userdata
+    vars:
+      s3_deployment_bucket: "{{ s3_deployment_bucket }}"
+      s3_deployment_root: "{{ s3_deployment_root }}"
     template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
@@ -121,18 +99,17 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-blog-wp-role"
-      instance_type: "t3a.large"
+      instance_role: "ansible-ami-beta-redis-role"
+      instance_type: "{{ instance_type }}"
       metadata_options:
-        http_endpoint: "enabled"
         http_tokens: "required"
-      name : "blog-wp-primer"
+      name : "beta-redis-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
-        subnet_id: "{{ subnet_id }}"
+        subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       region: "{{ region }}"
-      security_groups: ["{{ ec2_sec_group.group_id }}", "{{ db_sg.security_groups[0].group_id }}"]
+      security_groups: ["{{ ec2_sec_group.group_id }}"]
       state: "running"
       termination_protection: no
       user_data: "{{ lookup('file', './userdata.sh') }}"
@@ -143,10 +120,11 @@
             delete_on_termination: true
             encrypted: true
             volume_size: "{{ volume_size }}"
-      vpc_subnet_id: "{{ subnet_id }}"
+      vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
+        Name: "beta-redis-primer"
         Environment: "{{ account }}"
-        Service: "blog"
+        Service: "Beta"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -193,7 +171,7 @@
       msg:
         - "====================================================================="
         - "checking status of new instance before ami can be build"
-        - "20 second interval with max duration of 15 minutes"
+        - "20 second interval with max duration of 5 minutes"
         - "====================================================================="
 
   - name: check if ec2 instance is ready
@@ -202,24 +180,34 @@
     remote_user: ec2-user
     register: init_finished
     until: "init_finished.stat.exists"
-    retries: 45
+    retries: 15
     delay: 20
 
-  - name: check if wp-config.php exists
-    ansible.builtin.stat:
-      path: "/var/www/html/wp-config.php"
-    remote_user: ec2-user
-    register: wpconfig_finished
-    until: "wpconfig_finished.stat.exists"
-    retries: 9
-    delay: 20
+  - name: copy docker files to remote
+    ansible.builtin.copy:
+      src: ./docker/
+      dest: /var/docker/
+      force: yes
+    become: true
 
-  - ansible.builtin.debug:
-      msg:
-        - "====================================================================="
-        - "wp-config.php"
-        - "{{ wpconfig_finished.stat.exists }}"
-        - "====================================================================="
+  - name: copy scripts to remote
+    ansible.builtin.copy:
+      src: ./files/
+      dest: /usr/local/bin/
+      force: yes
+      mode: 0755
+    become: true
+
+  - name: set mode for scripts
+    ansible.builtin.file:
+      path: '/usr/local/bin/{{ item.file_name }}'
+      mode: '0755'
+    loop:
+      - { file_name: startup.sh }
+      - { file_name: traefik-up.sh }
+      - { file_name: traefik-down.sh }
+      - { file_name: traefik-deploy.sh }
+      - { file_name: website-blue-green-deploy.sh }
 
 - name: switch to localhost
   hosts: localhost
@@ -229,40 +217,39 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "blog-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-      description: "Blog webserver - ready for deployment"
+      name: "beta-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      description: "Beta RP Instance - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "blog-wp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "blog"
+        Name: "beta-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Service: "Beta"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
         Terraform: false
 
-#  - name: terminate instance
-#    ec2_instance:
-#      instance_ids: "{{ instance_id }}"
-#      region: "{{ region }}"
-#      state: "absent"
+  - name: terminate instance
+    amazon.aws.ec2_instance:
+      instance_ids: "{{ instance_id }}"
+      region: "{{ region }}"
+      state: "absent"
 
   - name: remove security group
-    amazon.aws.ec2_group:
-      name: "ansible-ami-blog-wp-sg"
-      region: "{{ region }}"
+    amazon.aws.ec2_security_group:
+      name: "ansible-ami-beta-redis-sg"
       state: "absent"
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-blog-wp-role"
+      name: "ansible-ami-beta-redis-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-blog-wp-s3-policy"
+      policy_name: "ansible-ami-beta-redis-s3-policy"
       state: "absent"
 ...
