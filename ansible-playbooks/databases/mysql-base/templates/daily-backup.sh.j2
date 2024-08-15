@@ -1,10 +1,10 @@
 #!/bin/bash
 
-sudo touch /var/log/mysql-daily-backup.log
+sudo touch /var/log/database-backup.log
 
 suffix=$(date +"%Y-%m-%d_%H-%M-%S")
 
-echo "$(date '+%Y-%m-%d %T') - get instance details" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - get instance details" | sudo tee -a /var/log/database-backup.log > /dev/null
 TOKEN=$(curl --request PUT "http://169.254.169.254/latest/api/token" --header "X-aws-ec2-metadata-token-ttl-seconds: 3600")
 account_id=$(curl -s http://169.254.169.254/latest/meta-data/identity-credentials/ec2/info --header "X-aws-ec2-metadata-token: $TOKEN" | jq -rc .AccountId)
 instance_id=$(curl -s http://169.254.169.254/latest/meta-data/instance-id --header "X-aws-ec2-metadata-token: $TOKEN")
@@ -16,29 +16,29 @@ fi
 
 backup_name="ds_${{account_id}}_${{instance_name}}_${{suffix}}"
 
-echo "$(date '+%Y-%m-%d %T') - read credentials" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - read credentials" | sudo tee -a /var/log/database-backup.log > /dev/null
 secret_values=$(aws secretsmanager get-secret-value \
   --secret-id /infrastructure/credentials/${project_name} \
   --output json)
 bkup_username=$(echo $secret_values | jq -rc .SecretString | jq -rc .bkup_user)
 bkup_password=$(echo $secret_values | jq -rc .SecretString | jq -rc .bkup_password)
 
-echo "$(date '+%Y-%m-%d %T') - write database dump" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - write database dump" | sudo tee -a /var/log/database-backup.log > /dev/null
 sudo mysqldump --host localhost --user $bkup_username --password="$bkup_password" --all-databases --events --routines --lock-all-tables --result-file /data/backups/$backup_name.sql
 
-echo "$(date '+%Y-%m-%d %T') - create zip file" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - create zip file" | sudo tee -a /var/log/database-backup.log > /dev/null
 zip /data/backups/$backup_name.zip /data/backups/$backup_name.sql
 
-echo "$(date '+%Y-%m-%d %T') - remove sql text file" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - remove sql text file" | sudo tee -a /var/log/database-backup.log > /dev/null
 sudo rm /data/backups/$backup_name.sql
 
-echo "$(date '+%Y-%m-%d %T') - prepare meta file" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - prepare meta file" | sudo tee -a /var/log/database-backup.log > /dev/null
 touch /data/backups/$backup_name.meta.txt
 echo "file name: $backup_name.zip" >> /data/backups/$backup_name.meta.txt
 echo "$(ls -l /data/backups/$backup_name.zip)" >> /data/backups/$backup_name.meta.txt
 echo "$(openssl dgst -sha1 < /data/backups/$backup_name.zip)" >> /data/backups/$backup_name.meta.txt
 echo "$(openssl dgst -sha256 < /data/backups/$backup_name.zip)" >> /data/backups/$backup_name.meta.txt
 
-echo "$(date '+%Y-%m-%d %T') - copy files to S3" | sudo tee -a /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - copy files to S3" | sudo tee -a /var/log/database-backup.log > /dev/null
 aws s3 cp /data/backups/ s3://ds-${account}-backups/databases/mysql/ --recursive --exclude "*" --include "$backup_name.zip" --include "$backup_name.meta.txt"
 
