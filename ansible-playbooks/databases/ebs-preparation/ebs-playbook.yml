@@ -117,7 +117,7 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "{{ ec2_iam_role.role_name }}"
+      instance_role: "{{ ec2_iam_role.iam_role.role_name }}"
       instance_type: "t3a.small"
       metadata_options:
         http_tokens: "required"
