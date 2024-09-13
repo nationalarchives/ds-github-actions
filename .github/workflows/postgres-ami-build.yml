@@ -98,8 +98,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          vpc_id: ${{ secrets.vpc_id }}
-          subnet_id: ${{ secrets.subnet_id }}
+          VPC_ID: ${{ secrets.vpc_id }}
+          SUBNET_ID: ${{ secrets.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/databases/postgres-base
