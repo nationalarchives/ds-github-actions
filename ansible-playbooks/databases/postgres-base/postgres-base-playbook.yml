@@ -5,6 +5,10 @@
   gather_facts: true
 
   tasks:
+  - name: set subnet id
+    set_fact:
+      subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
+
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
