@@ -1,11 +1,11 @@
-# daily database backup timer
+# mysql database backup timer
 #
 
 [Unit]
-Description=Daily Database Backup Timer
+Description=MySQL Database Backup Timer
 
 [Timer]
-Unit=daily-backup.service
+Unit=mysql-backup.service
 OnCalendar=*-*-* 22:15:00
 Persistent=true
 

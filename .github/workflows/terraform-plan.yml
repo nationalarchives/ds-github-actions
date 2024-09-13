@@ -1,0 +1,60 @@
+---
+name: Terraform Plan
+
+permissions:
+  id-token: write
+  contents: write
+
+on:
+  workflow_call:
+    inputs:
+      account:
+        type: string
+        required: true
+      assume-role:
+        type: string
+        required: true
+      region:
+        type: string
+        required: false
+        default: "eu-west-2"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: "${{ inputs.region }}"
+          role-to-assume: "${{ inputs.assume-role }}"
+          role-session-name: TFPlan
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: install python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: install terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.4
+
+      - name: copy environment variables
+        run: cp ./components/terraform-vars/${{ inputs.account }}/* ./components/terraform/
+
+      - name: terraform init
+        id: init
+        run: terraform init -upgrade
+        working-directory: "components/terraform"
+
+      - name: terraform plan
+        id: plan
+        run: terraform plan
+        working-directory: "components/terraform"
+...

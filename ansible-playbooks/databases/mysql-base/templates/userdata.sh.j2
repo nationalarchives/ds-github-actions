@@ -103,9 +103,9 @@ echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /v
 sudo mkdir /data/backups
 sudo chmod 0777 /data/backups
 
-echo "$(date '+%Y-%m-%d %T') - set up backup service" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo systemctl enable daily-backup.timer
-sudo systemctl start daily-backup.timer
+echo "$(date '+%Y-%m-%d %T') - set up mysql backup service" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo systemctl enable mysql-backup.timer
+sudo systemctl start mysql-backup.timer
 
 cat << EOF > /var/finish-init.txt
 [status]
