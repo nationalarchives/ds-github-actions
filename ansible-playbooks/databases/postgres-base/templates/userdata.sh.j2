@@ -42,6 +42,8 @@ echo "$(date '+%Y-%m-%d %T') - set port and archive mode postgres" | sudo tee -a
 sudo sed -i "s|#listen_addresses = 'localhost'|listen_addresses = '*'|g" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|log_filename = 'postgresql-%a.log'|log_filename = 'postgresql_%y%m%d_%H%M%S.log'|" /var/lib/pgsql/data/postgresql.conf
+sudo sed -i "s|logging_collector = off|logging_collector = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#full_page_writes = on|full_page_writes = on|" /var/lib/pgsql/data/postgresql.conf
 sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f ${ARCHIVE_DIR}/%f && cp %p ${ARCHIVE_DIR}/%f'|" /var/lib/pgsql/data/postgresql.conf
@@ -49,8 +51,8 @@ sudo sed -i 's/#wal_level = replica/wal_level = replica/' /var/lib/pgsql/data/po
 sudo sed -i 's/#wal_log_hints = off/wal_log_hints = on/' /var/lib/pgsql/data/postgresql.conf
 sudo sed -i 's/#max_replication_slots = 10/max_replication_slots = 10/' /var/lib/pgsql/data/postgresql.conf
 sudo sed -i 's/#max_wal_senders = 10/max_wal_senders = 10/' /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's/#hot_standby = off/hot_standby = on /' /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's/#primary_conninfo = ''/#primary_conninfo = ''  /' /var/lib/pgsql/data/postgresql.conf
+#sudo sed -i 's/#hot_standby = off/hot_standby = on /' /var/lib/pgsql/data/postgresql.conf
+#sudo sed -i 's/#primary_conninfo = ''/#primary_conninfo = ''  /' /var/lib/pgsql/data/postgresql.conf
 
 # Set up access to postgres from a list of IP CIDRs
 # allowed separators are in IFS
@@ -96,25 +98,8 @@ sudo sed -i "s|md5|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
 
 sudo systemctl stop postgresql
 
-DATA_DIR="/postgres/data"
-LOG_DIR="/postgres/log"
-ARCHIVE_DIR="/postgres/archive"
-
 echo "$(date '+%Y-%m-%d %T') - change service variable PGDATA" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|Environment=PGDATA=.*$|Environment=PGDATA=$DATA_DIR|" /lib/systemd/system/postgresql.service
-
-echo "$(date '+%Y-%m-%d %T') - set up postgresql.conf" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo sed -i "s|#data_directory = 'ConfigDir'|data_directory = '${DATA_DIR}'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#log_directory = 'log'|log_directory = '${LOG_DIR}'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|log_filename = 'postgresql-%a.log'|log_filename = 'postgresql_%y%m%d_%H%M%S.log'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|logging_collector = off|logging_collector = on|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#archive_mode = off|archive_mode = on|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#archive_command = ''|archive_command = 'test ! -f ${ARCHIVE_DIR}/%f && cp %p ${ARCHIVE_DIR}/%f'|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i "s|#full_page_writes = on|full_page_writes = on|" /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's|#wal_level = replica|wal_level = logical|' /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's|#wal_log_hints = off|wal_log_hints = on|' /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's|#max_replication_slots = 10|max_replication_slots = 10|' /var/lib/pgsql/data/postgresql.conf
-sudo sed -i 's|#max_wal_senders = 10|max_wal_senders = 10|' /var/lib/pgsql/data/postgresql.conf
 
 cat << EOF > /var/finish-init.txt
 [status]
