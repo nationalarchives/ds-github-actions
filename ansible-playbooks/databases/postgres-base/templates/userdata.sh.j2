@@ -32,6 +32,34 @@ sudo systemctl stop postgresql
 
 echo "$(date '+%Y-%m-%d %T') - prepare postgres" | sudo tee -a  /var/log/ami-install.log > /dev/null
 
+sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
+
+# sql statements to secure the instance
+echo "$(date '+%Y-%m-%d %T') - create secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
+cat << 'EOF' > ~/secure_installation.sql
+ALTER USER postgres PASSWORD '{{root_password}}';
+EOF
+
+echo "$(date '+%Y-%m-%d %T') - create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
+cat << 'EOF' > ~/db_user.sql
+CREATE ROLE {{admin_user}} WITH SUPERUSER LOGIN PASSWORD '{{admin_password}}';
+CREATE ROLE {{repl_user}} WITH REPLICATION LOGIN PASSWORD '{{repl_password}}';
+EOF
+
+sudo systemctl start postgresql
+
+echo "$(date '+%Y-%m-%d %T') - run secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
+psql -U postgres < ~/db_user.sql
+echo "$(date '+%Y-%m-%d %T') - run create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
+psql -U postgres < ~/secure_installation.sql
+
+sudo systemctl stop postgresql
+
+echo "$(date '+%Y-%m-%d %T') - set all user connections to scram-sha-256" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo sed -i "s|trust|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
+sudo sed -i "s|ident|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
+sudo sed -i "s|md5|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
+
 # Configure PostgreSQL for replication
 # the directories are specific for the version of postgres and linux 2 from AWS
 DATA_DIR="/postgres/data"
@@ -69,34 +97,6 @@ for cidr in "${cidrs[@]}"
 do
     sudo sed -i "/# TYPE/a host replication replicator $cidr scram-sha-256\n" /var/lib/pgsql/data/pg_hba.conf
 done
-
-sudo sed -i "s|peer|trust|g" /var/lib/pgsql/data/pg_hba.conf
-
-# sql statements to secure the instance
-echo "$(date '+%Y-%m-%d %T') - create secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
-cat << 'EOF' > ~/secure_installation.sql
-ALTER USER postgres PASSWORD '{{root_password}}';
-EOF
-
-echo "$(date '+%Y-%m-%d %T') - create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
-cat << 'EOF' > ~/db_user.sql
-CREATE ROLE {{admin_user}} WITH SUPERUSER LOGIN PASSWORD '{{admin_password}}';
-CREATE ROLE {{repl_user}} WITH REPLICATION LOGIN PASSWORD '{{repl_password}}';
-EOF
-
-sudo systemctl start postgresql
-
-echo "$(date '+%Y-%m-%d %T') - run secure user postgres script" | sudo tee -a  /var/log/ami-install.log > /dev/null
-psql -U postgres < ~/db_user.sql
-echo "$(date '+%Y-%m-%d %T') - run create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
-psql -U postgres < ~/secure_installation.sql
-
-echo "$(date '+%Y-%m-%d %T') - set all user connections to scram-sha-256" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo sed -i "s|trust|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
-sudo sed -i "s|ident|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
-sudo sed -i "s|md5|scram-sha-256|g" /var/lib/pgsql/data/pg_hba.conf
-
-sudo systemctl stop postgresql
 
 echo "$(date '+%Y-%m-%d %T') - change service variable PGDATA" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo sed -i "s|Environment=PGDATA=.*$|Environment=PGDATA=$DATA_DIR|" /lib/systemd/system/postgresql.service
