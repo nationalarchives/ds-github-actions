@@ -25,3 +25,27 @@ sudo systemctl start postgresql
 # Standby
 primary_conninfo = 'user=replicator port=5432 host=postgres-main-prime.staging.local application_name=db02.replicator'
 primary_slot_name = 'replica01_slot'
+
+### On prime
+edit /postgres/data/postgres.conf:
+```text
+# Uncomment and modify the following settings:
+wal_level = replica
+max_wal_senders = 10
+```
+run ```sudo systemctl restart postgresql```
+
+### On replica:
+run
+```
+sudo rm -R /postgres/data
+pg_basebackup -h postgres-main-prime.live.local -U replicator -P -R -X stream -D /postgres/data
+sudo chown -R postgres:postgres /postgres/data
+```
+create ```/postgres/data/recovery.conf```
+```text
+standby_mode = on
+primary_conninfo = 'host=postgres-main-prime.live.local port=5432 user=replicator password=password'
+```
+run ```sudo systemctl restart postgresql```
+
