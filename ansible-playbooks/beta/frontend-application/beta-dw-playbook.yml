@@ -5,6 +5,11 @@
   gather_facts: false
 
   tasks:
+  - name: set vpc and subnet id
+    set_fact:
+      vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
+      subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
+
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
@@ -55,7 +60,7 @@
       name: "ansible-ami-beta-dw-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
-      vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
+      vpc_id: "{{ vpc_id }}"
       rules:
         - proto: "tcp"
           from_port: 22
@@ -154,7 +159,7 @@
       network:
         assign_public_ip: yes
         delete_on_termination: yes
-        subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
+        subnet_id: "{{ subnet_id }}"
       region: "{{ region }}"
       security_groups: ["{{ ec2_sec_group.group_id }}"]
       state: "running"
@@ -167,7 +172,7 @@
             delete_on_termination: true
             encrypted: true
             volume_size: "{{ volume_size }}"
-      vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
+      vpc_subnet_id: "{{ subnet_id }}"
       tags:
         Name: "beta-dw-primer"
         Environment: "{{ account }}"
