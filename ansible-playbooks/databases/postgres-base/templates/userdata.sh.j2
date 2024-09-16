@@ -39,7 +39,7 @@ EOF
 
 echo "$(date '+%Y-%m-%d %T') - create postgres roles script" | sudo tee -a  /var/log/ami-install.log > /dev/null
 cat << 'EOF' > ~/db_user.sql
-CREATE ROLE {{admin_user}} WITH SUPERUSER LOGIN PASSWORD '{{admin_password}}';
+CREATE ROLE {{admin_user}} WITH SUPERUSER CREATEDB CREATEROLE LOGIN PASSWORD '{{admin_password}}';
 CREATE ROLE {{repl_user}} WITH REPLICATION LOGIN PASSWORD '{{repl_password}}';
 EOF
 
