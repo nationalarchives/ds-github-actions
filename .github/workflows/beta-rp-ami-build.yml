@@ -98,8 +98,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          VPC_ID: ${{ secrets.vpc.id }}
-          SUBNET_ID: ${{ secrets.subnet.id }}
+          VPC_ID: ${{ secrets.vpc_id }}
+          SUBNET_ID: ${{ secrets.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/beta/reverse-proxy

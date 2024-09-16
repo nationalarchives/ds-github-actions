@@ -5,7 +5,7 @@
   gather_facts: false
 
   tasks:
-  - name: set subnet id
+  - name: set vpc and subnet id
     set_fact:
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
       subnet_id: "{{ lookup( 'env', 'SUBNET_ID') }}"
