@@ -43,6 +43,11 @@ on:
       s3_deployment_root:
         type: string
         required: true
+    secrets:
+      vpc_id:
+        required: true
+      subnet_id:
+        required: true
 
 permissions:
   id-token: write
@@ -96,8 +101,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          VPC_ID: ${{ secrets.VPC_ID }}
-          SUBNET_ID: ${{ secrets.SUBNET_ID }}
+          VPC_ID: ${{ secrets.vpc_id }}
+          SUBNET_ID: ${{ secrets.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/databases/mysql-base
