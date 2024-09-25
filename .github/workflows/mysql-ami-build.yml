@@ -25,6 +25,9 @@ on:
       project_name:
         type: string
         required: true
+      retention_days:
+        type: string
+        required: true
       instance_type:
         type: string
         required: true
@@ -105,6 +108,7 @@ jobs:
           ansible-playbook \
           --extra-vars " \
           project_name='${{ inputs.project_name }}' \
+          retention_days='${{ retention_days` }}' \
           key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
           asm_key='/infrastructure/credentials/mysql-${{ inputs.project_name }}' \
