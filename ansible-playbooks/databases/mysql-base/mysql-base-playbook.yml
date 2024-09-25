@@ -110,7 +110,7 @@
 
   - name: create my.cnf
     vars:
-      random_id: "{{ 4294967295 | random(start=1, step=1, seed=ansible_facts["date_time"]["epoch"]) }}"
+      random_id: "{{ 4294967295 | random(start=1, step=1, seed=ansible_facts['date_time']['epoch']) }}"
     template:
       src: "./templates/my.cnf.j2"
       dest: "./my.cnf"
