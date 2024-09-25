@@ -75,6 +75,7 @@ def main():
         current_page = 1
         private_repos = 0
         public_repos = 0
+        internal_repos = 0
         error_repos = 0
         bucket_key = "{base}/{org}_{index}".format(base=bucket_base_key, org=organisation, index=bucket_index)
 
@@ -102,6 +103,9 @@ def main():
                     github_creds = "{user}:{token}@".format(user=user,token=token)
                     repo_url = url_parts[0] + "//" + github_creds + url_parts[1]
                     private_repos += 1
+                elif entry["internal"]:
+                    repo_url = entry["clone_url"]
+                    internal_repos += 1
                 else:
                     repo_url = entry["clone_url"]
                     public_repos += 1
@@ -156,8 +160,9 @@ def main():
         summary_file.write("end at: {count}\n".format(count=str(datetime.now())))
         summary_file.write("private repos: {count}\n".format(count=str(private_repos)))
         summary_file.write("public repos: {count}\n".format(count=str(public_repos)))
+        summary_file.write("internal repos: {count}\n".format(count=str(internal_repos)))
         summary_file.write("error repos: {count}\n".format(count=str(error_repos)))
-        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos + error_repos)))
+        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos + internal_repos + error_repos)))
         summary_file.close()
 
         s3_client.put_object(
