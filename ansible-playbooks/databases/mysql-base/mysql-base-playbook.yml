@@ -242,21 +242,21 @@
 
   - name: copy mysql-backup.sh to remote
     ansible.builtin.copy:
-      src: ./daily-backup.sh
+      src: ./mysql-backup.sh
       dest: /usr/local/sbin/mysql-backup.sh
       force: yes
     become: yes
 
   - name: copy mysql-backup timer file
     ansible.builtin.copy:
-      src: ./files/daily-backup.timer
+      src: ./files/mysql-backup.timer
       dest: /etc/systemd/system/mysql-backup.timer
       force: yes
     become: yes
 
   - name: copy mysql-backup service file
     ansible.builtin.copy:
-      src: ./files/daily-backup.service
+      src: ./files/mysql-backup.service
       dest: /etc/systemd/system/mysql-backup.service
       force: yes
     become: yes
