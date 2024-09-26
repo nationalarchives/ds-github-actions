@@ -30,7 +30,7 @@
       suffix: "{{ ansible_date_time.epoch }}"
 
   - name: template deployment policy
-    template:
+    ansible.builtin.template:
       src: "./templates/instance-role-policy.json.j2"
       dest: "./instance-role-policy.json"
       force: yes
@@ -111,7 +111,7 @@
   - name: create my.cnf
     vars:
       random_id: "{{ 4294967295 | random(start=1, step=1, seed=ansible_facts['date_time']['epoch']) }}"
-    template:
+    ansible.builtin.template:
       src: "./templates/my.cnf.j2"
       dest: "./my.cnf"
       force: yes
@@ -121,7 +121,7 @@
       account: "{{ account }}"
       project_name: "{{ project_name }}"
       retention_days: "{{ retention_days }}"
-    template:
+    ansible.builtin.template:
       src: "./templates/mysql-backup.sh.j2"
       dest: "./mysql-backup.sh"
       force: yes
@@ -140,7 +140,7 @@
       network_cidr: "{{ network_cidr }}"
       subnet_db_cidr_a: "{{ subnet_db_cidr_a }}"
       subnet_db_cidr_b: "{{ subnet_db_cidr_b }}"
-    template:
+    ansible.builtin.template:
       src: "./templates/userdata.sh.j2"
       dest: "./userdata.sh"
       force: yes
