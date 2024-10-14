@@ -22,6 +22,11 @@ on:
       volume_size:
         type: string
         required: true
+    secrets:
+      vpc_id:
+        required: true
+      subnet_id:
+        required: true
 
 permissions:
   id-token: write
