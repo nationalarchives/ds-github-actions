@@ -36,7 +36,7 @@ echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /
 sudo -H python3.11 -m pip3 install requests
 sudo -H python3.11 -m pip3 install boto3
 
-#sudo unzip /temp/secure-backups.zip /usr/local/share/applications/secure-backup
+#sudo unzip /temp/secure-backups.zip -d /usr/local/share/applications
 #sudo cp secure-backups.service /etc/systemd/system/
 #sudo systemctl enable secure-backups.service
 #sudo systemctl start secure-backups.service

@@ -8,8 +8,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/sbin
-ExecStart=/usr/bin/python3 /usr/local/share/applications/secrure-backups.py
+WorkingDirectory=/usr/local/share/applications/secrure-backups
+ExecStart=/usr/bin/python3 /usr/local/share/applications/secrure-backups/src/secrure-backups.py
 Restart=always
 
 [Install]
