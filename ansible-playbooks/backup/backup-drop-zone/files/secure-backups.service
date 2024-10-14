@@ -1,0 +1,16 @@
+# Monitor SQS for uploaded files and copy them into the S3 vault bucket
+#
+
+[Unit]
+Description=Secure backups from Drop Zone to Vault
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/sbin
+ExecStart=/usr/bin/python3 /usr/local/share/applications/secrure-backups.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
