@@ -9,7 +9,7 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=/usr/local/share/applications/secrure-backups
-ExecStart=/usr/bin/python3.11 /usr/local/share/applications/secrure-backups/src/secrure-backups.py
+ExecStart=/usr/bin/python3.11 /usr/local/share/applications/secure-backups/src/secure-backups.py
 Restart=always
 
 [Install]

@@ -32,9 +32,14 @@ sudo dnf install python3.11-pip -y
 echo "$(date '+%Y-%m-%d %T') - install python libs" | sudo tee -a  /var/log/ami-install.log > /dev/null
 python3.11 -m pip install requests
 python3.11 -m pip install boto3
+python3.11 -m pip install mysql-connector-python
+python3.11 -m pip install ndjson
+
 echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo -H python3.11 -m pip3 install requests
-sudo -H python3.11 -m pip3 install boto3
+sudo -H python3.11 -m pip install requests
+sudo -H python3.11 -m pip install boto3
+sudo -H python3.11 -m pip install mysql-connector-python
+sudo -H python3.11 -m pip install ndjson
 
 #sudo unzip /temp/secure-backups.zip -d /usr/local/share/applications
 #sudo cp secure-backups.service /etc/systemd/system/
