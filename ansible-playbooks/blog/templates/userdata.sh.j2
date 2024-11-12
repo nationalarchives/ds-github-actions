@@ -86,6 +86,7 @@ sudo systemctl restart httpd
 sudo echo "# BEGIN WordPress
 RewriteEngine On
 RewriteBase /
+RewriteRule ^wp-json/wp/v2/users/?$ - [R=403,NC,L]
 RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
