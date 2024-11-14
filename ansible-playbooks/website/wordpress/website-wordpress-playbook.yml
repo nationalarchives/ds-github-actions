@@ -135,6 +135,7 @@
       object: "/{{ s3_deployment_root }}/wordpress/logfile_archive.sh"
       src: "./logfile_archive.sh"
       mode: put
+      overwrite: true
 
   - name: template wordpress setup script
     template:
@@ -147,6 +148,7 @@
       object: "/{{ s3_deployment_root }}/wordpress/wordpress-setup.sh"
       src: "./wordpress-setup.sh"
       mode: put
+      overwrite: true
 
   - name: template wordpress.conf
     template:
@@ -159,6 +161,7 @@
       object: "/{{ s3_deployment_root }}/wordpress/wordpress.conf"
       src: "./wordpress.conf"
       mode: put
+      overwrite: true
 
   - name: upload httpd to S3
     amazon.aws.s3_object:
@@ -166,6 +169,7 @@
       object: "/{{ s3_deployment_root }}/wordpress/httpd"
       src: "./files/httpd"
       mode: put
+      overwrite: true
 
   - name: upload wp-cli.yml to S3
     amazon.aws.s3_object:
@@ -173,27 +177,31 @@
       object: "/{{ s3_deployment_root }}/wordpress/wp-cli.yml"
       src: "./files/wp-cli.yml"
       mode: put
+      overwrite: true
 
-  - name: upload .htaccess to S3
+  - name: upload robots.txt to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
       object: "/{{ s3_deployment_root }}/wordpress/robots.txt"
       src: "./files/robots-{{ account }}.txt"
       mode: put
+      overwrite: true
 
-  - name: upload wp-cli.yml to S3
+  - name: upload .htaccess to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
       object: "/{{ s3_deployment_root }}/wordpress/.htaccess"
       src: "./files/.htaccess"
       mode: put
+      overwrite: true
 
-  - name: upload wp-cli.yml to S3
+  - name: upload healthcheck.html to S3
     amazon.aws.s3_object:
       bucket: "{{ s3_deployment_bucket }}"
       object: "/{{ s3_deployment_root }}/wordpress/healthcheck.html"
       src: "./files/healthcheck.html"
       mode: put
+      overwrite: true
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
