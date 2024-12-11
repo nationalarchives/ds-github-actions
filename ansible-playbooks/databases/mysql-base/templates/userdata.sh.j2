@@ -27,7 +27,7 @@ sudo dnf install wget -y
 
 echo "$(date '+%Y-%m-%d %T') - install mysql" | sudo tee -a /var/log/ami-install.log > /dev/null
 sudo mkdir /packages
-sudo wget -P /packages https://repo.mysql.com/mysql80-community-release-el9.rpm
+sudo wget -P /packages https://repo.mysql.com/mysql84-community-release-el9.rpm
 sudo rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
 sudo dnf install /packages/mysql80-community-release-el9.rpm -y
 sudo dnf install mysql-community-server -y
