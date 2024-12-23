@@ -25,21 +25,21 @@ echo "$(date '+%Y-%m-%d %T') - install git" | sudo tee -a  /var/log/ami-install.
 sudo dnf install git -y
 
 echo "$(date '+%Y-%m-%d %T') - install python 3.11" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo dnf install python3.11 -y
+sudo dnf install python3.12 -y
 echo "$(date '+%Y-%m-%d %T') - install pip" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo dnf install python3.11-pip -y
+sudo dnf install python3.12-pip -y
 
-echo "$(date '+%Y-%m-%d %T') - install python libs" | sudo tee -a  /var/log/ami-install.log > /dev/null
-python3.11 -m pip install requests
-python3.11 -m pip install boto3
-python3.11 -m pip install mysql-connector-python
-python3.11 -m pip install ndjson
+echo "$(date '+%Y-%m-%d %T') - install python libs for ssm-user" | sudo tee -a  /var/log/ami-install.log > /dev/null
+/usr/bin/python3.12 -m pip install requests
+/usr/bin/python3.12 -m pip install boto3
+/usr/bin/python3.12 -m pip install mysql-connector-python
+/usr/bin/python3.12 -m pip install ndjson
 
 echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo -H python3.11 -m pip install requests
-sudo -H python3.11 -m pip install boto3
-sudo -H python3.11 -m pip install mysql-connector-python
-sudo -H python3.11 -m pip install ndjson
+sudo -H /usr/bin/python3.12 -m pip install requests
+sudo -H /usr/bin/python3.12 -m pip install boto3
+sudo -H /usr/bin/python3.12 -m pip install mysql-connector-python
+sudo -H /usr/bin/python3.12 -m pip install ndjson
 
 #sudo unzip /temp/secure-backups.zip -d /usr/local/share/applications
 #sudo cp secure-backups.service /etc/systemd/system/
