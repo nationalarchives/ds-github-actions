@@ -2,11 +2,11 @@ services:
   blue-web: &frontend
     container_name: blue-web
     environment:
-      - SECRET_KEY=c7566fb5c1da890395bde8fd360236d5f31bae78c95be8c2aa9f2cd217de0221
       - ENVIRONMENT=production
       - ENVIRONMENT_NAME=staging
       - CONFIG=config.Staging
       - LOG_LEVEL=debug
+      - SECRET_KEY=${SECRET_KEY}
       - SENTRY_DSN=https://cd29dbbbe0df9acf5c001eb0da230525@o1230303.ingest.us.sentry.io/4507423798853632
       - SENTRY_JS=https://js.sentry-cdn.com/f736865f0e1fb140b8192082e1bfb5ad.min.js
       - WAGTAIL_API_URL=https://beta.nationalarchives.gov.uk/api/v2
@@ -25,8 +25,8 @@ services:
       - CACHE_HEADER_DURATION=31536000
       - GA4_ID=GTM-KX8ZWVZG
       - ALLOW_INSECURE=true
-      - FORCE_HTTPS=false
-image: frontend-application-image
+      _ FORCE_HTTPS=false
+    image: frontend-application-image
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
