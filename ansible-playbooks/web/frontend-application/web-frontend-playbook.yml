@@ -91,10 +91,10 @@
       state: "present"
     register: ec2_sec_group
 
-  - name: template compose.yml for live
+  - name: template compose.yml for dev and staging
+    vars:
+      sub_domain: "{{ account }}-www.nationalarchives.gov.uk"
     template:
-      vars:
-        sub_domain: "{{ account }}-www.nationalarchives.gov.uk"
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"
       force: yes
@@ -102,9 +102,9 @@
           account == "staging"
 
   - name: template compose.yml for live
+    vars:
+      sub_domain: "www.nationalarchives.gov.uk"
     template:
-      vars:
-        sub_domain: "www.nationalarchives.gov.uk"
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"
       force: yes
