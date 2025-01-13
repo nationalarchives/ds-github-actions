@@ -25,7 +25,7 @@ $tmpDir = "c:\temp"
 write-log -Message "[debug]" | Out-File -FilePath \debug.txt
 
 # required packages
-$installerPackageUrl = "s3://ds-$environment-deployment-source/installation-packages/search-indexer"
+$installerPackageUrl = "s3://ds-$environment-deployment-source/installation-packages/discovery"
 
 $cloudwatchAgentJSON = "discovery-cloudwatch-agent.json"
 $pathAWScli = "C:\Program Files\Amazon\AWSCLIV2"
@@ -74,10 +74,10 @@ try {
 
     write-log -Message "===> download and install indexer code"
     write-log -Message "---- download code"
-    Invoke-Expression -Command "aws s3 cp s3://ds-$environment-deployment-source/search-index/search-index.zip $tmpDir\search-index.zip"
+    Invoke-Expression -Command "aws s3 cp s3://ds-$environment-deployment-source/discovery/search-index-windows-service.zip $tmpDir\search-index-windows-service.zip"
     write-log -Message "---- install code"
     New-Item -Path "$codeTarget" -ItemType "directory" -Force
-    Expand-Archive -LiteralPath "$tmpDir\search-index.zip" -DestinationPath \
+    Expand-Archive -LiteralPath "$tmpDir\search-index-windows-service.zip" -DestinationPath \
 
     write-log -Message "===> enable SMBv2 signing"
     Set-SmbServerConfiguration -EnableSMB2Protocol $true -Force
