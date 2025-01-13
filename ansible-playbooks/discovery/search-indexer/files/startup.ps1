@@ -25,10 +25,10 @@ try {
 	}
 
 	write-log -Message "update code from S3"
-	aws s3 cp s3://ds-staging-deployment-source/search-index/search-index.zip /temp/search-index.zip
+	aws s3 cp s3://ds-staging-deployment-source/discovery/search-index-windows-service.zip /temp/search-index-windows-service.zip
 
 	write-log -Message "write code"
-	expand-archive -Path \temp\search-index.zip -DestinationPath \ -force
+	expand-archive -Path \temp\search-index-windows-service.zip -DestinationPath \ -force
 } catch {
 	write-log -Message "Caught an exception:" -Severity "Error"
 	write-log -Message "Exception Type: $($_.Exception.GetType().FullName)" -Severity "Error"
