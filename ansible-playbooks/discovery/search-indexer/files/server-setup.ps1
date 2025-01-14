@@ -29,7 +29,8 @@ $installerPackageUrl = "s3://ds-$environment-deployment-source/installation-pack
 
 $cloudwatchAgentJSON = "discovery-cloudwatch-agent.json"
 $pathAWScli = "C:\Program Files\Amazon\AWSCLIV2"
-$dotnetSDK6 = "https://download.visualstudio.microsoft.com/download/pr/ba3a1364-27d8-472e-a33b-5ce0937728aa/6f9495e5a587406c85af6f93b1c89295/dotnet-sdk-8.0.404-win-x64.exe"
+$dotnetSDK = "https://download.visualstudio.microsoft.com/download/pr/ba3a1364-27d8-472e-a33b-5ce0937728aa/6f9495e5a587406c85af6f93b1c89295/dotnet-sdk-8.0.404-win-x64.exe"
+$dotnetFramework = "https://download.visualstudio.microsoft.com/download/pr/ba3a1364-27d8-472e-a33b-5ce0937728aa/6f9495e5a587406c85af6f93b1c89295/dotnet-sdk-8.0.404-win-x64.exe"
 $cloudwatchAgentInstaller = "https://s3.eu-west-1.amazonaws.com/amazoncloudwatch-agent-eu-west-1/windows/amd64/latest/amazon-cloudwatch-agent.msi"
 $codeTarget = "c:\search-index"
 
@@ -66,11 +67,17 @@ try {
     write-log -Message "---- configure agent"
     & "C:\Program Files\Amazon\AmazonCloudWatchAgent\amazon-cloudwatch-agent-ctl.ps1" -a fetch-config -m ec2 -c file:$tmpDir\$cloudwatchAgentJSON -s
 
-    write-log -Message "===> download and install dotnet sdk 6"
+    write-log -Message "===> download and install dotnet sdk"
     write-log -Message "---- download"
-    (new-object System.Net.WebClient).DownloadFile($dotnetSDK6, "$tmpDir\dotnet-sdk-6.0.407-win-x64.exe")
+    (new-object System.Net.WebClient).DownloadFile($dotnetSDK, "$tmpDir\dotnet-sdk.exe")
     write-log -Message "---- install"
-    & "$tmpDir\dotnet-sdk-6.0.407-win-x64.exe" /install /passive /norestart
+    & "$tmpDir\dotnet-sdk.exe" /install /passive /norestart
+
+    write-log -Message "===> download and install dotnet framework"
+    write-log -Message "---- download"
+    (new-object System.Net.WebClient).DownloadFile($dotnetFramework, "$tmpDir\dotnet-framework.exe")
+    write-log -Message "---- install"
+    & "$tmpDir\dotnet-framework.exe" /install /passive /norestart
 
     write-log -Message "===> download and install indexer code"
     write-log -Message "---- download code"
