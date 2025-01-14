@@ -29,6 +29,13 @@ try {
 
 	write-log -Message "write code"
 	expand-archive -Path \temp\search-index-windows-service.zip -DestinationPath \ -force
+	$params = @{
+      Name = "DiscoverySearchIndexingService"
+      BinaryPathName = '\WindowsService\EsSearchIndex.WinServiceClient.exe -k netsvcs'
+      DisplayName = "Discovery Search Indexing Service"
+      StartupType = "Automatic"
+    }
+    New-Service @params
 } catch {
 	write-log -Message "Caught an exception:" -Severity "Error"
 	write-log -Message "Exception Type: $($_.Exception.GetType().FullName)" -Severity "Error"
