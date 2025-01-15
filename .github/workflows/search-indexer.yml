@@ -77,10 +77,10 @@ jobs:
           aws_session_token: ${{ steps.creds.outputs.aws-session-token }}
           aws_region: ${{ inputs.region }}
 
-      - name: List files in the repository
-        run: |
-          ls -lR ${{ github.workspace }}      
-
+#      - name: List files in the repository
+#        run: |
+#          ls -lR ${{ github.workspace }}
+#
       - name: install python
         uses: actions/setup-python@v5
         with:
@@ -104,7 +104,7 @@ jobs:
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
           export AWS_DEFAULT_REGION=${{ inputs.region }}
           ansible-playbook \
-          --extra-vars "key_name='${{ inputs.key_name }}' \
+          --vvv --extra-vars "key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
           account='${{ inputs.account }}' \
           region='${{ inputs.region }}' \
