@@ -72,7 +72,7 @@ jobs:
 
       - name: List files in the repository
         run: |
-          ls ${{ github.workspace }}      
+          ls -lR ${{ github.workspace }}      
 
       - name: install python
         uses: actions/setup-python@v5
