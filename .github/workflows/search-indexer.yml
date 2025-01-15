@@ -110,5 +110,7 @@ jobs:
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}'" \
+          s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
+          s3_deployment_root='${{ inputs.s3_deployment_root }}'" \
           --private-key $cur_dir/${{ env.SSH_KEY_FILE }} \
           search-indexer-playbook.yml

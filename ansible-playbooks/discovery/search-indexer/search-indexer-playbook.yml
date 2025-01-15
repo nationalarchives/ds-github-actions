@@ -67,6 +67,9 @@
         force: yes
 
     - name: template deployment policy
+      vars:
+        s3_deployment_bucket: "{{ s3_deployment_bucket }}"
+        s3_deployment_root: "{{ s3_deployment_root }}"
       template:
         src: "./templates/instance-role-policy.json.j2"
         dest: "./instance-role-policy.json"
