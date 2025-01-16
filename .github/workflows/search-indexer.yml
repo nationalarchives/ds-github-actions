@@ -112,5 +112,5 @@ jobs:
           volume_size='${{ inputs.volume_size }}' \
           s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
           s3_deployment_root='${{ inputs.s3_deployment_root }}'" \
-          --private-key $cur_dir/${{ env.SSH_KEY_FILE }} \
+          --private-key $cur_dir/${{ inputs.key_name }} \
           search-indexer-playbook.yml
