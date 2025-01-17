@@ -1,0 +1,76 @@
+---
+  name: Web Frontend Apply 
+  
+  permissions:
+    id-token: write
+    contents: write
+  
+  on:
+    workflow_call:
+      inputs:
+        environment:
+          type: string
+          required: true
+        account-id:
+          type: string
+          required: true
+        assume-role:
+          type: string
+          required: true
+        bucket:
+          type: string
+          required: true
+        region:
+          type: string
+          required: false
+          default: "eu-west-2"
+        working-directory:
+          type: string
+          required: false
+          default: "components/terraform"
+        branch:
+          type: string
+          required: false
+          default: ""
+  jobs:
+    terraform:
+      runs-on: ubuntu-latest
+      timeout-minutes: 10
+  
+      steps:
+        - name: Configure AWS Credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            aws-region: "${{ inputs.region }}"
+            role-to-assume: "${{ inputs.assume-role }}"
+            role-session-name: PlaningSession
+  
+        - uses: actions/setup-python@v5
+          with:
+            python-version: "3.11"
+  
+        - name: Checkout
+          uses: actions/checkout@v4
+          with:
+            ref: "${{ inputs.branch }}"
+  
+        - name: Copy Environment Vars
+          run: |
+            cp ./vars/${{ inputs.environment }}/terraform/* ./components/terraform/
+  
+        - name: Terraform init
+          id: init
+          run: terraform init -upgrade
+          working-directory: ${{ inputs.working-directory }}
+  
+        - name: Terraform plan
+          id: plan
+          run: terraform plan
+          working-directory: ${{ inputs.working-directory }}
+  
+        - name: Terraform apply
+          id: apply
+          run: terraform apply -auto-approve -input=false
+          working-directory: ${{ inputs.working-directory }}
+...
+  
