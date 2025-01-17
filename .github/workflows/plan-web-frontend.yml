@@ -81,7 +81,7 @@ jobs:
           - name: Copy Environment Vars
             run: |
               echo 'test'
-              cp ./var/${{ env.environment }}/terraform/* ./components/terraform/
+              cp ./vars/${{ env.environment }}/terraform/* ./components/terraform/
 
           - name: Terraform init
             id: init
