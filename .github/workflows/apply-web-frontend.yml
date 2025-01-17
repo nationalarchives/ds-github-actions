@@ -96,5 +96,5 @@
             - name: Terraform apply
               id: apply
               run: terraform apply -auto-approve -input=false
-              working-directory: ${{ inputs.working-directory }}
+              working-directory: ${{ env.working-directory }}
     
