@@ -111,6 +111,8 @@ jobs:
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
           s3_deployment_bucket='${{ inputs.s3_deployment_bucket }}' \
-          s3_deployment_root='${{ inputs.s3_deployment_root }}'" \
+          s3_deployment_root='${{ inputs.s3_deployment_root }}' \
+          vpc_id='${{ secrets.vpc_id }}' \
+          subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           search-indexer-playbook.yml
