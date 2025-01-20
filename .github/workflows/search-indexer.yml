@@ -93,6 +93,9 @@ jobs:
         run: ansible-galaxy collection install ansible.windows
 
       - name: run ansible playbook
+        env:
+          VPC_ID: ${{ secrets.VPC_ID }}
+          SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/ds-github-actions/ansible-playbooks/discovery/search-indexer
