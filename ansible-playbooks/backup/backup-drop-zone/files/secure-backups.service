@@ -7,10 +7,13 @@ After=network.target
 
 [Service]
 Type=simple
+Environment=SSM_ID=/application/backup/secure-backups
 User=root
 WorkingDirectory=/usr/local/share/applications/secrure-backups
 ExecStart=/usr/bin/python3.11 /usr/local/share/applications/secure-backups/src/secure-backups.py
 Restart=always
+StandardOutput=syslog+console
+StandardError=syslog+console
 
 [Install]
 WantedBy=multi-user.target
