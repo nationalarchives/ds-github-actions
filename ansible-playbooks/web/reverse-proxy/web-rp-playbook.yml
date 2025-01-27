@@ -3,7 +3,7 @@
 - name: create web rp AMI
   hosts: localhost
   gather_facts: false
-
+  
   tasks:
     - name: switch role credentials
       community.aws.sts_assume_role:
@@ -168,6 +168,8 @@
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
   gather_facts: false
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
   tasks:
     - ansible.builtin.debug:
         msg:
