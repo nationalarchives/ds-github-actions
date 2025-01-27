@@ -181,9 +181,14 @@
       path: "/var/finish-init.txt"
     remote_user: ec2-user
     register: init_finished
-    until: "init_finished.stat.exists"
-    retries: 15
-    delay: 20
+  
+  - name: debug init
+    ansible.builtin.debug:
+      var: init_finished
+
+    # until: "init_finished.stat.exists"
+    # retries: 15
+    # delay: 20
 
 - name: switch to localhost
   hosts: localhost
