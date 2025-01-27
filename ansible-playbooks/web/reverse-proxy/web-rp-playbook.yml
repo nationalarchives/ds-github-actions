@@ -6,7 +6,7 @@
 
   tasks:
   - name: switch role credentials
-    community.aws.sts_assume_role:
+    amazon.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
       role_session_name: "s-devops-web-rp"
     register: assumed_role
