@@ -3,4 +3,5 @@ requests
 pyjwt
 wheel
 ansible
+pypsrp
 pywinrm
