@@ -131,7 +131,7 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
           export AWS_DEFAULT_REGION=${{ inputs.region }}
-          ansible-playbook -vvv \
+          ansible-playbook  \
           --extra-vars " \
           key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
