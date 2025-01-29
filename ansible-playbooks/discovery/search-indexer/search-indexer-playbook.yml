@@ -152,7 +152,7 @@
       ansible_user: ansible-winrm
       ansible_password: "{{ password }}"
       ansible_connection: winrm
-      ansible_port: 5985
+      ansible_port: 5986
       ansible_winrm_transport: basic
       ansible_winrm_message_encryption: auto
       ansible_winrm_server_cert_validation: ignore
@@ -160,7 +160,7 @@
   - name: wait for WinRM port
     ansible.builtin.wait_for:
       host: "{{ instance_public_ip }}"
-      port: 5985
+      port: 5986
       delay: 120
       timeout: 600
       sleep: 10
@@ -172,7 +172,7 @@
   hosts: winhosts
   gather_facts: no
   connection: winrm
-  port: 5985
+  port: 5986
 
   tasks:
   - ansible.builtin.debug:
