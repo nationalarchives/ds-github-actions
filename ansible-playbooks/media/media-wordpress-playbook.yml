@@ -11,12 +11,13 @@
       role_session_name: "s-devops"
     register: assumed_role
 
-  - name: get linux2 AMI
+  - name: get linux2023 AMI
     amazon.aws.ec2_ami_info:
       owners: amazon
       region: "{{ region }}"
       filters:
-        name: "amzn2-ami-hvm*"
+        name: "al2023-ami-2023*"
+        architecture: "x86_64"
     register: findami
 
   - name: set latest AMI
