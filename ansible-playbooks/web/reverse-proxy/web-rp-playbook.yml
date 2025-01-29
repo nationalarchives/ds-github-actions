@@ -11,12 +11,12 @@
         role_session_name: "s-devops-web-rp"
       register: assumed_role
 
-    - name: get linux 2 AMI
+    - name: get linux 2023 AMI
       amazon.aws.ec2_ami_info:
         owners: amazon
         region: "{{ region }}"
         filters:
-          name: "amzn2-ami-hvm*"
+          name: "al2023-ami-2023*"
           architecture: "x86_64"
       register: findami
 
@@ -43,7 +43,7 @@
         name: "ansible-ami-web-rp-role"
         region: "{{ region }}"
         assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
-        managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
+        managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/SecretsManagerReadWrite", "arn:aws:iam:aws:policy/org-session-manager-logs"]
         create_instance_profile: yes
         delete_instance_profile: yes
         purge_policies: yes
@@ -100,7 +100,7 @@
     - name: provisioning instance
       amazon.aws.ec2_instance:
         key_name: "{{ key_name }}"
-        image_id: "{{ latest_ami.image_id }}"#
+        image_id: "{{ latest_ami.image_id }}"
         instance_role: "ansible-ami-web-rp-role"
         instance_type: "{{ instance_type }}"
         metadata_options:
