@@ -16,6 +16,9 @@ on:
       account:
         type: string
         required: true
+      account_id:
+        type: string
+        required: true
       branch:
         type: string
         required: true
@@ -133,6 +136,7 @@ jobs:
           key_name='${{ inputs.key_name }}' \
           role_arn='${{ inputs.playbook_role }}' \
           account='${{ inputs.account }}' \
+          account_id='${{ inputs.account_id }}' \
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}' \
