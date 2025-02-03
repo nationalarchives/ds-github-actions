@@ -3,7 +3,7 @@ version: "3.8"
 services:
   blue-web: &frontend
     container_name: blue-web
-    image: ghcr.io/nationalarchives/ds-infrastructure-beta:latest
+    image: ghcr.io/nationalarchives/ds-infrastructure-web:latest
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
