@@ -91,19 +91,11 @@
       state: "present"
     register: ec2_sec_group
 
-  # - name: template compose.yml for dev and staging
-  #   vars:
-  #     sub_domain: "{{ account }}-www.nationalarchives.gov.uk"
-  #   template:
-  #     src: "./templates/compose.yml.j2"
-  #     dest: "./docker/compose.yml"
-  #     force: yes
-  #   when: account == "dev" or
-  #         account == "staging"
+  
 
   - name: template compose.yml for live
     vars:
-      sub_domain: "www.nationalarchives.gov.uk"
+      sub_domain: "ohos.ac.uk"
     template:
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"
@@ -130,7 +122,7 @@
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
-      image_id: "{{ latest_ami.image_id }}"#
+      image_id: "{{ latest_ami.image_id }}"
       instance_role: "ansible-ami-ohos-web-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
@@ -156,7 +148,7 @@
       tags:
         Name: "ohos-web-primer"
         Environment: "{{ account }}"
-        Service: "Web"
+        Service: "Ohos"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -250,13 +242,13 @@
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
       name: "ohos-web-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-      description: "Web Frontend Instance - ready for deployment"
+      description: "Ohos Web Instance - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
         Name: "ohos-web-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "Web"
+        Service: "Ohos"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
