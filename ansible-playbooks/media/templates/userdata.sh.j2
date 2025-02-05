@@ -15,16 +15,16 @@ sudo systemctl enable httpd
 sudo systemctl start httpd
 
 # Install php 8.2
-sudo amazon-linux-extras enable php8.2
 sudo dnf clean metadata
-sudo dnf install php php-common php-pear -y
-sudo dnf install php-{cli,cgi,curl,mbstring,gd,mysqlnd,gettext,json,xml,fpm,intl,zip,simplexml,gd} -y
+sudo dnf -y install php8.2 php8.2-common php-pear
+sudo dnf -y install php8.2-{cli,mbstring,gd,mysqlnd,xml,fpm,intl,zip}
+sudo dnf -y install php-{cgi,curl,gettext,json,simplexml}
 
 # Install mysql
 sudo dnf install mysql -y
 
 # Install ImageMagick
-sudo dnf -y install php-devel gcc ImageMagick ImageMagick-devel
+sudo dnf -y install php8.2-devel gcc ImageMagick ImageMagick-devel
 sudo bash -c "yes '' | pecl install -f imagick"
 sudo bash -c "echo 'extension=imagick.so' > /etc/php.d/imagick.ini"
 
@@ -157,34 +157,24 @@ PHP
 
 ## Co-Author Plus
 /usr/local/bin/wp plugin install co-authors-plus --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Yoast SEO
 /usr/local/bin/wp plugin install wordpress-seo --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Simple Footnotes
 /usr/local/bin/wp plugin install simple-footnotes --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Akismet Anti-Spam
 /usr/local/bin/wp plugin install akismet --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Classic Editor
 /usr/local/bin/wp plugin install classic-editor --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Term Management Tools
 /usr/local/bin/wp plugin install term-management-tools --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## WordPress Importer
 /usr/local/bin/wp plugin install wordpress-importer --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Export All URLS
 /usr/local/bin/wp plugin install export-all-urls --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## Advanced Custom Fields
 /usr/local/bin/wp plugin install advanced-custom-fields --activate --force --allow-root 2>/var/www/html/wp-cli.log
-
 ## TNA Cookie Consent
 /usr/local/bin/wp plugin install https://github.com/nationalarchives/ds-cookie-consent/archive/refs/heads/master.zip --force --allow-root 2>/var/www/html/wp-cli.log
-
 
 # remove PHP version exposure
 sudo sed -i 's/expose_php = On/expose_php = Off/' /etc/php.ini
