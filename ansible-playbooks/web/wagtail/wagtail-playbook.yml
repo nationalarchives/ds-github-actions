@@ -130,7 +130,7 @@
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
-      image_id: "{{ latest_ami.image_id }}"#
+      image_id: "{{ latest_ami.image_id }}"
       instance_role: "ansible-ami-wagtail-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
