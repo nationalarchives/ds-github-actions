@@ -15,16 +15,16 @@ sudo systemctl enable httpd
 sudo systemctl start httpd
 
 # Install php 8.2
-sudo amazon-linux-extras enable php8.2
 sudo dnf clean metadata
-sudo dnf install php php-common php-pear -y
-sudo dnf install php-{cli,cgi,curl,mbstring,gd,mysqlnd,gettext,json,xml,fpm,intl,zip,simplexml,gd} -y
+sudo dnf -y install php8.2 php8.2-common php-pear
+sudo dnf -y install php8.2-{cli,mbstring,gd,mysqlnd,xml,fpm,intl,zip}
+sudo dnf -y install php-{cgi,curl,mbstring,gettext,json,simplexml}
 
 # Install mysql
 sudo dnf install mysql -y
 
 # Install ImageMagick
-sudo dnf -y install php-devel gcc ImageMagick ImageMagick-devel
+sudo dnf -y install php8.2-devel gcc ImageMagick ImageMagick-devel
 sudo bash -c "yes '' | pecl install -f imagick"
 sudo bash -c "echo 'extension=imagick.so' > /etc/php.d/imagick.ini"
 
