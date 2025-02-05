@@ -24,7 +24,7 @@ sudo dnf install collectd -y
 echo "$(date '+%Y-%m-%d %T') - install git" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install git -y
 
-echo "$(date '+%Y-%m-%d %T') - install python 3.11" | sudo tee -a  /var/log/ami-install.log > /dev/null
+echo "$(date '+%Y-%m-%d %T') - install python 3.12" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install python3.12 -y
 echo "$(date '+%Y-%m-%d %T') - install pip" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo dnf install python3.12-pip -y
