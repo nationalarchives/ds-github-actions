@@ -1,21 +1,21 @@
 #!/bin/bash
 
 # Update yum
-sudo dnf update -y
+sudo dnf -y update
 
 # Install apache
-sudo dnf install -y httpd httpd-tools mod_ssl
+sudo dnf -y install httpd httpd-tools mod_ssl
 sudo systemctl enable httpd
 sudo systemctl start httpd
 
 # Install php 8.2
-sudo amazon-linux-extras enable php8.2
 sudo dnf clean metadata
-sudo dnf install php php-common php-pear -y
-sudo dnf install php-{cli,cgi,curl,mbstring,gd,mysqlnd,gettext,json,xml,fpm,intl,zip,simplexml,gd} -y
+sudo dnf -y install php8.2 php8.2-common php-pear
+sudo dnf -y install php8.2-{cli,mbstring,gd,mysqlnd,xml,fpm,intl,zip}
+sudo dnf -y install php-{cgi,curl,gettext,json,simplexml}
 
 # Install ImageMagick
-sudo dnf -y install php-devel gcc ImageMagick ImageMagick-devel
+sudo dnf -y install php8.2-devel gcc ImageMagick ImageMagick-devel
 sudo bash -c "yes '' | pecl install -f imagick"
 sudo bash -c "echo 'extension=imagick.so' > /etc/php.d/imagick.ini"
 
@@ -23,13 +23,13 @@ sudo systemctl restart php-fpm.service
 sudo systemctl restart httpd.service
 
 # Install NFS packages
-sudo dnf install -y amazon-efs-utils
-sudo dnf install -y nfs-utils
+sudo dnf -y install amazon-efs-utils
+sudo dnf -y install nfs-utils
 sudo service nfs start
 sudo service nfs status
 
 # Install Cloudwatch agent
-sudo dnf install amazon-cloudwatch-agent -y
+sudo dnf -y install amazon-cloudwatch-agent
 sudo amazon-linux-extras install -y collectd
 sudo aws s3 cp s3://{{ s3_deployment_bucket }}/{{ s3_deployment_root }}/cloudwatch/cloudwatch-agent-config.json /opt/aws/amazon-cloudwatch-agent/bin/config.json
 sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
@@ -48,7 +48,7 @@ wp cli info
 cd /
 
 # client required by wp config command
-sudo dnf install mysql -y
+sudo dnf -y install mysql
 
 # Change Apache base config file to point to different root
 # /etc/httpd/conf/httpd.conf
