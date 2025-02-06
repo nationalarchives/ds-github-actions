@@ -57,23 +57,6 @@ jobs:
         with:
           ref: "${{ inputs.branch }}"
 
-      - name: Create Backend S3 Bucket
-        run: |
-          if 
-           aws s3 ls "s3://${{ inputs.bucket }}" 2>&1 | grep -q 'NoSuchBucket' 
-          then 
-           aws s3api create-bucket \
-              --bucket "${{ inputs.bucket }}" \
-              --region ${{ inputs.region }} \
-              --create-bucket-configuration LocationConstraint=${{ inputs.region }}
-          
-           aws s3api put-public-access-block \
-              --bucket "${{ inputs.bucket }}" \
-              --public-access-block-configuration "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
-          else
-           echo 'Bucket Already Exists'
-          fi
-
       - name: Copy Environment Vars
         run: |
           echo 'test'
@@ -81,7 +64,7 @@ jobs:
 
       - name: Terraform init
         id: init
-        run: terraform init -upgrade
+        run: terraform init
         working-directory: ${{ inputs.working-directory }}
 
       - name: Terraform plan
