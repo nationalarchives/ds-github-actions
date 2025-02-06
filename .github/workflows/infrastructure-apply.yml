@@ -38,6 +38,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: terraform setup
+        uses: hashicorp/setup-terraform@v3
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
