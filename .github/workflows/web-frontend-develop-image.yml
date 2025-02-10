@@ -1,10 +1,18 @@
-name: Update Develop Image Version 
+name: Update Image Version in Parameter Store
 
 on:
   workflow_dispatch:
     inputs:
+      environment:
+        description: 'The environment for which the version is being updated'
+        required: true
+        type: choice
+        options:
+          - develop
+          - staging
+          - live
       new_version:
-        description: 'The new version of the frontend application image for develop'
+        description: 'The new version of the frontend application image'
         required: true
         type: string
 
@@ -19,15 +27,21 @@ jobs:
       - name: Set Environment Variables
         run: |
           echo "NEW_VERSION=${{ inputs.new_version }}" >> $GITHUB_ENV
-          echo "PARAMETER_NAME=/application/web/frontend/docker_image" >> $GITHUB_ENV
-          echo "ENVIRONMENT=develop" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
+         
+          # Set the Parameter Store name based on environment
+          echo "PARAMETER_NAME=/application/web/frontend/docker_image-${{ inputs.environment }}" >> $GITHUB_ENV
+         
+          # Set the AWS account number based on the selected environment
+          if [ "${{ inputs.environment }}" == "develop" ]; then
+            echo "AWS_ACCOUNT_ID=846769538626" >> $GITHUB_ENV
+          elif [ "${{ inputs.environment }}" == "337670467269" ]; then
+            echo "AWS_ACCOUNT_ID=STAGING_ACCOUNT_ID" >> $GITHUB_ENV
+          elif [ "${{ inputs.environment }}" == "968803923593" ]; then
+            echo "AWS_ACCOUNT_ID=LIVE_ACCOUNT_ID" >> $GITHUB_ENV
+          fi
 
-      - name: Configure AWS Credentials (via EC2 IAM Role)
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: eu-west-2  
-
-      - name: Update SSM Parameter Store for Develop
+      - name: Update SSM Parameter Store
         run: |
           NEW_IMAGE_TAG="ghcr.io/nationalarchives/ds-frontend:${{ env.NEW_VERSION }}"
-          aws ssm put-parameter --name ${{ env.PARAMETER_NAME }} --value "$NEW_IMAGE_TAG" --type String --overwrite
+          aws ssm put-parameter --name "${{ env.PARAMETER_NAME }}" --value "$NEW_IMAGE_TAG" --type String --overwrite
