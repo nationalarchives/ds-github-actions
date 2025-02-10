@@ -1,4 +1,4 @@
-name: Update Image Version in Parameter Store
+name: Update Web Frontend Image Version
 
 on:
   workflow_dispatch:
