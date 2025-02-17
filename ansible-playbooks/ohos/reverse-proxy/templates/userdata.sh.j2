@@ -100,7 +100,7 @@ sudo make install
 
 echo "$(date '+%Y-%m-%d %T') - set up NginX environment" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo groupadd nginx
-sudo useradd -c "Nginx beta" -g nginx -d /var/lib/nginx -s /sbin/nologin nginx
+sudo useradd -c "Nginx ohos" -g nginx -d /var/lib/nginx -s /sbin/nologin nginx
 
 sudo mkdir /var/lib/nginx
 sudo mkdir /var/lib/nginx/tmp
