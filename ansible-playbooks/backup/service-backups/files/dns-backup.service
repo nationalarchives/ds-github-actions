@@ -1,0 +1,9 @@
+# Backing up all DNS records from Total Uptime
+
+[Unit]
+Description=Backup DNS records from Total Uptime
+
+[Service]
+Environment='DNS_API_URL=https://api.totaluptime.com'
+Environment='S3_ACCESS_POINT=tna-external-service-i38re81tu48c7tsxh3ugswpt51e6ceuw2b-s3alias'
+ExecStart=/usr/bin/python3.12 /backup-scripts/dns_backup.py

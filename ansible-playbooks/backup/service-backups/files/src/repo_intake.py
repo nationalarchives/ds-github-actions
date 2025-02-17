@@ -1,6 +1,5 @@
 import requests
 import json
-import subprocess
 import shutil
 import boto3
 import os

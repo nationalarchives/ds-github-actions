@@ -43,6 +43,9 @@ sudo chmod 0777 /github-backup
 sudo systemctl enable repo-intake.timer
 sudo systemctl start repo-intake.timer
 
+sudo systemctl enable dns-backup.timer
+sudo systemctl start dns-backup.timer
+
 cat << EOF > /var/finish-init.txt
 [status]
 finished = true

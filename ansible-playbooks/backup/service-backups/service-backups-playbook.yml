@@ -175,10 +175,10 @@
       mode: '0755'
     become: yes
 
-  - name: copy repo_intake python script
+  - name: copy python backup script
     ansible.builtin.copy:
-      src: ./files/repo_intake.py
-      dest: /backup-scripts/repo_intake.py
+      src: ./files/src/
+      dest: /backup-scripts/
       owner: root
       group: root
       mode: 'u+x,g+x,o+x'
@@ -194,6 +194,18 @@
     ansible.builtin.copy:
       src: ./files/repo-intake.service
       dest: /etc/systemd/system/repo-intake.service
+    become: yes
+
+  - name: copy dns-backup timer
+    ansible.builtin.copy:
+      src: ./files/dns-backup.timer
+      dest: /etc/systemd/system/dns-backup.timer
+    become: yes
+
+  - name: copy dns-backup service
+    ansible.builtin.copy:
+      src: ./files/dns-backup.service
+      dest: /etc/systemd/system/dns-backup.service
     become: yes
 
 - name: switch to localhost

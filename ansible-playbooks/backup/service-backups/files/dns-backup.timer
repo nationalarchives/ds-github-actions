@@ -1,0 +1,13 @@
+# Backing up all DNS records from Total Uptime timer
+#
+
+[Unit]
+Description=Backup DNS records from Total Uptime
+
+[Timer]
+Unit=dns-backup.service
+OnCalendar=Fri *-*-* 23:07:00
+Persistent=true
+
+[Install]
+WantedBy=default.target
