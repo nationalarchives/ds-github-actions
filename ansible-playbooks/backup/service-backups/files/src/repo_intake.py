@@ -6,18 +6,19 @@ import os
 import tarfile
 from pathlib import Path
 from datetime import datetime, timedelta
-from private_tools import get_asm_parameter, sha256sum, sha1sum
+from private_tools import get_asm_parameters
 
 def main():
     asm_key = os.environ['ASM_KEY']
     access_point = os.environ['S3_ACCESS_POINT']
+
     root_dir = '/github-backup'
     zip_dir = '/github-zips'
     tar_dir = '/github-tar'
     ap_dir  = 'tna-external-services/github'
 
     # read repo credentials from ASM
-    secret_values = json.loads(get_asm_parameter(name=asm_key))
+    secret_values = json.loads(get_asm_parameters(name=asm_key, aws_region='eu-west-2'))
 
     s3_client = boto3.client("s3")
     repos_per_page = 100

@@ -6,12 +6,10 @@ import boto3
 from datetime import datetime
 from requests.auth import HTTPBasicAuth
 import xml.etree.ElementTree as ET
-from private_tools import get_asm_parameter
+from private_tools import get_asm_parameters
 
 def main():
-    # read repo credentials from ASM
-    secret_values = json.loads(get_asm_parameter(name="service-backups/dns/totaluptime/credentials"))
-
+    asm_key = os.environ['ASM_KEY']
     api_url = os.environ['DNS_API_URL']
     access_point = os.environ['S3_ACCESS_POINT']
 
@@ -19,6 +17,8 @@ def main():
     tar_dir = '/dns-totaluptime-tar'
     ap_dir = 'tna-external-services/dns-totaluptime'
 
+    # read repo credentials from ASM
+    secret_values = json.loads(get_asm_parameters(name=asm_key, aws_region='eu-west-2'))
     user = secret_values['user']
     pw = secret_values['pass']
 

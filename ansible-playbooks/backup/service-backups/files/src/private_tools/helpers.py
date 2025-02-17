@@ -99,7 +99,7 @@ def get_ssm_parameters(name: str, aws_region: str):
     return params
 
 
-def get_asm_parameter(asm_client, name: str, aws_region: str) -> json:
+def get_asm_parameters(asm_client, name: str, aws_region: str) -> json:
     client = boto3.client('ssm',
                           region_name=aws_region)
 
