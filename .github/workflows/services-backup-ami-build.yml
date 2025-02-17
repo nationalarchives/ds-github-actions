@@ -1,5 +1,5 @@
 ---
-name: Service Backups AMI
+name: Services Backup AMI
 
 on:
   workflow_call:
@@ -82,7 +82,7 @@ jobs:
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
         run: |
           cur_dir=$(pwd)
-          cd $cur_dir/actions/ansible-playbooks/backup/service-backups
+          cd $cur_dir/actions/ansible-playbooks/backup/services-backup
           export AWS_ACCESS_KEY_ID=${{ steps.creds.outputs.aws-access-key-id }}
           export AWS_SECRET_ACCESS_KEY=${{ steps.creds.outputs.aws-secret-access-key }}
           export AWS_SESSION_TOKEN=${{ steps.creds.outputs.aws-session-token }}
@@ -97,5 +97,5 @@ jobs:
           vpc_id='${{ secrets.vpc_id }}' \
           subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
-          service-backups-playbook.yml
+          services-backup-playbook.yml
 ...
