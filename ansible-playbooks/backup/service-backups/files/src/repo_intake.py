@@ -3,90 +3,46 @@ import json
 import shutil
 import boto3
 import os
-import hashlib
+import tarfile
 from pathlib import Path
-from datetime import datetime
-
-
-def get_asm_parameter(asm_client, name: str) -> json:
-    secrets = asm_client.get_secret_value(SecretId=name)
-    return secrets["SecretString"]
-
-
-def sha256sum(filename: str) -> str:
-    h = hashlib.sha256()
-    b = bytearray(128 * 1024)
-    mv = memoryview(b)
-    with open(filename, 'rb', buffering=0) as f:
-        while n := f.readinto(mv):
-            h.update(mv[:n])
-    return h.hexdigest()
-
-
-def sha1sum(filename: str) -> str:
-    h = hashlib.sha1()
-    b = bytearray(128 * 1024)
-    mv = memoryview(b)
-    with open(filename, 'rb', buffering=0) as f:
-        while n := f.readinto(mv):
-            h.update(mv[:n])
-    return h.hexdigest()
-
-
-def rmdir(directory: str) -> None:
-    directory = Path(directory)
-    for item in directory.iterdir():
-        if item.is_dir():
-            directory.rmdir(item)
-        else:
-            item.unlink()
-    directory.rmdir()
-
-
-def s3_folder_exists(s3_client, bucket: str, path: str) -> bool:
-    path = path.rstrip('/')
-    resp = s3_client.list_objects(Bucket=bucket, Prefix=path, Delimiter='/', MaxKeys=1)
-    return 'CommonPrefixes' in resp
-
+from datetime import datetime, timedelta
+from private_tools import get_asm_parameter, sha256sum, sha1sum
 
 def main():
-    bucket_name = "tna-service-backup"
-    bucket_base_key = "github"
-    bucket_index = str(datetime.now()).replace(" ", "_")
-    root_dir = "/github-backup"
+    asm_key = os.environ['ASM_KEY']
+    access_point = os.environ['S3_ACCESS_POINT']
+    root_dir = '/github-backup'
+    zip_dir = '/github-zips'
+    tar_dir = '/github-tar'
+    ap_dir  = 'tna-external-services/github'
 
     # read repo credentials from ASM
-    asm_client = boto3.client("secretsmanager", region_name="eu-west-2")
-    secret_values = json.loads(get_asm_parameter(asm_client=asm_client, name="service-backups/github/credentials"))
+    secret_values = json.loads(get_asm_parameter(name=asm_key))
 
     s3_client = boto3.client("s3")
     repos_per_page = 100
     git_fetch = "git fetch --all"
 
     Path(root_dir).mkdir(parents=True, exist_ok=True)
-    os.chdir(root_dir)
+    Path(zip_dir).mkdir(parents=True, exist_ok=True)
+    Path(tar_dir).mkdir(parents=True, exist_ok=True)
 
     start_time = str(datetime.now())
     for repo in secret_values:
-        user = repo["user"]
-        token = repo["token"]
-        organisation = repo["organisation"]
+        os.chdir(root_dir)
         current_page = 1
         private_repos = 0
         public_repos = 0
-        internal_repos = 0
-        error_repos = 0
-        bucket_key = "{base}/{org}_{index}".format(base=bucket_base_key, org=organisation, index=bucket_index)
 
-        url = "https://api.github.com/orgs/{org}/repos".format(org=organisation)
+        url = f'https://api.github.com/orgs/{repo["organisation"]}/repos'
         headers = {
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "Authorization": "Bearer {key}".format(key=token)
+            'Accept': 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Authorization': f'Bearer {repo["token"]}'
         }
 
         while True:
-            payload = {"per_page": repos_per_page, "page": current_page}
+            payload = {'per_page': repos_per_page, 'page': current_page}
             response = requests.get(url, params=payload, headers=headers)
             response_json = response.json()
             if len(response_json) == 0:
@@ -94,83 +50,44 @@ def main():
 
             for entry in response_json:
                 # clone github repo
-                meta_file_name = "{repo_name}.meta.json".format(repo_name=entry["name"])
-                archive_name = "{name}.zip".format(name=entry["name"])
+                meta_file_name = f'{entry["name"]}.meta.json'
+                archive_name = f'{entry["name"]}.zip'
 
                 if entry["private"]:
-                    url_parts = entry["clone_url"].split("//")
-                    github_creds = "{user}:{token}@".format(user=user,token=token)
-                    repo_url = url_parts[0] + "//" + github_creds + url_parts[1]
+                    url_parts = entry['clone_url'].split('//')
+                    repo_url = f'{url_parts[0]}//{repo["user"]}:{repo["token"]}@{url_parts[1]}'
                     private_repos += 1
-                elif entry["internal"]:
-                    repo_url = entry["clone_url"]
-                    internal_repos += 1
                 else:
-                    repo_url = entry["clone_url"]
+                    repo_url = entry['clone_url']
                     public_repos += 1
 
-                clone = "git clone --mirror {repo}".format(repo=repo_url)
-                repo_dir = "{repos_base_name}.git".format(repos_base_name=entry["name"])
+                clone = f'git clone --mirror {repo_url}'
+                repo_dir = f'{entry["name"]}.git'
                 os.system(clone)
 
-                if os.path.isdir(repo_dir):
-                    shutil.make_archive(entry["name"], format='zip', root_dir=root_dir, base_dir=repo_dir)
-
-                    try:
-                        shutil.rmtree(repo_dir)
-                    except OSError as e:
-                        print("issues with " + repo_dir)
-
-                    # run checksum
-                    meta_file = open(meta_file_name, "a")
-                    meta_file.write('{\n')
-                    meta_file.write('  "file_name":"{name}",\n'.format(name=repo_dir))
-                    meta_file.write('  "file_size":"{size}",\n'.format(size=str(os.path.getsize(archive_name))))
-                    meta_file.write('  "created_at:":"{date}",\n'.format(date=str(os.path.getctime(archive_name))))
-                    meta_file.write('  "sha1":"{sha1}",\n'.format(sha1=sha1sum(archive_name)))
-                    meta_file.write('  "sha256":"{sha256}",\n'.format(sha256=sha256sum(archive_name)))
-                    meta_file.write('}\n')
-                    meta_file.close()
-
-                    s3_client.put_object(
-                        Body=open(archive_name, 'rb'),
-                        Bucket=bucket_name,
-                        Key="{key}/{file_name}".format(key=bucket_key, file_name=archive_name),
-                    )
-
-                    s3_client.put_object(
-                        Body=open(meta_file_name, 'rb'),
-                        Bucket=bucket_name,
-                        Key="{key}/{file_name}".format(key=bucket_key, file_name=meta_file_name),
-                    )
-
-                    os.remove(archive_name)
-                    os.remove(meta_file_name)
-                else:
-                    error_repos += 1
+                shutil.make_archive(entry['name'], format='zip', root_dir=root_dir, base_dir=repo_dir)
+                shutil.move(f'{root_dir}/{archive_name}', zip_dir)
+                shutil.rmtree(repo_dir)
 
             current_page += 1
 
-        summary_file_name = "_backup-summary.log"
+        # create a tar file of the entire github organistion
+        tar_name = f'{repo["organisation"]}_{str(datetime.now()).replace(" ", "_").replace(":", "-")}.tar'
+        tar_file = f'{tar_dir}/{tar_name}'
+        with tarfile.open(tar_file, 'w') as tar:
+            for entry in os.scandir(zip_dir):
+                if entry.is_file():
+                    tar.add(f'{zip_dir}/{entry.name}')
+                    os.remove(f'{zip_dir}/{entry.name}')
 
-        summary_file = open(summary_file_name, "a")
-        summary_file.write("organisation: {org}\n".format(org=organisation))
-        summary_file.write("start at: {time}\n".format(time=start_time))
-        summary_file.write("end at: {count}\n".format(count=str(datetime.now())))
-        summary_file.write("private repos: {count}\n".format(count=str(private_repos)))
-        summary_file.write("public repos: {count}\n".format(count=str(public_repos)))
-        summary_file.write("internal repos: {count}\n".format(count=str(internal_repos)))
-        summary_file.write("error repos: {count}\n".format(count=str(error_repos)))
-        summary_file.write("total repos:  {count}\n".format(count=str(private_repos + public_repos + internal_repos + error_repos)))
-        summary_file.close()
-
-        s3_client.put_object(
-            Body=open(summary_file_name, 'rb'),
-            Bucket=bucket_name,
-            Key="{key}/{file_name}".format(key=bucket_key, file_name=summary_file_name),
-        )
-        os.remove(summary_file_name)
-
+        s3_client.upload_file(tar_file, access_point, f'{ap_dir}/{tar_name}',
+                              ExtraArgs={'Metadata': {'x-amz-meta-legal_hold': 'ON',
+                                                      'x-amz-meta-lock_mode': 'governance',
+                                                      'x-amz-meta-retain_until_date': (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d 00:00:00')
+                                                      }
+                                         }
+                              )
+        os.remove(tar_file)
 
 if __name__ == "__main__":
     main()
