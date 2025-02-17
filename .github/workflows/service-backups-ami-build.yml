@@ -22,6 +22,11 @@ on:
       volume_size:
         type: string
         required: true
+    secrets:
+      vpc_id:
+        required: true
+      subnet_id:
+        required: true
 
 permissions:
   id-token: write
@@ -89,6 +94,8 @@ jobs:
           region='${{ inputs.region }}' \
           instance_type='${{ inputs.instance_type }}' \
           volume_size='${{ inputs.volume_size }}'" \
+          vpc_id='${{ secrets.vpc_id }}' \
+          subnet_id='${{ secrets.subnet_id }}'" \
           --private-key $cur_dir/${{ inputs.key_name }} \
           service-backups-playbook.yml
 ...
