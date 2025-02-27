@@ -96,6 +96,7 @@ jobs:
         env:
           VPC_ID: ${{ secrets.VPC_ID }}
           SUBNET_ID: ${{ secrets.SUBNET_ID }}
+          ANSIBLE_FORCE_COLOR: '1'
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/discovery/search-indexer
