@@ -95,19 +95,21 @@
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
-#      key_name: "{{ key_name }}"
-#      image_id: "{{ latest_ami.image_id }}"#
-#      instance_role: "ansible-ami-search-indexer-role"
-#      instance_type: "{{ instance_type }}"
+      diff: true
+      check: true
+      key_name: "{{ key_name }}"
+      image_id: "{{ latest_ami.image_id }}"#
+      instance_role: "ansible-ami-search-indexer-role"
+      instance_type: "{{ instance_type }}"
 #      metadata_options:
 #        http_endpoint: "enabled"
 #        http_tokens: "optional"
-#      name: "search-indexer-primer"
-#      network:
-#        assign_public_ip: yes
-#        delete_on_termination: yes
-#        subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
-#      region: "{{ region }}"
+      name: "search-indexer-primer"
+      network:
+        assign_public_ip: yes
+        delete_on_termination: yes
+        subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
+      region: "{{ region }}"
 #      security_groups: [ "{{ ec2_sec_group.group_id }}" ]
 #      state: "running"
 #      termination_protection: no
