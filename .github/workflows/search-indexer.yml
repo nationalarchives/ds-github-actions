@@ -94,8 +94,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          VPC_ID: ${{ secrets.VPC_ID }}
-          SUBNET_ID: ${{ secrets.SUBNET_ID }}
+          VPC_ID: ${{ secrets.vpc_id }}
+          SUBNET_ID: ${{ secrets.subnet_id }}
           ANSIBLE_FORCE_COLOR: '1'
         run: |
           cur_dir=$(pwd)
