@@ -26,7 +26,7 @@ def main():
 
     domains = list()
     basic = HTTPBasicAuth(user, pw)
-    r = requests.get(api_url + "/CloudDNS/Domain/All", auth=basic)
+    r = requests.get('{api_url}/CloudDNS/Domain/All', auth=basic)
     if r.status_code == 200:
         xml = r.text
         root = ET.fromstring(xml)
@@ -40,7 +40,7 @@ def main():
         os.makedirs(tar_dir)
 
     for domain in domains:
-        r = requests.get(api_url + "/CloudDNS/Domain/Export/" + domain, auth=basic)
+        r = requests.get('{api_url}/CloudDNS/Domain/Export/{domain}', auth=basic)
         if r.status_code == 200:
             root = ET.fromstring(r.text)
             message = root.find('{http://schemas.datacontract.org/2004/07/Cloud.APIClasses}message').text
@@ -59,7 +59,7 @@ def main():
     s3_client.upload_file(tar_file, access_point , f'{ap_dir}/{tar_name}',
                           ExtraArgs={'Metadata': {'x-amz-meta-legal_hold': 'ON'}}
                           )
-    os.remove(f'{tar_dir}/{tar_file}')
+    os.remove(tar_file)
 
 if __name__ == "__main__":
     main()

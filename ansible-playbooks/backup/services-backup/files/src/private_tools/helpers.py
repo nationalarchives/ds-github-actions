@@ -99,12 +99,12 @@ def get_ssm_parameters(name: str, aws_region: str):
     return params
 
 
-def get_asm_parameters(asm_client, name: str, aws_region: str) -> json:
-    client = boto3.client('ssm',
+def get_asm_parameters(name: str, aws_region: str) -> json:
+    client = boto3.client('secretsmanager',
                           region_name=aws_region)
 
     try:
-        secrets = asm_client.get_secret_value(SecretId=name)
+        secrets = client.get_secret_value(SecretId=name)
     except botocore.exceptions.ClientError as error:
         raise error
     return secrets["SecretString"]

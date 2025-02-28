@@ -22,7 +22,6 @@ def main():
 
     s3_client = boto3.client("s3")
     repos_per_page = 100
-    git_fetch = "git fetch --all"
 
     Path(root_dir).mkdir(parents=True, exist_ok=True)
     Path(zip_dir).mkdir(parents=True, exist_ok=True)

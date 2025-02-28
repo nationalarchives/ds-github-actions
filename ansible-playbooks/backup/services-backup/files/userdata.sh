@@ -32,9 +32,12 @@ sudo dnf install python3.12-pip -y
 echo "$(date '+%Y-%m-%d %T') - install python libs" | sudo tee -a  /var/log/ami-install.log > /dev/null
 python3.12 -m pip install requests
 python3.12 -m pip install boto3
+python3.12 -m pip install mysql-connector-python
+
 echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo -H python3.12 -m pip install requests
 sudo -H python3.12 -m pip install boto3
+sudo -H python3.12 -m pip install mysql-connector-python
 
 echo "$(date '+%Y-%m-%d %T') - create backup target directory" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo mkdir /github-backup
