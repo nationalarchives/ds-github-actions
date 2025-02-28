@@ -95,21 +95,30 @@
 
   - name: provisioning instance
     amazon.aws.ec2_instance:
-      diff: true
-      check: true
-      key_name: "taxonomy-indexer-staging-eu-west-2"
-      image_id: "ami-005b40ccfd9f202b5"
-      instance_role: "ansible-ami-search-indexer-role"
-      instance_type: "t3.micro"
+      name: "search-indexer-primer"
+      key_name: "{{ key_name }}"
+      vpc_subnet_id: "subnet-01612a28e9631c567"
+      instance_type: "t3a.large"
+      image_id: "ami-0fd24edaae77b2388"
+      region: "eu-west-2"
+      security_group: "{{ ec2_sec_group.group_id }}"
+    register: ec2
+
+#  - name: provisioning instance
+#    amazon.aws.ec2_instance:
+#      key_name: "{{ key_name }}"
+#      image_id: "{{ latest_ami.image_id }}"#
+#      instance_role: "ansible-ami-search-indexer-role"
+#      instance_type: "{{ instance_type }}"
 #      metadata_options:
 #        http_endpoint: "enabled"
 #        http_tokens: "optional"
-      name: "search-indexer-primer"
-      network:
-        assign_public_ip: yes
-        delete_on_termination: yes
-        subnet_id: "subnet-01612a28e9631c567"
-      region: "eu-west-2"
+#      name: "search-indexer-primer"
+#      network:
+#        assign_public_ip: yes
+#        delete_on_termination: yes
+#        subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
+#      region: "{{ region }}"
 #      security_groups: [ "{{ ec2_sec_group.group_id }}" ]
 #      state: "running"
 #      termination_protection: no
@@ -130,7 +139,7 @@
 #        CreatedBy: "ansible"
 #        CostCentre: 53
 #        Terraform: false
-    register: ec2
+#    register: ec2
 
   - name: get instance ip address
     set_fact:
