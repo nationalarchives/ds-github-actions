@@ -104,6 +104,10 @@
 #      security_group: "{{ ec2_sec_group.group_id }}"
 #    register: ec2
 
+  - name: Print return information from the previous task
+    ansible.builtin.debug:
+      msg: key_name {{ key_name }} image_id {{ image_id }} subnet_id {{ lookup('env', 'SUBNET_ID') }} security_group {{ ec2_sec_group.group_id }}
+
   - name: provisioning instance
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
@@ -119,7 +123,7 @@
         delete_on_termination: yes
         subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       region: "{{ region }}"
-      security_groups: [ "{{ ec2_sec_group.group_id }}" ]
+      security_group: "{{ ec2_sec_group.group_id }}"
       state: "running"
       termination_protection: no
       user_data: "{{ lookup('file', './userdata.ps1') }}"
@@ -140,6 +144,10 @@
         CostCentre: 53
         Terraform: false
     register: ec2
+
+  - name: Print return information from the previous task
+    ansible.builtin.debug:
+      var:
 
   - name: get instance ip address
     set_fact:
