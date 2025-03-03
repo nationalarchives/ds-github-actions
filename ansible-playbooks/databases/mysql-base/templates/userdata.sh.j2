@@ -47,14 +47,14 @@ temp_pw="$(sudo grep "temporary password" /var/log/mysqld.log | grep -o '[^ ]\+$
 echo "$(date '+%Y-%m-%d %T') - create bash CIDR function" | sudo tee -a /var/log/ami-install.log > /dev/null
 # get netmask form cidr
 function cidr_mask() {
-  ip=`echo $1 | cut -d"/" -f1`
-  cidr=`echo $1 | cut -d"/" -f2`
-  if [[ "cidr" == "" ]] then
+  ip=$(echo $1 | cut -d"/" -f1)
+  cidr=$(echo $1 | cut -d"/" -f2)
+  if [[ -v cidr && -z $cidr ]]; then
     mask="255.255.255.255"
     exit 0
   fi
   value=$(( 0xffffffff ^ ((1 << (32 - $cidr)) - 1) ))
-  mask=`echo "$(( (value >> 24) & 0xff )).$(( (value >> 16) & 0xff )).$(( (value >> 8) & 0xff )).$(( value & 0xff ))"`
+  mask=$(echo "$(( (value >> 24) & 0xff )).$(( (value >> 16) & 0xff )).$(( (value >> 8) & 0xff )).$(( value & 0xff ))")
   echo "$ip/$mask"
 }
 
