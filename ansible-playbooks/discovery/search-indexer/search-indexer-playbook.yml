@@ -88,10 +88,15 @@
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './indexer-role-policy.json') }}"
       managed_policies: ["{{ s3_policy.policy.arn }}"]
-      create_instance_profile: yes
       purge_policies: yes
       state: "present"
     register: updater_iam_role
+
+  - name: create instance profile
+    community.aws.iam_instance_profile:
+      name: "ansible-ami-search-indexer-profile"
+      role: "ansible-ami-search-indexer-role"
+      state: "present"
 
 #  - name: provisioning instance
 #    amazon.aws.ec2_instance:
@@ -112,7 +117,7 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-search-indexer-role"
+      instance_role: "ansible-ami-search-indexer-profile"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_endpoint: "enabled"
@@ -315,6 +320,11 @@
         name: "ansible-ami-search-indexer-sg"
         region: "{{ region }}"
         state: "absent"
+
+    - name: remove instance profile
+      community.aws.iam_instance_profile:
+          name: "ansible-ami-search-indexer-profile"
+          state: "absent"
 
     - name: remove updater IAM role
       community.aws.iam_role:
