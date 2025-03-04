@@ -79,7 +79,7 @@
         http_endpoint: "enabled"
         http_tokens: "optional"
       name: "discovery-web-wincore-primer"
-      network-interfaces:
+      network_interfaces:
         - assign_public_ip: yes
           delete_on_termination: yes
           subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
