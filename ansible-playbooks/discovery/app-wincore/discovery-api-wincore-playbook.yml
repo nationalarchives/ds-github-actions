@@ -80,8 +80,8 @@
         http_tokens: "optional"
       name: "discovery-app-wincore-primer"
       network_interfaces:
-        assign_public_ip: yes
-        delete_on_termination: yes
+        assign_public_ip: true
+        delete_on_termination: true
         subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       region: "{{ region }}"
       security_groups: [ "{{ ec2_sec_group.group_id }}" ]
