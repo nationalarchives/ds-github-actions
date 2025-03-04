@@ -73,7 +73,7 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "discovery-ansible-ami-build--role"
+      instance_role: "discovery-ansible-ami-build-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_endpoint: "enabled"
