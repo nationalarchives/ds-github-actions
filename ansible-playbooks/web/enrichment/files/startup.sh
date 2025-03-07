@@ -7,13 +7,13 @@ sudo touch /var/log/server-startup.log
 
 region="eu-west-2"
 if [ -z ${TRAEFIK_IMAGE+x} ]; then export TRAEFIK_IMAGE="none"; fi
-if [ -z ${FRONTEND_APP_IMAGE+x} ]; then export FRONTEND_APP_IMAGE="none"; fi
+if [ -z ${ENRICHMENT_APP_IMAGE+x} ]; then export ENRICHMENT_APP_IMAGE="none"; fi
 
 # Install dependencies
 sudo dnf -y update && sudo dnf install -y aws-cli jq
 
 AWS_REGION="eu-west-2"
-PARAMETER_PATH="/application/web/frontend"
+PARAMETER_PATH="/application/web/enrichment"
 
 # Fetch parameters from SSM
 PARAMS_JSON=$(aws ssm get-parameters-by-path \
@@ -27,7 +27,7 @@ if [ -z "$PARAMS_JSON" ]; then
   exit 1
 fi
 
-OUTPUT_FILE="/var/docker/frontend.env"
+OUTPUT_FILE="/var/docker/enrichment.env"
 sudo touch "$OUTPUT_FILE"
 sudo chmod 777 "$OUTPUT_FILE"
 > "$OUTPUT_FILE"
@@ -61,11 +61,10 @@ echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
 done
 
 echo "Environment variables have been written to $OUTPUT_FILE."
-
 # get docker image tag from parameter store
 echo "retrieve versions"
-exp_traefik_image=$(aws ssm get-parameter --name /application/web/frontend/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
-exp_app_image=$(aws ssm get-parameter --name /application/web/frontend/docker_images --query Parameter.Value --region $region --output text | jq -r '.["frontend-application"]')
+exp_traefik_image=$(aws ssm get-parameter --name /application/web/enrichment/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
+exp_app_image=$(aws ssm get-parameter --name /application/web/enrichment/docker_images --query Parameter.Value --region $region --output text | jq -r '.["enrichment-application"]')
 
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
@@ -102,15 +101,16 @@ else
 fi
 
 # update app version
-if [ "$FRONTEND_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
+if [ "$ENRICHMENT_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
-  export FRONTEND_APP_IMAGE="$exp_app_image"
-  sudo sed -i "s|export FRONTEND_APP_IMAGE=.*|export FRONTEND_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
+  export ENRICHMENT_APP_IMAGE="$exp_app_image"
+  sudo sed -i "s|export ENRICHMENT_APP_IMAGE=.*|export ENRICHMENT_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
 fi
 
 TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
 if [ "$TRAEFIK_UP" = "true" ]; then
   sudo /usr/local/bin/website-blue-green-deploy.sh
+  echo "startup completed"
 else
   echo "can't start app - traefik hasn't started"
 fi

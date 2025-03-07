@@ -1,7 +1,7 @@
 version: "3.8"
 
 services:
-  blue-web: &frontend
+  blue-web: &enrichment
     container_name: blue-web
     environment:
       - SECRET_KEY=c7566fb5c1da890395bde8fd360236d5f31bae78c95be8c2aa9f2cd217de0221
@@ -25,7 +25,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
       - "traefik.http.routers.web.entrypoints=web"
-      - "traefik.http.routers.web.rule=Host(`private-beta.dev.local`) || PathPrefix(`/`)"
+      - "traefik.http.routers.web.rule=Host(`web-enrichment.live.local`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
       - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/"
@@ -36,7 +36,7 @@ services:
       - traefik
 
   green-web:
-    <<: *frontend
+    <<: *enrichment
     container_name: green-web
 
 networks:
