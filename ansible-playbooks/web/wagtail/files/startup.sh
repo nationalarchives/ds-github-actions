@@ -7,65 +7,12 @@ sudo touch /var/log/server-startup.log
 
 region="eu-west-2"
 if [ -z ${TRAEFIK_IMAGE+x} ]; then export TRAEFIK_IMAGE="none"; fi
-if [ -z ${FRONTEND_APP_IMAGE+x} ]; then export FRONTEND_APP_IMAGE="none"; fi
-
-# Install dependencies
-sudo dnf -y update && sudo dnf install -y aws-cli jq
-
-AWS_REGION="eu-west-2"
-PARAMETER_PATH="/application/web/frontend"
-
-# Fetch parameters from SSM
-PARAMS_JSON=$(aws ssm get-parameters-by-path \
-    --path "$PARAMETER_PATH" \
-    --with-decryption \
-    --region "$AWS_REGION" \
-    --query "Parameters")
-
-if [ -z "$PARAMS_JSON" ]; then
-  echo "Error: No parameters found under the path $PARAMETER_PATH or insufficient permissions."
-  exit 1
-fi
-
-OUTPUT_FILE="/var/docker/frontend.env"
-sudo touch "$OUTPUT_FILE"
-sudo chmod 777 "$OUTPUT_FILE"
-> "$OUTPUT_FILE"
-
-# Loop over each parameter and handle it correctly
-echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
-    NAME=$(echo "$PARAMETER" | jq -r '.Name | split("/")[-1]')
-    VALUE=$(echo "$PARAMETER" | jq -r '.Value')
-
-    # Handle special cases (like docker_images with JSON format)
-    if [[ "$NAME" == "docker_images" ]]; then
-        # Escape quotes inside docker_images string properly
-        ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
-        echo "Exporting $NAME=\"$ESCAPED_VALUE\""
-        export "$NAME"="$ESCAPED_VALUE"
-        echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
-    else
-        # For regular variables or variables containing special characters
-        if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
-            # Wrap the value in quotes to handle special characters properly
-            echo "Exporting $NAME=\"$VALUE\""
-            export "$NAME"="$VALUE"
-            echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
-        else
-            # Normal variable, no need to quote
-            echo "Exporting $NAME=$VALUE"
-            export "$NAME"="$VALUE"
-            echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
-        fi
-    fi
-done
-
-echo "Environment variables have been written to $OUTPUT_FILE."
+if [ -z ${WAGTAIL_APP_IMAGE+x} ]; then export WAGTAIL_APP_IMAGE="none"; fi
 
 # get docker image tag from parameter store
 echo "retrieve versions"
-exp_traefik_image=$(aws ssm get-parameter --name /application/web/frontend/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
-exp_app_image=$(aws ssm get-parameter --name /application/web/frontend/docker_images --query Parameter.Value --region $region --output text | jq -r '.["frontend-application"]')
+exp_traefik_image=$(aws ssm get-parameter --name /application/wagtail/docker-images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
+exp_app_image=$(aws ssm get-parameter --name /application/wagtail/docker-images --query Parameter.Value --region $region --output text | jq -r '.["wagtail-application"]')
 
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
@@ -102,10 +49,10 @@ else
 fi
 
 # update app version
-if [ "$FRONTEND_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
+if [ "$WAGTAIL_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
-  export FRONTEND_APP_IMAGE="$exp_app_image"
-  sudo sed -i "s|export FRONTEND_APP_IMAGE=.*|export FRONTEND_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
+  export WAGTAIL_APP_IMAGE="$exp_app_image"
+  sudo sed -i "s|export WAGTAIL_APP_IMAGE=.*|export WAGTAIL_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
 fi
 
 TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
@@ -114,3 +61,4 @@ if [ "$TRAEFIK_UP" = "true" ]; then
 else
   echo "can't start app - traefik hasn't started"
 fi
+
