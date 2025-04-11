@@ -103,7 +103,7 @@
 
   - name: template compose.yml for dev and staging
     vars:
-      sub_domain: "{{ account }}-beta.nationalarchives.gov.uk"
+      sub_domain: "{{ account }}-www.nationalarchives.gov.uk"
       db_password: "{{ db_password }}"
       db_user: "{{ db_user }}"
       db_host: "{{ db_host }}"
@@ -118,7 +118,7 @@
 
   - name: template compose.yml for live
     vars:
-      sub_domain: "beta.nationalarchives.gov.uk"
+      sub_domain: "www.nationalarchives.gov.uk"
       db_password: "{{ db_password }}"
       db_user: "{{ db_user }}"
       db_host: "{{ db_host }}"

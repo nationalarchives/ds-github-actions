@@ -4,18 +4,24 @@ services:
   blue-web: &frontend
     container_name: blue-web
     environment:
-      - SECRET_KEY=c7566fb5c1da890395bde8fd360236d5f31bae78c95be8c2aa9f2cd217de0221
+      - ENVIRONMENT=production
+      - SENTRY_ENVIRONMENT=develop
+      - SECRET_KEY=boduhunxjnlkjckkodmclkm
+      - REDIS_URL=redis://:redis@redis:6379
+      - FEATURE_FEEDBACK_MECHANISM_ENABLED=False
+      - DATABASE_ENGINE=django.db.backends.postgresql
       - DATABASE_HOST=postgres-main-prime.dev.local
-      - DATABASE_PORT=5432
       - DATABASE_NAME=etna
       - DATABASE_USER=etna_app_user
       - DATABASE_PASSWORD=JHW25bZ2AVVX£qO!oySfGZhhr[v
-      - WAGTAILADMIN_BASE_URL=https://dev-private-beta.nationalarchives.gov.uk
-      - COOKIE_DOMAIN=dev-private-beta.nationalarchives.gov.uk
-      - DJANGO_SETTINGS_MODULE=config.settings.production
-      - CSRF_TRUSTED_ORIGINS=https://dev-private-beta.nationalarchives.gov.uk
+      - DATABASE_PORT=5432
+      - WAGTAILAPI_BASE_URL=http://host.docker.internal:8000
+      - WAGTAILADMIN_BASE_URL=https://dev-wagtail.nationalarchives.gov.uk
+      - WAGTAILADMIN_HEADLESS_BASE_URL=https://dev-www.nationalarchives.gov.uk
+      - WAGTAILADMIN_HEADLESS_PREVIEW_URL=https://dev-www.nationalarchives.gov.uk/preview/
+      - DJANGO_SETTINGS_MODULE=config.settings.dev
       - DATABASE_ENGINE=django.db.backends.postgresql
-      - KONG_CLIENT_BASE_URL=https://aa83a1e6831944fa8bcf17f5ce391b73-58be9fd587cba13e.elb.eu-west-2.amazonaws.com/api/v1/data
+      - KONG_CLIENT_BASE_URL=https://ciim-api-staging.k-int.com/api/v1/data
       - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
       - KONG_CLIENT_KEY=kjsd8242wdbjy827hwbryqr
       - KONG_CLIENT_VERIFY_CERTIFICATES=false
@@ -25,7 +31,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
       - "traefik.http.routers.web.entrypoints=web"
-      - "traefik.http.routers.web.rule=Host(`private-beta.dev.local`) || PathPrefix(`/`)"
+      - "traefik.http.routers.web.rule=Host(`web-frontend.dev.local`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
       - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/"
