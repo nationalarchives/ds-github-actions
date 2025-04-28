@@ -1,0 +1,13 @@
+# daily database backup timer
+#
+
+[Unit]
+Description=Daily Database Backup Timer
+
+[Timer]
+Unit=backup-daily.service
+OnCalendar=*-*-* 22:34:00
+Persistent=true
+
+[Install]
+WantedBy=default.target

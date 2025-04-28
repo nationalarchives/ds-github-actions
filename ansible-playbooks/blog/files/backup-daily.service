@@ -1,0 +1,10 @@
+# daily database backup service call
+#
+
+[Unit]
+Description=Daily database backup service call
+
+[Service]
+Environment='BACKUP_TARGET=ds-{{ env }}-backup'
+Environment='SECRET_KEY=application/blog/wp/credentials'
+ExecStart=/usr/local/sbin/backup-daily.sh
