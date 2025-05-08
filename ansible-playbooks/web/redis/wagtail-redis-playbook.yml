@@ -1,6 +1,6 @@
-# Wagtail Redis playbook
+# Platform Redis playbook
 ---
-- name: create wagtail redis AMI
+- name: create platform redis AMI
   hosts: localhost
   gather_facts: false
 
@@ -8,7 +8,7 @@
   - name: switch role credentials
     community.aws.sts_assume_role:
       role_arn: "{{ role_arn }}"
-      role_session_name: "s-devops-wagtail-redis"
+      role_session_name: "s-devops-platform-redis"
     register: assumed_role
 
   - name: get linux 2023 AMI
@@ -33,14 +33,14 @@
 
   - name: create deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-wagtail-redis-s3-policy"
+      policy_name: "ansible-ami-platform-redis-s3-policy"
       policy: "{{ lookup('file', './instance-role-policy.json') }}"
       state: "present"
     register: s3_policy
 
-  - name: create base wagtail redis IAM role
+  - name: create base platform redis IAM role
     community.aws.iam_role:
-      name: "ansible-ami-wagtail-redis-role"
+      name: "ansible-ami-platform-redis-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
       managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
@@ -52,7 +52,7 @@
 
   - name: create security group - allowing updates and downloads
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-wagtail-redis-sg"
+      name: "ansible-ami-platform-redis-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
       vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
@@ -99,11 +99,11 @@
     amazon.aws.ec2_instance:
       key_name: "{{ key_name }}"
       image_id: "{{ latest_ami.image_id }}"#
-      instance_role: "ansible-ami-wagtail-redis-role"
+      instance_role: "ansible-ami-platform-redis-role"
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "wagtail-redis-primer"
+      name : "platform-redis-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -122,9 +122,9 @@
             volume_size: "{{ volume_size }}"
       vpc_subnet_id: "{{ lookup('env', 'SUBNET_ID') }}"
       tags:
-        Name: "wagtail-redis-primer"
+        Name: "platform-redis-primer"
         Environment: "{{ account }}"
-        Service: "wagtail"
+        Service: "platform"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -217,14 +217,14 @@
   - name: create AMI
     amazon.aws.ec2_ami:
       instance_id: "{{ instance_id }}"
-      name: "wagtail-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-      description: "wagtail RP Instance - ready for deployment"
+      name: "platform-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+      description: "platform RP Instance - ready for deployment"
       region: "{{ region }}"
       state: "present"
       wait: yes
       tags:
-        Name: "wagtail-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "wagtail"
+        Name: "platform-redis-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+        Service: "platform"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -238,18 +238,18 @@
 
   - name: remove security group
     amazon.aws.ec2_security_group:
-      name: "ansible-ami-wagtail-redis-sg"
+      name: "ansible-ami-platform-redis-sg"
       state: "absent"
 
   - name: remove IAM role
     community.aws.iam_role:
-      name: "ansible-ami-wagtail-redis-role"
+      name: "ansible-ami-platform-redis-role"
       region: "{{ region }}"
       delete_instance_profile: yes
       state: "absent"
 
   - name: remove deployment policy
     community.aws.iam_managed_policy:
-      policy_name: "ansible-ami-wagtail-redis-s3-policy"
+      policy_name: "ansible-ami-platform-redis-s3-policy"
       state: "absent"
 ...
