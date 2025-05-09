@@ -1,4 +1,3 @@
-# Beta RP playbook
 ---
 - name: create beta rp AMI
   hosts: localhost
@@ -22,8 +21,13 @@
 
   - name: set latest AMI
     set_fact:
-      latest_ami: >
-        {{ findami.images | sort(attribute='creation_date') | last }}
+      latest_ami: "{{ (findami.images | sort(attribute='creation_date')[-1] }}"
+    when: findami.images | length > 0
+
+  - name: fail if no AMI found
+    ansible.builtin.fail:
+      msg: "No suitable AMI found matching the criteria"
+    when: findami.images | length == 0
 
   - name: template deployment policy
     template:
@@ -43,7 +47,10 @@
       name: "ansible-ami-beta-rp-role"
       region: "{{ region }}"
       assume_role_policy_document: "{{ lookup('file', './ec2-role-policy.json') }}"
-      managed_policies: ["{{ s3_policy.policy.arn }}", "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
+      managed_policies: 
+        - "{{ s3_policy.policy.arn }}"
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        - "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
       create_instance_profile: yes
       delete_instance_profile: yes
       purge_policies: yes
@@ -55,7 +62,7 @@
       name: "ansible-ami-beta-rp-sg"
       description: "security group allowing updates and downloads"
       region: "{{ region }}"
-      vpc_id: "{{ lookup( 'env', 'VPC_ID') }}"
+      vpc_id: "{{ lookup('env', 'VPC_ID') }}"
       rules:
         - proto: "tcp"
           from_port: 22
@@ -105,7 +112,7 @@
       instance_type: "{{ instance_type }}"
       metadata_options:
         http_tokens: "required"
-      name : "beta-rp-primer"
+      name: "beta-rp-primer"
       network:
         assign_public_ip: yes
         delete_on_termination: yes
@@ -132,20 +139,30 @@
         CostCentre: 53
         Terraform: false
     register: ec2
+    retries: 3
+    delay: 10
+    until: ec2 is not failed and ec2.instances is defined and ec2.instances|length > 0
 
-  - name: get instance ip address
+  - name: validate instance creation
+    ansible.builtin.fail:
+      msg: "Failed to create EC2 instance after multiple attempts"
+    when: ec2 is failed or ec2.instances|length == 0
+
+  - name: get instance details
     set_fact:
       instance_private_ip: "{{ ec2.instances[0].private_ip_address }}"
       instance_public_ip: "{{ ec2.instances[0].public_ip_address }}"
       instance_id: "{{ ec2.instances[0].instance_id }}"
+    when: ec2.instances|length > 0
 
-  - ansible.builtin.debug:
+  - name: display instance details
+    ansible.builtin.debug:
       msg:
         - "====================================================================="
-        - "instance started up"
-        - "instance private ip: {{ instance_private_ip }}"
-        - "instance id: {{ instance_id }}"
-        - "instance public ip {{ instance_public_ip }}"
+        - "Instance details:"
+        - "Private IP: {{ instance_private_ip | default('Not available') }}"
+        - "Public IP: {{ instance_public_ip | default('Not available') }}"
+        - "Instance ID: {{ instance_id | default('Not available') }}"
         - "====================================================================="
 
   - name: register new ec2 as host
@@ -155,6 +172,7 @@
       ansible_user: ec2-user
       remote_user: ec2-user
       gather_facts: no
+    when: instance_public_ip is defined
 
   - name: wait for SSH service to bind on new instance
     wait_for:
@@ -164,6 +182,7 @@
       timeout: 600
       state: started
     tags: [ami]
+    when: instance_public_ip is defined
 
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
@@ -205,12 +224,14 @@
         CreatedBy: "ansible"
         CostCentre: 53
         Terraform: false
+    when: instance_id is defined
 
   - name: terminate instance
     amazon.aws.ec2_instance:
       instance_ids: "{{ instance_id }}"
       region: "{{ region }}"
       state: "absent"
+    when: instance_id is defined
 
   - name: remove security group
     amazon.aws.ec2_security_group:
@@ -228,4 +249,4 @@
     community.aws.iam_managed_policy:
       policy_name: "ansible-ami-beta-rp-s3-policy"
       state: "absent"
-...
+      
