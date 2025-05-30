@@ -20,6 +20,8 @@
         name: "al2023-ami-2023*"
         architecture: "x86_64"
     register: findami
+    tags:
+      ami_name: "amazon-linux-2023"
 
   - name: set latest AMI
     set_fact:
