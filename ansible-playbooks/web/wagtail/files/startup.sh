@@ -1,6 +1,5 @@
 #!/bin/bash
 
-sudo ./traefik-up.sh
 # Set environment variables
 source /etc/environment
 
