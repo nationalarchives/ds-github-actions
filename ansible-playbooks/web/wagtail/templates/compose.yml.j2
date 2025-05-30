@@ -1,42 +1,23 @@
 services:
   blue-web: &wagtail
     container_name: blue-web
-    environment:
-      - ENVIRONMENT=production
-      - SENTRY_ENVIRONMENT=develop
-      - DJANGO_SETTINGS_MODULE=config.settings.dev
-      - SECRET_KEY=bhjkdoicjowsdjkbchgyuwgdhcbhb
-      - REDIS_URL=redis://:redis@redis:6379
-      - FEATURE_FEEDBACK_MECHANISM_ENABLED=False
-      - DATABASE_ENGINE=django.db.backends.postgresql
-      - DATABASE_NAME=etna
-      - DATABASE_USER=etna_app_user
-      - DATABASE_PASSWORD=JHW25bZ2AVVX£qO!oySfGZhhr[v
-      - DATABASE_HOST=postgres-main-prime.dev.local
-      - KONG_CLIENT_BASE_URL=https://ciim-api-staging.k-int.com/api/v1/data
-      - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
-      - KONG_CLIENT_KEY=C5Qkrb8rL8a2jdXdjUAHKwnm
-      - KONG_CLIENT_VERIFY_CERTIFICATES=False
-      - WAGTAILADMIN_BASE_URL=https://dev-wagtail.nationalarchives.gov.uk
-      - WAGTAILADMIN_HEADLESS_BASE_URL=https://dev-www.nationalarchives.gov.uk
-      - WAGTAILADMIN_HEADLESS_PREVIEW_URL=https://dev-www.nationalarchives.gov.uk/preview/
-      - WAGTAILAPI_BASE_URL=http://host.docker.internal:8000
-      - ALLOW_INSECURE=true
-      - FORCE_HTTPS=false
-    image: "ghcr.io/nationalarchives/ds-wagtail:25.03.28.549"
+    env_file: /var/docker/wagtail.env
+    image: "ghcr.io/nationalarchives/ds-wagtail:25.05.30.632"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
       - "traefik.http.routers.web.entrypoints=web"
-      - "traefik.http.routers.web.rule=Host(`dev-www.nationalarchives.gov.uk`) || PathPrefix(`/`)"
+      - "traefik.http.routers.web.rule=Host(`wagtail.${environment}.local`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
       - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/"
       - "traefik.http.services.web.loadbalancer.healthCheck.interval=10s"
       - "traefik.http.services.web.loadbalancer.healthCheck.timeout=1s"
-    restart: "no"
+    restart: "always"
     networks:
       - traefik
+    volumes:
+      - /media:/media
   green-web:
     !!merge <<: *wagtail
     container_name: green-web
