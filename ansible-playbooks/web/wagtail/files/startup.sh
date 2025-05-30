@@ -11,8 +11,8 @@ if [ -z ${WAGTAIL_APP_IMAGE+x} ]; then export WAGTAIL_APP_IMAGE="none"; fi
 
 # get docker image tag from parameter store
 echo "retrieve versions"
-exp_traefik_image=$(aws ssm get-parameter --name /application/wagtail/docker-images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
-exp_app_image=$(aws ssm get-parameter --name /application/wagtail/docker-images --query Parameter.Value --region $region --output text | jq -r '.["wagtail-application"]')
+exp_traefik_image=$(aws ssm get-parameter --name /application/web/wagtail/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
+exp_app_image=$(aws ssm get-parameter --name /application/web/wagtail/docker_images --query Parameter.Value --region $region --output text | jq -r '.["wagtail-application"]')
 
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
