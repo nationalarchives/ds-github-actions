@@ -41,16 +41,16 @@ echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
     # Handle special cases (like docker_images with JSON format)
     if [[ "$NAME" == "docker_images" ]]; then
         ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
-        echo "Exporting $NAME=\"$ESCAPED_VALUE\""
+        #echo "Exporting $NAME=\"$ESCAPED_VALUE\""
         export "$NAME"="$ESCAPED_VALUE"
         echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
     else
         if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
-            echo "Exporting $NAME=\"$VALUE\""
+            #echo "Exporting $NAME=\"$VALUE\""
             export "$NAME"="$VALUE"
             echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
         else
-            echo "Exporting $NAME=$VALUE"
+            #echo "Exporting $NAME=$VALUE"
             export "$NAME"="$VALUE"
             echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
         fi
