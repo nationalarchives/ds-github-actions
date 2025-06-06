@@ -95,7 +95,7 @@
 
   - name: template compose.yml for live
     vars:
-      sub_domain: "ohos.ac.uk"
+      sub_domain: "ohos-web.{{ account }}.local"
     template:
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"

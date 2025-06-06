@@ -1,10 +1,8 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik-image
+    image: traefik:v3.4
     command:
-      #- "--log.level=DEBUG"
-      #- "--api.insecure=true"
       - "--providers.docker=true"
     labels:
        - "traefik.http.routers.dashbord.rule=Host(`{{local_domain}}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
