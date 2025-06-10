@@ -95,7 +95,7 @@
 
   - name: template compose.yml for live
     vars:
-      sub_domain: "ohos-web.{{ account }}.local"
+      sub_domain: "ohos.{{ account }}.local"
     template:
       src: "./templates/compose.yml.j2"
       dest: "./docker/compose.yml"
@@ -104,7 +104,7 @@
 
   - name: template compose.traefik.yml
     vars:
-      local_domain: "ohos-web.{{ account }}.local"
+      local_domain: "ohos.{{ account }}.local"
     template:
       src: "./templates/compose.traefik.yml.j2"
       dest: "./docker/compose.traefik.yml"
