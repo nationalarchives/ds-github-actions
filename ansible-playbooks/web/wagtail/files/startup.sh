@@ -88,3 +88,19 @@ else
   echo "Can't start app - traefik hasn't started"
   exit 1
 fi
+
+# Identify which web container is running (green-web or blue-web)
+RUNNING_WEB=$(sudo docker ps --filter "name=green-web" --filter "status=running" --format "{{.Names}}" | grep green-web || true)
+
+if [ -z "$RUNNING_WEB" ]; then
+  RUNNING_WEB=$(sudo docker ps --filter "name=blue-web" --filter "status=running" --format "{{.Names}}" | grep blue-web || true)
+fi
+
+# Run migrate inside the running container
+if [ -n "$RUNNING_WEB" ]; then
+  echo "Running migration in container: $RUNNING_WEB"
+  sudo docker exec -it "$RUNNING_WEB" migrate
+else
+  echo "Error: Neither green-web nor blue-web is running."
+  exit 1
+fi
