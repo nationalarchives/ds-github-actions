@@ -65,6 +65,7 @@ exp_app_image=$(aws ssm get-parameter --name /application/web/enrichment/docker_
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
 
+sudo docker pull "$exp_app_image"
 # update traefik version if needed
 if [ "$TRAEFIK_IMAGE" != "$exp_traefik_image" ] || [ "$set_traefik_image" != "$exp_traefik_image" ]; then
   sudo yq -i ".services.traefik.image = \"$exp_traefik_image\"" /var/docker/compose.traefik.yml

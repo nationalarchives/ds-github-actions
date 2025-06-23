@@ -72,7 +72,7 @@ if [ "$TRAEFIK_IMAGE" != "$exp_traefik_image" ] || [ "$set_traefik_image" != "$e
   export TRAEFIK_IMAGE="$exp_traefik_image"
   sudo sed -i "s|export TRAEFIK_IMAGE=.*|export TRAEFIK_IMAGE=\"$exp_traefik_image\"|g" /etc/environment
 fi
-
+sudo docker pull "$exp_app_image"
 # update app version
 if [ "$WAGTAIL_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
