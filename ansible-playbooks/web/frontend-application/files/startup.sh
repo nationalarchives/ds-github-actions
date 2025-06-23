@@ -106,6 +106,26 @@ fi
 TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
 if [ "$TRAEFIK_UP" = "true" ]; then
   sudo /usr/local/bin/website-blue-green-deploy.sh
+
+  CLOUDFRONT_DIST_ID=$(aws ssm get-parameter \
+    --name "/application/web/wagtail/FRONTEND_CACHE_AWS_DISTRIBUTION_ID" \
+    --with-decryption \
+    --region "$AWS_REGION" \
+    --query "Parameter.Value" \
+    --output text)
+
+  if [ -z "$CLOUDFRONT_DIST_ID" ]; then
+    echo "❌ Error: Could not fetch CloudFront Distribution ID from SSM."
+    exit 1
+  fi
+
+  echo "Invalidating CloudFront cache for distribution $CLOUDFRONT_DIST_ID ..."
+  aws cloudfront create-invalidation \
+    --distribution-id "$CLOUDFRONT_DIST_ID" \
+    --paths "/*"
+
+  echo "Deployment and cache invalidation complete."
+  
 else
   echo "can't start app - traefik hasn't started"
 fi
