@@ -16,6 +16,8 @@ services:
     restart: "always"
     networks:
       - traefik
+    volumes:
+      - /media:/media
   green-web:
     !!merge <<: *ohos
     container_name: green-web

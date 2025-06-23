@@ -95,7 +95,7 @@ elif [ "$update_traefik" == "yes" ]; then
 else
   echo "traefik is ok - tag:$exp_traefik_image"
 fi
-
+sudo docker pull "$exp_app_image"
 # update app version
 if [ "$OHOS_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
