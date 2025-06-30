@@ -17,7 +17,7 @@ services:
     networks:
       - traefik
     volumes:
-      - /media:/media
+      - /images:/media/images
   green-web:
     !!merge <<: *ohos
     container_name: green-web
