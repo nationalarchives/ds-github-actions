@@ -1,9 +1,7 @@
 #!/bin/bash
 
 sudo touch /var/log/ami-install.log
-
 echo "$(date '+%Y-%m-%d %T') - update system" | sudo tee -a  /var/log/ami-install.log > /dev/null
-sudo dnf update
 
 # create swap file
 echo "$(date '+%Y-%m-%d %T') - create swap file" | sudo tee -a  /var/log/ami-install.log > /dev/null
@@ -11,6 +9,9 @@ sudo fallocate -l 4G /swapfile
 sudo chmod 0600 /swapfile
 sudo /sbin/mkswap /swapfile
 sudo /sbin/swapon /swapfile
+
+echo "$(date '+%Y-%m-%d %T') - install dnf smart-restart" | sudo tee -a  /var/log/ami-install.log > /dev/null
+sudo dnf install smart-restart -y
 
 # Install Cloudwatch agent
 echo "$(date '+%Y-%m-%d %T') - install CloudWatch agent" | sudo tee -a  /var/log/ami-install.log > /dev/null
@@ -34,12 +35,16 @@ echo "$(date '+%Y-%m-%d %T') - install python libs for ssm-user" | sudo tee -a  
 /usr/bin/python3.12 -m pip install boto3
 /usr/bin/python3.12 -m pip install mysql-connector-python
 /usr/bin/python3.12 -m pip install ndjson
+/usr/bin/python3.12 -m pip install slack_sdk
+/usr/bin/python3.12 -m pip install certifi
 
 echo "$(date '+%Y-%m-%d %T') - install python libs for systemd" | sudo tee -a  /var/log/ami-install.log > /dev/null
 sudo -H /usr/bin/python3.12 -m pip install requests
 sudo -H /usr/bin/python3.12 -m pip install boto3
 sudo -H /usr/bin/python3.12 -m pip install mysql-connector-python
 sudo -H /usr/bin/python3.12 -m pip install ndjson
+sudo -H /usr/bin/python3.12 -m pip install slack_sdk
+sudo -H /usr/bin/python3.12 -m pip install certifi
 
 #sudo unzip /temp/secure-backups.zip -d /usr/local/share/applications
 #sudo cp secure-backups.service /etc/systemd/system/
