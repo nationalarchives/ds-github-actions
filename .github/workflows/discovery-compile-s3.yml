@@ -4,6 +4,9 @@ name: Discovery compile and deploy
 on:
   workflow_call:
     inputs:
+      deploy-environment:
+        type: string
+        required: true
       deploy-target:
         type: string
         required: true
@@ -32,6 +35,7 @@ jobs:
       region: "eu-west-2"
       release: "${{ inputs.release }}"
       branch: "${{ inputs.branch }}"
+      deploy_env: "${{ inputs.deploy-environment }}"
       deploy_target: "${{ inputs.deploy-target }}"
       output_dir: "\\build"
 
