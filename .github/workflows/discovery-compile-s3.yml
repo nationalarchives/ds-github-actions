@@ -1,0 +1,106 @@
+---
+name: Discovery compile and deploy
+
+on:
+  workflow_call:
+    inputs:
+      deploy-target:
+        type: string
+        required: true
+      release:
+        type: string
+        required: false
+        default: ""
+      branch:
+        type: string
+        required: false
+        default: ""
+    secrets:
+      AWS_CODEDEPLOY_ARN:
+        required: true
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: windows-latest
+    timeout-minutes: 15
+
+    env:
+      region: "eu-west-2"
+      release: "${{ inputs.release }}"
+      branch: "${{ inputs.branch }}"
+      deploy_target: "${{ inputs.deploy-target }}"
+      output_dir: "\\build"
+
+    steps:
+      - name: set credentials for AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: "${{ secrets.AWS_CODEDEPLOY_ARN }}"
+          aws-region: "${{ env.region }}"
+          role-session-name: CopyToS3
+
+      - name: checkout repo with release
+        if: "${{ env.release != '' }}"
+        uses: actions/checkout@v4
+        with:
+          ref: "${{ env.release }}"
+
+      - name: checkout repo with branch
+        if: "${{ env.release == '' }}"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.branch }}
+
+      - name: add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.1
+        with:
+          msbuild-architecture: x64
+
+      - name: create build target directory
+        run: |
+          mkdir ${{ env.output_dir }}
+
+      - name: run nuget
+        run: |
+          nuget restore ResourceDiscovery.sln
+
+      - name: run MSBuild
+        run: |
+          msbuild ResourceDiscovery.sln /m /p:configuration=Release /p:OutDir=${{ env.output_dir }} -verbosity:quiet
+
+      - name: run prep script
+        run: |
+          cd ${{ env.output_dir }}
+          copy ${{ github.workspace }}\.devops-deployment-scripts\start-webserver.ps1 ${{ env.output_dir }}
+          copy ${{ github.workspace }}\.devops-deployment-scripts\stop-webserver.ps1 ${{ env.output_dir }}
+          ${{ github.workspace }}\.devops-deployment-scripts\prepare_zip_files.ps1 -output_dir ${{ env.output_dir }}
+
+      - name: setup AWS.Tools
+        run: |
+          msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi /qn
+#          Install-Module -Name AWS.Tools.Installer -Force
+#          Install-AWSToolsModule AWS.Tools.S3 -Force -CleanUp
+
+##          # maybe there is better clean up to remove the redundant modules
+##          del "C:\Users\runneradmin\Documents\PowerShell\Modules\AWS.Tools.Common.*"
+##          del "C:\Program Files\WindowsPowerShell\Modules\AWSPowerShell.*"
+
+      - name: copy zip files
+        run: |
+          if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
+          {
+            echo "copy web zip file"
+            # Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+            Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+          }
+          if ( "${{ inputs.deploy-target }}" -eq "api" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
+          {
+            echo "copy api zip file"
+            # Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+            Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+          }
+...
