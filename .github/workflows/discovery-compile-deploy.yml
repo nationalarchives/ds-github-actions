@@ -49,13 +49,13 @@ jobs:
 
       - name: checkout repo with release
         if: "${{ env.release != '' }}"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: "${{ env.release }}"
 
       - name: checkout repo with branch
         if: "${{ env.release == '' }}"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ env.branch }}
 
@@ -117,7 +117,7 @@ jobs:
       region: "eu-west-2"
     steps:
       - name: Checkout ds-github-actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: nationalarchives/ds-github-actions
 

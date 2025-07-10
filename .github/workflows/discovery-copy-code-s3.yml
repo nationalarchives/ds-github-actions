@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout ds-github-actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: nationalarchives/ds-github-actions
 

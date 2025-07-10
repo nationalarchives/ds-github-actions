@@ -16,15 +16,15 @@ When running a job, you must select the environment and optionally the release. 
 ### Actions used
 The actions should be kept up-to-date with the latest versions. Ensure you visit the repositories regulary and when updating run the pipelines.
 #### blog, media and website
-1) actions/checkout@v3
+1) actions/checkout@v4
 2) aws-actions/configure-aws-credentials@v1-node16
 #### discovery
-1) actions/checkout@v3
+1) actions/checkout@v4
 2) aws-actions/configure-aws-credentials@v2
 3) microsoft/setup-msbuild@v1.1
 4) actions/setup-python@v5
 #### nginx
-1) actions/checkout@v3
+1) actions/checkout@v4
 2) actions/setup-python@v5
 3) aws-actions/configure-aws-credentials@v1-node16
 

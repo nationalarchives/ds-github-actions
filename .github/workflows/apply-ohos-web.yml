@@ -48,7 +48,7 @@
                 architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
   
             - name: Checkout
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
               with:
                 ref: ${{ env.branch }}
   
@@ -97,4 +97,3 @@
               id: apply
               run: terraform apply -auto-approve -input=false
               working-directory: ${{ env.working-directory }}
-    
