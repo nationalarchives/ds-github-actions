@@ -1,32 +1,8 @@
-version: "3.8"
-
 services:
   blue-web: &frontend
     container_name: blue-web
-    environment:
-      - ENVIRONMENT=production
-      - SENTRY_ENVIRONMENT=develop
-      - SECRET_KEY=boduhunxjnlkjckkodmclkm
-      - REDIS_URL=redis://:redis@redis:6379
-      - FEATURE_FEEDBACK_MECHANISM_ENABLED=False
-      - DATABASE_ENGINE=django.db.backends.postgresql
-      - DATABASE_HOST=postgres-main-prime.dev.local
-      - DATABASE_NAME=etna
-      - DATABASE_USER=etna_app_user
-      - DATABASE_PASSWORD=JHW25bZ2AVVX£qO!oySfGZhhr[v
-      - DATABASE_PORT=5432
-      - WAGTAILAPI_BASE_URL=http://host.docker.internal:8000
-      - WAGTAILADMIN_BASE_URL=https://dev-wagtail.nationalarchives.gov.uk
-      - WAGTAILADMIN_HEADLESS_BASE_URL=https://dev-www.nationalarchives.gov.uk
-      - WAGTAILADMIN_HEADLESS_PREVIEW_URL=https://dev-www.nationalarchives.gov.uk/preview/
-      - DJANGO_SETTINGS_MODULE=config.settings.dev
-      - DATABASE_ENGINE=django.db.backends.postgresql
-      - KONG_CLIENT_BASE_URL=https://ciim-api-staging.k-int.com/api/v1/data
-      - KONG_IMAGE_PREVIEW_BASE_URL=https://ciim-media.s3.eu-west-2.amazonaws.com/preview/
-      - KONG_CLIENT_KEY=kjsd8242wdbjy827hwbryqr
-      - KONG_CLIENT_VERIFY_CERTIFICATES=false
-    image: ghcr.io/nationalarchives/national-archives-website:latest
-      #image: traefik/whoami
+    env_file: /var/docker/frontend.env
+    image: "ghcr.io/nationalarchives/ds-frontend:25.05.30.1210"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
@@ -34,18 +10,17 @@ services:
       - "traefik.http.routers.web.rule=Host(`web-frontend.dev.local`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
-      - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/"
+      - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/live/"
       - "traefik.http.services.web.loadbalancer.healthCheck.interval=10s"
       - "traefik.http.services.web.loadbalancer.healthCheck.timeout=1s"
-    restart: "no"
+    restart: "always"
     networks:
       - traefik
-
   green-web:
-    <<: *frontend
+    !!merge <<: *frontend
     container_name: green-web
-
 networks:
   traefik:
     name: traefik_webgateway
     external: true
+    

@@ -1,20 +1,19 @@
 #!/bin/bash
-sudo /usr/local/bin/traefik-up.sh
 
-# Set environment variables
+# set environment variables
 source /etc/environment
 
 sudo touch /var/log/server-startup.log
 
 region="eu-west-2"
 if [ -z ${TRAEFIK_IMAGE+x} ]; then export TRAEFIK_IMAGE="none"; fi
-if [ -z ${WAGTAIL_APP_IMAGE+x} ]; then export WAGTAIL_APP_IMAGE="none"; fi
+if [ -z ${OHOS_APP_IMAGE+x} ]; then export OHOS_APP_IMAGE="none"; fi
 
 # Install dependencies
 sudo dnf -y update && sudo dnf install -y aws-cli jq
 
 AWS_REGION="eu-west-2"
-PARAMETER_PATH="/application/web/wagtail"
+PARAMETER_PATH="/application/ohos"
 
 # Fetch parameters from SSM
 PARAMS_JSON=$(aws ssm get-parameters-by-path \
@@ -28,7 +27,7 @@ if [ -z "$PARAMS_JSON" ]; then
   exit 1
 fi
 
-OUTPUT_FILE="/var/docker/wagtail.env"
+OUTPUT_FILE="/var/docker/ohos.env"
 sudo touch "$OUTPUT_FILE"
 sudo chmod 777 "$OUTPUT_FILE"
 > "$OUTPUT_FILE"
@@ -60,8 +59,8 @@ done
 echo "Environment variables have been written to $OUTPUT_FILE."
 # get docker image tag from parameter store
 echo "retrieve versions"
-exp_traefik_image=$(aws ssm get-parameter --name /application/web/wagtail/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
-exp_app_image=$(aws ssm get-parameter --name /application/web/wagtail/docker_images --query Parameter.Value --region $region --output text | jq -r '.["wagtail-application"]')
+exp_traefik_image=$(aws ssm get-parameter --name /application/ohos/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
+exp_app_image=$(aws ssm get-parameter --name /application/ohos/docker_images --query Parameter.Value --region $region --output text | jq -r '.["ohos-application"]')
 
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
@@ -72,57 +71,41 @@ if [ "$TRAEFIK_IMAGE" != "$exp_traefik_image" ] || [ "$set_traefik_image" != "$e
   export TRAEFIK_IMAGE="$exp_traefik_image"
   sudo sed -i "s|export TRAEFIK_IMAGE=.*|export TRAEFIK_IMAGE=\"$exp_traefik_image\"|g" /etc/environment
 fi
+
+# check if traefik is running...
+TRAEFIK_ID=$(sudo docker ps --all --filter "name=traefik" --format "{{.ID}}")
+TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
+
+if [ -z "$TRAEFIK_ID" ]; then
+  # traefik container isn't loaded
+  echo "starting up traefik - $exp_traefik_image"
+  source /usr/local/bin/traefik-deploy.sh --up
+  export TRAEFIK_IMAGE="$exp_traefik_image"
+  echo "traefik image version set to $exp_traefik_image"
+elif [ ! -z "$TRAEFIK_ID" ] && [ "$TRAEFIK_UP" != "true" ]; then
+  # traefik is in a exit state
+  echo "traefik has exited - try to restart"
+  source /usr/local/bin/traefik-deploy.sh --restart
+elif [ "$update_traefik" == "yes" ]; then
+  echo "updating traefik to $exp_traefik_image ..."
+  source /usr/local/bin/traefik-deploy.sh --down
+  source /usr/local/bin/traefik-deploy.sh --up
+  export TRAEFIK_IMAGE="$exp_traefik_image"
+  echo "traefik image version set to $exp_traefik_image"
+else
+  echo "traefik is ok - tag:$exp_traefik_image"
+fi
 sudo docker pull "$exp_app_image"
 # update app version
-if [ "$WAGTAIL_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
+if [ "$OHOS_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
-  export WAGTAIL_APP_IMAGE="$exp_app_image"
-  sudo sed -i "s|export WAGTAIL_APP_IMAGE=.*|export WAGTAIL_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
+  export OHOS_APP_IMAGE="$exp_app_image"
+  sudo sed -i "s|export OHOS_APP_IMAGE=.*|export OHOS_APP_IMAGE=\"$exp_app_image\"|g" /etc/environment
 fi
 
-# Continue with the deployment process
 TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
 if [ "$TRAEFIK_UP" = "true" ]; then
   sudo /usr/local/bin/website-blue-green-deploy.sh
-
-  CLOUDFRONT_DIST_ID=$(aws ssm get-parameter \
-    --name "/application/web/wagtail/FRONTEND_CACHE_AWS_DISTRIBUTION_ID" \
-    --with-decryption \
-    --region "$AWS_REGION" \
-    --query "Parameter.Value" \
-    --output text)
-
-  if [ -z "$CLOUDFRONT_DIST_ID" ]; then
-    echo "❌ Error: Could not fetch CloudFront Distribution ID from SSM."
-    exit 1
-  fi
-
-  echo "Invalidating CloudFront cache for distribution $CLOUDFRONT_DIST_ID ..."
-  aws cloudfront create-invalidation \
-    --distribution-id "$CLOUDFRONT_DIST_ID" \
-    --paths "/*"
-
-  echo "Deployment and cache invalidation complete."
 else
-  echo "Can't start app - traefik hasn't started"
-  exit 1
-fi
-
-# Identify which web container is running (green-web or blue-web)
-RUNNING_WEB=$(sudo docker ps --filter "name=green-web" --filter "status=running" --format "{{.Names}}" | grep green-web || true)
-
-if [ -z "$RUNNING_WEB" ]; then
-  RUNNING_WEB=$(sudo docker ps --filter "name=blue-web" --filter "status=running" --format "{{.Names}}" | grep blue-web || true)
-fi
-
-# Create or overwrite migrate.log before running migrations
-sudo bash -c '> /var/log/migrate.log'
-
-# Run migrate inside the running container, output to migrate.log
-if [ -n "$RUNNING_WEB" ]; then
-  echo "Running migration in container: $RUNNING_WEB"
-  sudo docker exec "$RUNNING_WEB" poetry run python /app/manage.py migrate > /var/log/migrate.log 2>&1
-else
-  echo "Error: Neither green-web nor blue-web is running."
-  exit 1
+  echo "can't start app - traefik hasn't started"
 fi

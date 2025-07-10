@@ -39,21 +39,17 @@ echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
 
     # Handle special cases (like docker_images with JSON format)
     if [[ "$NAME" == "docker_images" ]]; then
-        # Escape quotes inside docker_images string properly
         ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
-        echo "Exporting $NAME=\"$ESCAPED_VALUE\""
+        #echo "Exporting $NAME=\"$ESCAPED_VALUE\""
         export "$NAME"="$ESCAPED_VALUE"
         echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
     else
-        # For regular variables or variables containing special characters
         if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
-            # Wrap the value in quotes to handle special characters properly
-            echo "Exporting $NAME=\"$VALUE\""
+            #echo "Exporting $NAME=\"$VALUE\""
             export "$NAME"="$VALUE"
             echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
         else
-            # Normal variable, no need to quote
-            echo "Exporting $NAME=$VALUE"
+            #echo "Exporting $NAME=$VALUE"
             export "$NAME"="$VALUE"
             echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
         fi
@@ -61,7 +57,6 @@ echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
 done
 
 echo "Environment variables have been written to $OUTPUT_FILE."
-
 # get docker image tag from parameter store
 echo "retrieve versions"
 exp_traefik_image=$(aws ssm get-parameter --name /application/web/frontend/docker_images --query Parameter.Value --region $region --output text | jq -r '.["traefik"]')
@@ -100,7 +95,7 @@ elif [ "$update_traefik" == "yes" ]; then
 else
   echo "traefik is ok - tag:$exp_traefik_image"
 fi
-
+sudo docker pull "$exp_app_image"
 # update app version
 if [ "$FRONTEND_APP_IMAGE" != "$exp_app_image" ] || [ "$set_app_image" != "$exp_app_image" ]; then
   sudo yq -i ".services.blue-web.image = \"$exp_app_image\"" /var/docker/compose.yml
@@ -111,6 +106,26 @@ fi
 TRAEFIK_UP=$(sudo docker inspect -f '{{.State.Running}}' traefik 2> /dev/null)
 if [ "$TRAEFIK_UP" = "true" ]; then
   sudo /usr/local/bin/website-blue-green-deploy.sh
+
+  CLOUDFRONT_DIST_ID=$(aws ssm get-parameter \
+    --name "/application/web/wagtail/FRONTEND_CACHE_AWS_DISTRIBUTION_ID" \
+    --with-decryption \
+    --region "$AWS_REGION" \
+    --query "Parameter.Value" \
+    --output text)
+
+  if [ -z "$CLOUDFRONT_DIST_ID" ]; then
+    echo "❌ Error: Could not fetch CloudFront Distribution ID from SSM."
+    exit 1
+  fi
+
+  echo "Invalidating CloudFront cache for distribution $CLOUDFRONT_DIST_ID ..."
+  aws cloudfront create-invalidation \
+    --distribution-id "$CLOUDFRONT_DIST_ID" \
+    --paths "/*"
+
+  echo "Deployment and cache invalidation complete."
+  
 else
   echo "can't start app - traefik hasn't started"
 fi

@@ -1,7 +1,7 @@
 services:
   traefik:
     container_name: traefik
-    image: traefik-image
+    image: traefik:v3.4
     command:
       #- "--log.level=DEBUG"
       #- "--api.insecure=true"
@@ -17,7 +17,7 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "/var/docker/traefik.yml:/traefik.yml"
-    restart: "no"
+    restart: "always"
 
 networks:
   webgateway:

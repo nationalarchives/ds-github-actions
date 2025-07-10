@@ -41,19 +41,15 @@ echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
     if [[ "$NAME" == "docker_images" ]]; then
         # Escape quotes inside docker_images string properly
         ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
-        echo "Exporting $NAME=\"$ESCAPED_VALUE\""
         export "$NAME"="$ESCAPED_VALUE"
         echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
     else
         # For regular variables or variables containing special characters
         if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
             # Wrap the value in quotes to handle special characters properly
-            echo "Exporting $NAME=\"$VALUE\""
             export "$NAME"="$VALUE"
             echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
         else
-            # Normal variable, no need to quote
-            echo "Exporting $NAME=$VALUE"
             export "$NAME"="$VALUE"
             echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
         fi
@@ -69,6 +65,7 @@ exp_app_image=$(aws ssm get-parameter --name /application/web/enrichment/docker_
 set_traefik_image=$(yq '.services.traefik.image' /var/docker/compose.traefik.yml)
 set_app_image=$(yq '.services.blue-web.image' /var/docker/compose.yml)
 
+sudo docker pull "$exp_app_image"
 # update traefik version if needed
 if [ "$TRAEFIK_IMAGE" != "$exp_traefik_image" ] || [ "$set_traefik_image" != "$exp_traefik_image" ]; then
   sudo yq -i ".services.traefik.image = \"$exp_traefik_image\"" /var/docker/compose.traefik.yml

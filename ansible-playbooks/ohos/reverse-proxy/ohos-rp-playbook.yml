@@ -104,6 +104,7 @@
         instance_role: "ansible-ami-ohos-rp-role"
         instance_type: "{{ instance_type }}"
         metadata_options:
+          http_endpoint: "enabled"
           http_tokens: "required"
         name : "ohos-rp-primer"
         network:
@@ -126,7 +127,7 @@
         tags:
           Name: "ohos-rp-primer"
           Environment: "{{ account }}"
-          Service: "Ohos"
+          Service: "Ohos Reverse Proxy"
           Owner: "Digital Services"
           CreatedBy: "ansible"
           CostCentre: 53
@@ -206,7 +207,7 @@
         wait: yes
         tags:
           Name: "ohos-rp-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-          Service: "Ohos"
+          Service: "Ohos Reverse Proxy"
           Owner: "Digital Services"
           CreatedBy: "ansible"
           CostCentre: 53

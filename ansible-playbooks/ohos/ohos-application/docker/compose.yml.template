@@ -1,8 +1,8 @@
 services:
-  blue-web: &enrichment
+  blue-web: &ohos
     container_name: blue-web
-    env_file: /var/docker/enrichment.env
-    image: "ghcr.io/nationalarchives/ds-frontend-enrichment:25.06.02.37"
+    env_file: /var/docker/ohos.env
+    image: "ghcr.io/nationalarchives/ds-ohos:ohos"
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network='traefik_webgateway'"
@@ -10,14 +10,16 @@ services:
       - "traefik.http.routers.web.rule=Host(`{{sub_domain}}`) || PathPrefix(`/`)"
       - "traefik.http.middlewares.test-retry.retry.attempts=5"
       - "traefik.http.middlewares.test-retry.retry.initialinterval=200ms"
-      - "traefik.http.services.web.loadbalancer.healthCheck.path=/"
+      - "traefik.http.services.web.loadbalancer.healthCheck.path=/healthcheck/live/"
       - "traefik.http.services.web.loadbalancer.healthCheck.interval=10s"
       - "traefik.http.services.web.loadbalancer.healthCheck.timeout=1s"
     restart: "always"
     networks:
       - traefik
+    volumes:
+      - /images:/media/images
   green-web:
-    !!merge <<: *enrichment
+    !!merge <<: *ohos
     container_name: green-web
 networks:
   traefik:
