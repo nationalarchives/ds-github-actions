@@ -98,12 +98,14 @@ jobs:
           if ( "${{ inputs.deploy-target }}" -eq "web" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
             echo "copy web zip file"
-            Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+            # Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+            Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
           }
           if ( "${{ inputs.deploy-target }}" -eq "api" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
             echo "copy api zip file"
-            Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+            # Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
+            Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.api.zip -File ${{ env.output_dir }}\TNA.Discovery.api.zip -Force
           }
 
   deploy:
