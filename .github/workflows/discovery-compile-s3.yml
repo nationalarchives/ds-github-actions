@@ -83,10 +83,10 @@ jobs:
           copy ${{ github.workspace }}\.devops-deployment-scripts\stop-webserver.ps1 ${{ env.output_dir }}
           ${{ github.workspace }}\.devops-deployment-scripts\prepare_zip_files.ps1 -output_dir ${{ env.output_dir }}
 
-      - name: setup AWS.Tools
-        run: |
-          Install-Module -Name AWS.Tools.Installer -Force
-          Install-AWSToolsModule AWS.Tools.S3 -Force -AllowClobber
+##      - name: setup AWS.Tools
+##        run: |
+##          Install-Module -Name AWS.Tools.Installer -Force
+##          Install-AWSToolsModule AWS.Tools.S3 -Force -AllowClobber
 ##          msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi /qn
 
 ##          # maybe there is better clean up to remove the redundant modules
@@ -99,7 +99,8 @@ jobs:
           {
             echo "copy web zip file"
             # Write-S3Object -Credential $Creds -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
-            Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+            # Write-S3Object -BucketName ds-${{ env.deploy_env }}-deployment-source -Key /discovery/builds/TNA.Discovery.web.zip -File ${{ env.output_dir }}\TNA.Discovery.web.zip -Force
+            aws s3 cp ${{ env.output_dir }}\TNA.Discovery.web.zip s3://ds-${{ env.deploy_env }}-deployment-source/discovery/builds/TNA.Discovery.web.zip
           }
           if ( "${{ inputs.deploy-target }}" -eq "api" -or "${{ inputs.deploy-target }}" -eq "web_&_api" )
           {
