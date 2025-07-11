@@ -85,6 +85,7 @@ jobs:
 
       - name: setup AWS.Tools
         run: |
+          Remove-Module AWSPowerShell
           Install-Module -Name AWS.Tools.Installer -Force
           Install-AWSToolsModule AWS.Tools.S3 -Force -CleanUp
 ##          msiexec.exe /i https://awscli.amazonaws.com/AWSCLIV2.msi /qn
