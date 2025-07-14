@@ -68,13 +68,13 @@ jobs:
       - name: Get VPC ID from SSM
         id: vpc
         run: |
-          VPC_ID=$(aws ssm get-parameter --name "/infrastructure/dev/VPC_ID" --with-decryption --query "Parameter.Value" --output text)
+          VPC_ID=$(aws ssm get-parameter --name "/infrastructure/${{ inputs.account }}/VPC_ID" --with-decryption --query "Parameter.Value" --output text)
           echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
 
       - name: Get Subnet ID from SSM
         id: subnet
         run: |
-          SUBNET_ID=$(aws ssm get-parameter --name "/infrastructure/dev/SUBNET_ID_2A" --with-decryption --query "Parameter.Value" --output text)
+          SUBNET_ID=$(aws ssm get-parameter --name "/infrastructure/${{ inputs.account }}/SUBNET_ID_2A" --with-decryption --query "Parameter.Value" --output text)
           echo "subnet_id=$SUBNET_ID" >> $GITHUB_OUTPUT
 
       - name: download key file
