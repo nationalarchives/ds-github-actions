@@ -19,8 +19,6 @@
       filters:
         name: "al2023-ami-2023*"
         architecture: "x86_64"
-      tags:
-        ami_name: "amazon-linux-2023"
     register: findami
 
   - name: set latest AMI
