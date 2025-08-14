@@ -274,7 +274,7 @@
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
   become: yes
-  gather_facts: true
+  gather_facts: false
   tasks:
   - ansible.builtin.debug:
       msg:
