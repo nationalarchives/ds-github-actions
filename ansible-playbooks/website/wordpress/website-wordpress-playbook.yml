@@ -288,7 +288,7 @@
       path: "/var/finish-init.txt"
     remote_user: ec2-user
     register: init_finished
-    until: "init_finished.stat.exists"
+    until: init_finished.stat is defined
     retries: 45
     delay: 20
 
