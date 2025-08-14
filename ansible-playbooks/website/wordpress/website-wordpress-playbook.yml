@@ -274,7 +274,7 @@
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
   become: yes
-  gather_facts: false
+  gather_facts: true
   tasks:
   - ansible.builtin.debug:
       msg:
@@ -285,7 +285,7 @@
 
   - name: check if ec2 instance is ready
     ansible.builtin.stat:
-      path: "/var/finish-init.txt"
+      path: /var/finish-init.txt
     remote_user: ec2-user
     register: init_finished
     until: init_finished.stat.exists
