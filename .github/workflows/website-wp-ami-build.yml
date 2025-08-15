@@ -122,7 +122,6 @@ jobs:
         with:
           python-version: '3.13'
       - run: |
-          python3 --version
           pip install -r ${{ github.workspace }}/actions/.github/workflows/base-python-req.txt
 
       - name: run ansible playbook
