@@ -271,9 +271,9 @@
       state: started
     tags: [ami]
 
-  - name: Python 3.13 installation
+  - name: Run userdata script
     ansible.builtin.pause:
-      minutes: 20
+      minutes: 30
 
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
