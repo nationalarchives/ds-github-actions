@@ -271,6 +271,11 @@
       state: started
     tags: [ami]
 
+  - name: Python 3.13 installation
+    ansible.builtin.pause:
+      prompt: "The installation of Python 3.13 is very slow. 20 minute waiting time until the compilation is finished."
+      minutes: 20
+
 - name: switch to ec2hosts - checking if setup has finished
   hosts: ec2hosts
   become: yes
@@ -280,8 +285,7 @@
       msg:
         - "====================================================================="
         - "checking status of new instance before ami can be build"
-        - "due to installing python3.13 (build) the process is extremely slow"
-        - "20 second interval with max duration of 20 minutes"
+        - "20 second interval with max duration of 5 minutes"
         - "====================================================================="
 
   - name: check if ec2 instance is ready
@@ -289,7 +293,7 @@
       path: /var/finish-init.txt
     register: init_finished
     until: init_finished.stat.exists
-    retries: 60
+    retries: 15
     delay: 20
 
   - name: check if wp-config.php exists
