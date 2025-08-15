@@ -273,7 +273,6 @@
 
   - name: Python 3.13 installation
     ansible.builtin.pause:
-      prompt: "The installation of Python 3.13 is very slow. 20 minute waiting time until the compilation is finished."
       minutes: 20
 
 - name: switch to ec2hosts - checking if setup has finished
