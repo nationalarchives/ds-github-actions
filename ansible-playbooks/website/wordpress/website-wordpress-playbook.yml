@@ -280,7 +280,7 @@
       msg:
         - "====================================================================="
         - "checking status of new instance before ami can be build"
-        - "due to installing python3.13 (compiling) the process is extremely slow"
+        - "due to installing python3.13 (build) the process is extremely slow"
         - "20 second interval with max duration of 20 minutes"
         - "====================================================================="
 
