@@ -18,7 +18,7 @@ sudo systemctl enable httpd
 sudo systemctl start httpd
 
 # Remove old php version
-sudo yum -y remove php*
+sudo yum -y erase php*
 sudo yum -y remove php*
 
 # Install php 7.4
@@ -120,9 +120,9 @@ cd Python-3.13.7/
 sudo ./configure --enable-optimizations --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
 sudo make -j $(nproc)
 sudo make altinstall
-alias python3=Python-3.13.7/python
+alias python3=/Python-3.13.7/python
 alias pip3=pip3.13
-echo "alias python3=Python-3.13.7/python" | sudo tee -a /home/ec2-user/.bashrc
+echo "alias python3=/Python-3.13.7/python" | sudo tee -a /home/ec2-user/.bashrc
 echo "alias pip3=pip3.13" | sudo tee -a /home/ec2-user/.bashrc
 
 cat << EOF > /var/finish-init.txt
