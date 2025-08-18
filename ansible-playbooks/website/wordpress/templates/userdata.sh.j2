@@ -12,18 +12,6 @@ sudo yum -y groupinstall "Development Tools"
 sudo yum -y erase openssl-devel
 sudo yum -y install openssl11 openssl11-devel  libffi-devel bzip2-devel wget
 
-# update python
-sudo wget https://www.python.org/ftp/python/3.13.7/Python-3.13.7.tgz
-sudo tar -xf Python-3.13.7.tgz
-cd Python-3.13.7/
-sudo ./configure --enable-optimizations --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
-sudo make -j $(nproc)
-sudo make altinstall
-alias python3=Python-3.13.7/python
-alias pip3=pip3.13
-echo "alias python3=Python-3.13.7/python" | sudo tee -a /home/ec2-user/.bashrc
-echo "alias pip3=pip3.13" | sudo tee -a /home/ec2-user/.bashrc
-
 # Install apache
 sudo yum -y install httpd httpd-tools mod_ssl
 sudo systemctl enable httpd
@@ -124,6 +112,18 @@ sudo chown apache:apache /var/www -R
 sudo find /var/www -type d -exec chmod 775 {} \;
 sudo find /var/www -type f -exec chmod 664 {} \;
 sudo systemctl restart httpd
+
+# update python
+sudo wget https://www.python.org/ftp/python/3.13.7/Python-3.13.7.tgz
+sudo tar -xf Python-3.13.7.tgz
+cd Python-3.13.7/
+sudo ./configure --enable-optimizations --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
+sudo make -j $(nproc)
+sudo make altinstall
+alias python3=Python-3.13.7/python
+alias pip3=pip3.13
+echo "alias python3=Python-3.13.7/python" | sudo tee -a /home/ec2-user/.bashrc
+echo "alias pip3=pip3.13" | sudo tee -a /home/ec2-user/.bashrc
 
 cat << EOF > /var/finish-init.txt
 [status]
