@@ -156,7 +156,7 @@
       tags:
         Name: "crawlguard-primer"
         Environment: "{{ account }}"
-        Service: "Web"
+        Service: "insights"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
@@ -256,7 +256,7 @@
       wait: yes
       tags:
         Name: "crawlguard-primer-{{ ansible_date_time.date }} {{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
-        Service: "Web"
+        Service: "insights"
         Owner: "Digital Services"
         CreatedBy: "ansible"
         CostCentre: 53
