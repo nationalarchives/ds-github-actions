@@ -1,5 +1,5 @@
 ---
-name: Web Frontend Terraform Plan
+name: Web Terraform Plan
 
 permissions:
       id-token: write

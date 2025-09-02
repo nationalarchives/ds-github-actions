@@ -1,5 +1,5 @@
 ---
-  name: Web Frontend Terraform Apply
+  name: Web Terraform Apply
   
   permissions:
         id-token: write
