@@ -55,7 +55,7 @@ jobs:
             --application-name discovery-frontend \
             --deployment-config-name discovery-frontend \
             --deployment-group-name discovery-frontend-group \
-            --s3-location bucket=ds-${{ deploy_env }}-deployment-source,bundleType=zip,key=discovery/builds/TNA.Discovery.web.zip
+            --s3-location bucket=ds-${{ env.deploy_env }}-deployment-source,bundleType=zip,key=discovery/builds/TNA.Discovery.web.zip
           aws deploy create-deployment \
             --application-name discovery-frontend-internal \
             --deployment-config-name discovery-frontend-internal \
