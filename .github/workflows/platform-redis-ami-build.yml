@@ -59,7 +59,7 @@ jobs:
       - name: Checkout ds-github-actions
         uses: actions/checkout@v4
         with:
-          repository: nationalarchives/ds-github-actions
+          repository: nationalarchives/ds-github-actions@redis-actions
           path: actions
 
       - name: Configure AWS Credentials
