@@ -51,13 +51,13 @@ jobs:
 
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: main
           ref: "${{ inputs.branch }}"
 
       - name: Checkout ds-github-actions
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: nationalarchives/ds-github-actions@redis-actions
           path: actions
