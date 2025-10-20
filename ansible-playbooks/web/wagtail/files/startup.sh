@@ -116,7 +116,12 @@ if [ -z "$RUNNING_WEB" ]; then
 fi
 
 # Create or overwrite migrate.log before running migrations
-sudo bash -c '> /var/log/migrate.log'
+if [ ! -f /var/log/migrate.log ]; then
+    sudo touch /var/log/migrate.log
+    sudo chmod 666 /var/log/migrate.log
+else
+    sudo bash -c '> /var/log/migrate.log'
+fi
 
 # Run migrate inside the running container, output to migrate.log
 if [ -n "$RUNNING_WEB" ]; then
