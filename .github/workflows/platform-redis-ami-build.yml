@@ -99,8 +99,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          VPC_ID: ${{ secrets.VPC_ID }}
-          SUBNET_ID: ${{ secrets.SUBNET_ID }}
+          VPC_ID: ${{ steps.vpc.outputs.vpc_id }}
+          SUBNET_ID: ${{ steps.subnet.outputs.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/web/redis
