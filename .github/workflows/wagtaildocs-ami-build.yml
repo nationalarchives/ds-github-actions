@@ -34,11 +34,6 @@ on:
       s3_deployment_root:
         type: string
         required: true
-    secrets:
-      vpc_id:
-        required: true
-      subnet_id:
-        required: true
 
 permissions:
   id-token: write
@@ -70,6 +65,18 @@ jobs:
           role-to-assume: "${{ inputs.base_role }}"
           output-credentials: true
 
+      - name: Get VPC ID from SSM
+        id: vpc
+        run: |
+          VPC_ID=$(aws ssm get-parameter --name "/infrastructure/${{ inputs.account }}/VPC_ID" --with-decryption --query "Parameter.Value" --output text)
+          echo "vpc_id=$VPC_ID" >> $GITHUB_OUTPUT
+
+      - name: Get Subnet ID from SSM
+        id: subnet
+        run: |
+          SUBNET_ID=$(aws ssm get-parameter --name "/infrastructure/${{ inputs.account }}/SUBNET_ID_2A" --with-decryption --query "Parameter.Value" --output text)
+          echo "subnet_id=$SUBNET_ID" >> $GITHUB_OUTPUT      
+
       - name: download key file
         uses: keithweaver/aws-s3-github-action@v1.0.0
         with:
@@ -92,8 +99,8 @@ jobs:
 
       - name: run ansible playbook
         env:
-          VPC_ID: ${{ secrets.vpc_id }}
-          SUBNET_ID: ${{ secrets.subnet_id }}
+          VPC_ID: ${{ steps.vpc.outputs.vpc_id }}
+          SUBNET_ID: ${{ steps.subnet.outputs.subnet_id }}
         run: |
           cur_dir=$(pwd)
           cd $cur_dir/actions/ansible-playbooks/web/wagtaildocs
