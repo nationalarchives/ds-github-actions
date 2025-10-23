@@ -127,6 +127,8 @@ fi
 if [ -n "$RUNNING_WEB" ]; then
   echo "Running migration in container: $RUNNING_WEB"
   sudo docker exec "$RUNNING_WEB" poetry run python /app/manage.py migrate > /var/log/migrate.log 2>&1
+  retVal=$?
+  exit $retVal
 else
   echo "Error: Neither green-web nor blue-web is running."
   exit 1
