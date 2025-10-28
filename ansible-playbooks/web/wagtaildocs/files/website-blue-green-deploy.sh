@@ -24,7 +24,7 @@ blue_ps=$(sudo docker ps --all --format "{{.Names}}" | grep "$BLUE_SERVICE")
 green_ps=$(sudo docker ps --all --format "{{.Names}}" | grep "$GREEN_SERVICE")
 
 if [ ! -z "$blue_ps" ] && [ ! -z "$blue_up" ]; then
-  echo "$BLUE_SERVICE -> $BLUE_SERVICE"
+  echo "$BLUE_SERVICE -> $GREEN_SERVICE"
   ACTIVE_SERVICE=$BLUE_SERVICE
   INACTIVE_SERVICE=$GREEN_SERVICE
 else
