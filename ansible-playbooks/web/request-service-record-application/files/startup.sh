@@ -2,10 +2,40 @@
 
 # set environment variables
 source /etc/environment
-
 sudo touch /var/log/server-startup.log
-
 region="eu-west-2"
+
+json_to_env_file() {
+    local json_string="$1"        # JSON text
+    local output_file="$2"        # e.g. ./app.env
+    local prefix="${3:-}"         # optional prefix, e.g. APP_
+    if [[ -z "$json_string" || -z "$output_file" ]]; then
+        echo "Usage: json_to_env_file <json_string> <output_file> [PREFIX]" >&2
+        return 1
+    fi
+    if ! command -v jq >/dev/null 2>&1; then
+        echo "jq not found (install: brew install jq)" >&2
+        return 1
+    fi
+
+    : > "$output_file" || return 1
+    chmod 644 "$output_file" 2>/dev/null || true
+
+    jq -r --arg p "$prefix" '
+        paths(scalars) as $path |
+        ($path | map(tostring)) as $parts |
+        ($parts
+        | map(gsub("[^A-Za-z0-9_]"; "_"))
+        | map(sub("^([0-9])"; "_\\1"))
+        | map(ascii_upcase)
+        | join("_")
+        ) as $base |
+        ($p + $base) as $var |
+        # Always shell-escape; yields safe single-quoted strings for non-numeric scalars
+        "\($var)=\(getpath($path)|@sh)"
+        ' <<<"$json_string" >> "$output_file"
+}
+
 if [ -z ${TRAEFIK_IMAGE+x} ]; then export TRAEFIK_IMAGE="none"; fi
 if [ -z ${FRONTEND_APP_IMAGE+x} ]; then export FRONTEND_APP_IMAGE="none"; fi
 
@@ -13,7 +43,7 @@ if [ -z ${FRONTEND_APP_IMAGE+x} ]; then export FRONTEND_APP_IMAGE="none"; fi
 sudo dnf -y update && sudo dnf install -y aws-cli jq
 
 AWS_REGION="eu-west-2"
-PARAMETER_PATH="/application/web/request-service-record"
+PARAMETER_PATH="/application/web/requestservicerecord"
 
 # Fetch parameters from SSM
 PARAMS_JSON=$(aws ssm get-parameters-by-path \
@@ -32,29 +62,30 @@ sudo touch "$OUTPUT_FILE"
 sudo chmod 777 "$OUTPUT_FILE"
 > "$OUTPUT_FILE"
 
-# Loop over each parameter and handle it correctly
-echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
-    NAME=$(echo "$PARAMETER" | jq -r '.Name | split("/")[-1]')
-    VALUE=$(echo "$PARAMETER" | jq -r '.Value')
-
-    # Handle special cases (like docker_images with JSON format)
-    if [[ "$NAME" == "docker_images" ]]; then
-        ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
-        #echo "Exporting $NAME=\"$ESCAPED_VALUE\""
-        export "$NAME"="$ESCAPED_VALUE"
-        echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
-    else
-        if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
-            #echo "Exporting $NAME=\"$VALUE\""
-            export "$NAME"="$VALUE"
-            echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
-        else
-            #echo "Exporting $NAME=$VALUE"
-            export "$NAME"="$VALUE"
-            echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
-        fi
-    fi
-done
+json_to_env_file "$PARAMS_JSON" "$OUTPUT_FILE"
+## Loop over each parameter and handle it correctly
+#echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
+#    NAME=$(echo "$PARAMETER" | jq -r '.Name | split("/")[-1]')
+#    VALUE=$(echo "$PARAMETER" | jq -r '.Value')
+#
+#    # Handle special cases (like docker_images with JSON format)
+#    if [[ "$NAME" == "docker_images" ]]; then
+#        ESCAPED_VALUE=$(echo "$VALUE" | sed 's/"/\\"/g')
+#        #echo "Exporting $NAME=\"$ESCAPED_VALUE\""
+#        export "$NAME"="$ESCAPED_VALUE"
+#        echo "$NAME=\"$ESCAPED_VALUE\"" >> "$OUTPUT_FILE"
+#    else
+#        if [[ "$VALUE" == *","* ]] || [[ "$VALUE" == *":"* ]] || [[ "$VALUE" == *"/"* ]] || [[ "$VALUE" == *"\""* ]]; then
+#            #echo "Exporting $NAME=\"$VALUE\""
+#            export "$NAME"="$VALUE"
+#            echo "$NAME=\"$VALUE\"" >> "$OUTPUT_FILE"
+#        else
+#            #echo "Exporting $NAME=$VALUE"
+#            export "$NAME"="$VALUE"
+#            echo "$NAME=$VALUE" >> "$OUTPUT_FILE"
+#        fi
+#    fi
+#done
 
 echo "Environment variables have been written to $OUTPUT_FILE."
 # get docker image tag from parameter store
