@@ -33,7 +33,7 @@ sudo chmod 777 "$OUTPUT_FILE"
 
 while IFS=$'\t' read -r raw_key raw_value; do
     printf '%s="%s"\n' "$raw_key" "$raw_value" >> "$OUTPUT_FILE"
-done < <(jq -r 'to_entries[] | [.key, .value] | @tsv' <<< "$string")
+done < <(jq -r 'to_entries[] | [.key, .value] | @tsv' <<< "$PARAMS_JSON")
 
 ## Loop over each parameter and handle it correctly
 #echo "$PARAMS_JSON" | jq -c '.[]' | while read -r PARAMETER; do
