@@ -18,8 +18,8 @@ PARAMETER_PATH="/application/web/requestservicerecord"
 PARAMS_JSON=$(aws ssm get-parameter \
     --name "$PARAMETER_PATH" \
     --region "$AWS_REGION" \
-    --query "Parameter.Value") \
-    --output text
+    --query "Parameter.Value" \
+    --output text)
 
 if [ -z "$PARAMS_JSON" ]; then
   echo "Error: No parameters found under the path $PARAMETER_PATH or insufficient permissions."
